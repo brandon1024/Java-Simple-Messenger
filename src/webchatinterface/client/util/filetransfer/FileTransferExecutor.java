@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import util.CodeGenerator;
+import util.KeyGenerator;
 import util.DynamicQueue;
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
@@ -78,7 +78,7 @@ public class FileTransferExecutor implements Runnable
 		this.transferRunning = true;
 		this.mode = FileTransferExecutor.MODE_SEND;
 		this.file = file;
-		this.transferID = CodeGenerator.generate256bitKey(CodeGenerator.ALPHANUMERIC_MIXED_CASE);
+		this.transferID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 		this.dialog = new TransferProgressDialog();
 		(new Thread(this)).start();
 	}
