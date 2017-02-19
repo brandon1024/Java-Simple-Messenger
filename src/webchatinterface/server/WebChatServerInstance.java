@@ -9,7 +9,7 @@ import java.io.StreamCorruptedException;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 
-import util.CodeGenerator;
+import util.KeyGenerator;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.ui.ConsoleManager;
 import webchatinterface.server.util.AccountManager;
@@ -420,8 +420,8 @@ public class WebChatServerInstance implements Runnable
 								break;
 							}
 							
-							String username = "Guest" + CodeGenerator.generate64bitKey(CodeGenerator.NUMERIC);
-							String userID = CodeGenerator.generate256bitKey(CodeGenerator.ALPHANUMERIC_MIXED_CASE);
+							String username = "Guest" + KeyGenerator.generate64bitKey(KeyGenerator.NUMERIC);
+							String userID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 							
 							this.client.setUsername(username);
 							this.client.setUserID(userID);
@@ -437,7 +437,7 @@ public class WebChatServerInstance implements Runnable
 							String emailAddress = (String)data[3];
 							String username = (String)data[4];
 							byte[] password = (byte[])data[5];
-							String userID = CodeGenerator.generate256bitKey(CodeGenerator.ALPHANUMERIC_MIXED_CASE);
+							String userID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 							
 							if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
 							{
