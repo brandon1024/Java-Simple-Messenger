@@ -45,7 +45,7 @@ public class ConnectionSettingsPanel extends PreferencePanel
 		super.add(Box.createRigidArea(new Dimension(0,45)), BorderLayout.PAGE_END);
 	}
 	
-	protected JPanel buildConnectionSettingsPanel()
+	private JPanel buildConnectionSettingsPanel()
 	{
 		JPanel connectionSettings = new JPanel();
 		connectionSettings.setLayout(new BoxLayout(connectionSettings, BoxLayout.PAGE_AXIS));
@@ -97,7 +97,7 @@ public class ConnectionSettingsPanel extends PreferencePanel
 		return connectionSettings;
 	}
 	
-	protected JPanel buildTimeoutSettingsPanel()
+	private JPanel buildTimeoutSettingsPanel()
 	{
 		JPanel timeoutSettings = new JPanel();
 		timeoutSettings.setLayout(new BoxLayout(timeoutSettings, BoxLayout.PAGE_AXIS));
@@ -119,24 +119,16 @@ public class ConnectionSettingsPanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(Integer.parseInt(this.portNumberField.getText()) != AbstractServer.serverPortNumber)
-		{
 			changedFields.add("Port Number");
-		}
 		
 		if(!this.bindIPField.getText().equals(AbstractServer.serverBindIPAddress))
-		{
 			changedFields.add("Bind IP Address");
-		}
 		
 		if(Integer.parseInt(this.maxConnectionsField.getText()) != AbstractServer.maxConnectedUsers)
-		{
 			changedFields.add("Maximum Number of Connected Users");
-		}
 		
 		if(Integer.parseInt(this.loginTimeoutField.getText()) != AbstractServer.loginTimeoutSeconds)
-		{
 			changedFields.add("Login Timeout Seconds");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}

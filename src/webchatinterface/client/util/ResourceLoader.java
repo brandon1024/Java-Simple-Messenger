@@ -108,10 +108,7 @@ public class ResourceLoader
 			this.STATUS_OFFLINE_ICON = null;
 		}
 		
-		if(this.STATUS_AVAILABLE_ICON == null)
-			return false;
-		else
-			return true;
+		return this.STATUS_AVAILABLE_ICON != null;
 	}
 	
 	public BufferedImage getFrameIcon()

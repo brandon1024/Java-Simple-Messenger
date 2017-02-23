@@ -90,25 +90,19 @@ public class AdvancedSettingsPanel extends PreferencePanel
 					int index = line.indexOf('=') + 1;
 					
 					if(index == -1)
-					{
 						return;
-					}
 					
 					startPos += index;
 					
 					int currentSelectionStart = AdvancedSettingsPanel.this.configurationEditor.getSelectionStart();
 					int currentSelectionEnd = AdvancedSettingsPanel.this.configurationEditor.getSelectionStart();
 					if(currentSelectionStart >= startPos && currentSelectionEnd <= endPos)
-					{
 						return;
-					}
 					
 					AdvancedSettingsPanel.this.configurationEditor.select(startPos, endPos);
 					
 				}
 				catch (BadLocationException e){}
-				catch(StringIndexOutOfBoundsException e){}
-				catch(IndexOutOfBoundsException e){}
 			}
 
 			public void mouseEntered(MouseEvent arg0){}
@@ -127,7 +121,7 @@ public class AdvancedSettingsPanel extends PreferencePanel
 		super.add(body, BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildAdvancedSettingsPanel()
+	private JPanel buildAdvancedSettingsPanel()
 	{
 		JPanel advancedSettingsPanel = new JPanel();
 		advancedSettingsPanel.setLayout(new BoxLayout(advancedSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -166,21 +160,15 @@ public class AdvancedSettingsPanel extends PreferencePanel
 	public String[] requestChangedFields()
 	{
 		if(this.editedCheckBox.isSelected())
-		{
 			return new String[]{"Modified Configuration File"};
-		}
 		else
-		{
 			return new String[0];
-		}
 	}
 	
 	public void save()
 	{
 		if(!this.editedCheckBox.isSelected())
-		{
 			return;
-		}
 		
 		try
 		{
@@ -195,33 +183,23 @@ public class AdvancedSettingsPanel extends PreferencePanel
 			String temp = lines[0].replace("[", "");
 			temp = temp.replace("]", "");
 			if(!temp.equals(AbstractIRC.SERVER_APPLICATION_NAME))
-			{
 				throw new Exception();
-			}
 			
 			temp = lines[1].substring(lines[1].indexOf('=')+1);
 			if(!temp.equals(AbstractIRC.SERVER_VERSION))
-			{
 				throw new Exception();
-			}
 			
 			temp = lines[2].substring(lines[2].indexOf('=')+1);
 			if(!temp.equals(AbstractIRC.RELEASE_DATE))
-			{
 				throw new Exception();
-			}
 			
 			temp = lines[3].substring(lines[3].indexOf('=')+1);
 			if(!temp.equals(AbstractIRC.AUTHOR))
-			{
 				throw new Exception();
-			}
 			
 			temp = lines[4].substring(lines[4].indexOf('=')+1);
 			if(!temp.equals(AbstractIRC.SERVER_APPLCATION_DIRECTORY))
-			{
 				throw new Exception();
-			}
 			
 			temp = lines[6].substring(lines[6].indexOf('=')+1);
 			AbstractServer.startServerWhenApplicationStarts = Boolean.parseBoolean(temp);
@@ -406,9 +384,7 @@ public class AdvancedSettingsPanel extends PreferencePanel
 		lines[46] = "ConsoleFontPlain=" + (AbstractServer.textFont.getStyle() == Font.PLAIN);
 		
 		for(String line : lines)
-		{
 			this.configurationEditor.append(line);
-		}
 	}
 
 	public boolean isEdited()

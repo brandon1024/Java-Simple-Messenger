@@ -78,15 +78,11 @@ public class WebChatClient implements Runnable
 	  *<p>
 	  *A direct connection with the server is established with the specified host name address and 
 	  *port number. If a connection cannot be established for any reason, an IOException is thrown.
-	  *@throws 	IOException if the client cannot establish a connection with the server
+	  *@throws	IOException if the client cannot establish a connection with the server
 	  *@param 	parent 		the graphical user interface with which the client can
 	  *		display inbound messages. The graphical user interface must implement
 	  *		the appropriate {@code appendToChat()} and {@code processCommand()} methods.
-	  *@param 	hostName 	The server address to which the client will establish a connection
-	  *@param 	portNumber 	The server port number
-	  *@param 	logger 		A reference to the logger responsible for logging thrown exceptions to a log file in the application directory
-	  *@param 	client 		The ClientUser object representing user paramters
-	 * @throws AuthenticationException 
+	 * @throws AuthenticationException thrown if an error occurred while attempting to instantiate the client
 	  */
 	public WebChatClient(WebChatClientGUI parent, Authenticator auth) throws IOException, AuthenticationException
 	{
@@ -103,9 +99,7 @@ public class WebChatClient implements Runnable
 	public void start()
 	{
 		if(this.isRunning())
-		{
 			return;
-		}
 
 		this.RUN = true;
 		(new Thread(this)).start();
@@ -150,19 +144,14 @@ public class WebChatClient implements Runnable
 				
 				//If a transfer buffer is received
 				if(message != null && message instanceof TransferBuffer)
-				{
 					this.processTransferBuffer((TransferBuffer)message);
-				}
 				//If Message Received, append to chat window
 				else if(message != null && message instanceof Message)
-				{
 					this.processMessage((Message)message);
-				}
+				
 				//If Command Received, Process Command
 				if(message != null && message instanceof Command)
-				{
 					this.processCommand((Command)message);
-				}
 			}
 			catch(SocketException e)
 			{
@@ -183,12 +172,6 @@ public class WebChatClient implements Runnable
 			{
 				AbstractClient.logException(e);
 				this.graphicalUserInterface.disconnect("Connection Reset: Incompatible Client");
-				this.RUN = false;
-			}
-			catch(CannotEstablishConnectionException e)
-			{
-				AbstractClient.logException(e);
-				this.graphicalUserInterface.disconnect("Connection Reset: Unable to Communicate with the Server");
 				this.RUN = false;
 			}
 			catch(Exception e)
@@ -219,7 +202,7 @@ public class WebChatClient implements Runnable
 	}
 	
 	/***/
-	private void requestConnection() throws CannotEstablishConnectionException, ConnectionDeniedException
+	private void requestConnection() throws CannotEstablishConnectionException
 	{
 		//Send Connection Request Command and Await Connection Authorization
 		try
@@ -269,9 +252,7 @@ public class WebChatClient implements Runnable
 					//If Server Denied Connection
 					else if(commandID == Command.CONNECTION_DENIED)
 					{
-						int reason = ((Command)objectIn).getReason();
-						
-						switch(reason)
+						switch(((Command)objectIn).getReason())
 						{
 							case Command.REASON_BLACKLISTED:
 								throw new ConnectionDeniedException("Connection Denied; Blacklisted Account");
@@ -319,15 +300,11 @@ public class WebChatClient implements Runnable
 			if(next.isRunning())
 			{
 				if(next.getTransferID().equals(messageTransferID))
-				{
 					next.bufferReceived(buffer);
-				}
 			}
 			//Else Remove From List of Ongoing Transfers
 			else
-			{
 				iterator.remove();
-			}
 		}
 	}
 	
@@ -343,30 +320,20 @@ public class WebChatClient implements Runnable
 			//If Connection Closes, Determine Reason
 			case Command.CONNECTION_SUSPENDED:
 				if(com.getReason() == Command.REASON_BLACKLISTED)
-				{
 					this.RUN = false;
-				}
 				else if(com.getReason() == Command.REASON_INCONSISTENT_USER_ID)
-				{
 					this.RUN = false;
-				}
 				else if(com.getReason() == Command.REASON_KICKED)
-				{
 					this.RUN = false;
-				}
 				else if(com.getReason() == Command.REASON_ROOM_CLOSED)
-				{
 					this.RUN = false;
-				}
 				else if(com.getReason() == Command.REASON_SERVER_FULL)
-				{
 					this.RUN = false;
-				}
 				else
 				{
 					try
 					{
-						this.send(new Command(Command.CONNECTION_SUSPENDED_AWKKNOWLEDGE, this.client.getUsername(), this.client.getUserID()));
+						this.send(new Command(Command.CONNECTION_SUSPENDED_AWKNOWLEDGE, this.client.getUsername(), this.client.getUserID()));
 					}
 					catch(IOException e)
 					{
@@ -418,25 +385,6 @@ public class WebChatClient implements Runnable
 	{
 		//Send Message Object to Server
 		this.messageOut.writeObject(com);
-		this.messageOut.flush();
-	}
-	
-	/**The {@code send(Object obj)} method is not used with 
-	  *the dedicated {@code WebChatServer} server application. Any object 
-	  *that is not an instance of {@code Message}, {@code MultimediaMessage}, 
-      *or {@code Command} objects received by the dedicated {@code WebChatServer} 
-	  *will simply be ignored and discarded. However, this method may be useful 
-	  *if one wishes to develop a unique server application.
-	  *<p>
-	  *Sends a generic object to the server.
-	  *@param obj the generic object to be communicated to the server
-	  *@throws IOException if an exception occured while writing to the
-	  *object stream*/
-	@Deprecated
-	public synchronized void send(Object obj) throws IOException
-	{
-		//Send Object to Server
-		this.messageOut.writeObject(obj);
 		this.messageOut.flush();
 	}
 	

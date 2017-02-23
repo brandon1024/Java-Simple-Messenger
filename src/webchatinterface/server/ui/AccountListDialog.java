@@ -2,7 +2,6 @@ package webchatinterface.server.ui;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -17,7 +16,7 @@ import webchatinterface.server.util.AccountManager;
 
 public class AccountListDialog
 {
-	public final static void displayAccountList()
+	public static void displayAccountList()
 	{
 		JFrame accountDialog = new JFrame();
 		accountDialog.setTitle("User Accounts");
@@ -57,24 +56,13 @@ public class AccountListDialog
 			for(int n = 0; n < accountList[0].length; n++)
 			{
 				String[] row = new String[2];
-				row[0] = new String(accountList[0][n]);
-				row[1] = new String(accountList[1][n]);
+				row[0] = accountList[0][n];
+				row[1] = accountList[1][n];
 				
 				tableModel.addRow(row);
 			}
 		}
-		catch (FileNotFoundException e)
-		{
-			
-		}
-		catch (ClassNotFoundException e)
-		{
-			
-		}
-		catch (IOException e)
-		{
-			
-		}
+		catch (Exception e){}
 		
 		accountDialog.setVisible(true);
 	}

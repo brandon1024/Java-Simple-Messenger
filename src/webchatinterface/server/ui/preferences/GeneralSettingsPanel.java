@@ -38,6 +38,7 @@ public class GeneralSettingsPanel extends PreferencePanel
 		this.showResourceMonitor = new JCheckBox("Show Resource Monitor");
 		this.restoreDefaultSettings = new JButton("Restore Global Default Settings");
 		this.restoreSavedSettings = new JButton("Restore Saved Settings");
+
 		this.restoreDefaultSettings.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent event)
@@ -52,6 +53,7 @@ public class GeneralSettingsPanel extends PreferencePanel
 				dialog.restoreSavedSettings();
 			}
 		});
+
 		this.populatePanel();
 		
 		JPanel body = new JPanel();
@@ -63,7 +65,7 @@ public class GeneralSettingsPanel extends PreferencePanel
 		super.add(body, BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildWindowSettingsPanel()
+	private JPanel buildWindowSettingsPanel()
 	{
 		JPanel generalSettingsPanel = new JPanel();
 		generalSettingsPanel.setLayout(new BoxLayout(generalSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -104,7 +106,7 @@ public class GeneralSettingsPanel extends PreferencePanel
 		return generalSettingsPanel;
 	}
 	
-	protected JPanel buildRestoreSettingsPanel()
+	private JPanel buildRestoreSettingsPanel()
 	{
 		JPanel restoreSettingsPanel = new JPanel();
 		restoreSettingsPanel.setLayout(new BoxLayout(restoreSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -124,19 +126,13 @@ public class GeneralSettingsPanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(this.startServerWhenOpened.isSelected() != AbstractServer.startServerWhenApplicationStarts)
-		{
 			changedFields.add("Start Server When Application Starts");
-		}
 		
 		if(this.startServerMinimized.isSelected() != AbstractServer.openMinimized)
-		{
 			changedFields.add("Start Application Minimized");
-		}
 		
 		if(this.showResourceMonitor.isSelected() != AbstractServer.showResourceMonitor)
-		{
 			changedFields.add("Show Resource Monitor");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}

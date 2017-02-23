@@ -59,7 +59,7 @@ public abstract class TransportEntity implements Serializable
 	/**Constructor for a new instance of the TransportEntity class.
 	  *@param sender the sender identifier or username
 	  *@param senderID the unique sender identification key*/
-	public TransportEntity(String sender, String senderID)
+	protected TransportEntity(String sender, String senderID)
 	{
 		this.SENDER = sender;
 		this.SENDER_ID = senderID;

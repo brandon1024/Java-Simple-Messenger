@@ -74,10 +74,7 @@ public class UsageMonitor extends JPanel implements Runnable
 	private JLabel status;
 	
 	/**The JLabel for displaying the number of files transfered between clients.*/
-	private JLabel filesTransfered;
-	
-	/**The JLabel for displaying the number of available processors.*/
-	private JLabel availableProcessors;
+	private JLabel filesTransferred;
 	
 	/**The JLabel for displaying the total server uptime.*/
 	private JLabel upTime;
@@ -133,14 +130,14 @@ public class UsageMonitor extends JPanel implements Runnable
 		col6.setLayout(new GridLayout(2,1, 5, 0));
 		
 		//Build JLabels
+		JLabel availableProcessors = new JLabel("Available Processors: " + this.availableProcessors());
 		this.usedMem = new JLabel("Used Memory: 0");
 		this.freeMem = new JLabel("Free Memory: 0");
 		this.totalMem = new JLabel("Total Memory: 0");
 		this.maxMem = new JLabel("Max Memory: 0");
 		
 		this.messagesSent = new JLabel("Messages Sent: 0");
-		this.filesTransfered = new JLabel("Files Transfered: 0");
-		this.availableProcessors = new JLabel("Available Processors: " + this.availableProcessors());
+		this.filesTransferred = new JLabel("Files Transferred: 0");
 		this.port = new JLabel("Server Port: 0");
 		this.maxConnections = new JLabel("Max Connections: 0");
 		this.version = new JLabel("Server Version: 0.0.0");
@@ -164,7 +161,7 @@ public class UsageMonitor extends JPanel implements Runnable
 		col2.add(this.maxMem);
 		
 		col3.add(this.messagesSent);
-		col3.add(this.filesTransfered);
+		col3.add(this.filesTransferred);
 		
 		col4.add(this.port);
 		col4.add(this.maxConnections);
@@ -173,7 +170,7 @@ public class UsageMonitor extends JPanel implements Runnable
 		col5.add(this.clientVersion);
 		
 		col6.add(this.status);
-		col6.add(this.availableProcessors);
+		col6.add(availableProcessors);
 		
 		visualInfo.add(new JLabel("Memory Usage: "));
 		visualInfo.add(memUsage);
@@ -237,7 +234,7 @@ public class UsageMonitor extends JPanel implements Runnable
 			this.maxMem.setText("Max Memory: " + this.maxMemory() + " MB");
 			
 			this.messagesSent.setText("Messages Sent: " + this.objectsCommunicated());
-			this.filesTransfered.setText("Files Transfered: " + this.filesCommunicated());
+			this.filesTransferred.setText("Files Transferred: " + this.filesCommunicated());
 			this.port.setText("Server Port: " + this.serverPort());
 			this.maxConnections.setText("Max Connections: " + this.serverMaxConnections());
 			this.version.setText("Server Version: " + this.serverVersion());
@@ -245,37 +242,27 @@ public class UsageMonitor extends JPanel implements Runnable
 			this.status.setText("Server Status: " + this.serverStatus());
 			
 			this.memUsage.setValue((int)(this.usedMemory() * 100 / this.totalMemory()));
-			this.serverUsage.setValue(this.server != null ? (int)(this.serverConnectedUsers() * 100 / this.serverMaxConnections()) : 0);
+			this.serverUsage.setValue(this.server != null ? (this.serverConnectedUsers() * 100 / this.serverMaxConnections()) : 0);
 			this.serverUsage.setString(this.server != null ? this.serverConnectedUsers() + "/" + this.serverMaxConnections() : "Suspended");
 			
 			this.upTime.setText("Server Up Time: " + serverUpTime());
 			
 			if(this.memUsage.getValue() >= 75)
-			{
 				this.memUsage.setForeground(Color.RED);
-			}
 			else
-			{
 				this.memUsage.setForeground(new Color(0,204,0));
-			}
 			
 			if(this.serverUsage.getValue() >= 75)
-			{
 				this.serverUsage.setForeground(Color.RED);
-			}
 			else
-			{
 				this.serverUsage.setForeground(new Color(0,204,0));
-			}
 			
 			try
 			{
 				Thread.sleep(1000);
 				
 				if(this.server != null)
-				{
 					this.serverUpTime++;
-				}
 			}
 			catch(InterruptedException e)
 			{
@@ -286,102 +273,72 @@ public class UsageMonitor extends JPanel implements Runnable
 	
 	/**Accessor method for the memory used by the JVM, in megabytes (MB).
 	  *@return the number of megabytes used by the JVM.*/
-	public long usedMemory()
+	private long usedMemory()
 	{
 		return (runtime.totalMemory() - runtime.freeMemory())/1024/1024;
 	}
 	
 	/**Accessor method for the free memory available to the JVM, in megabytes (MB).
 	  *@return the number of megabytes available to the JVM.*/
-	public long freeMemory()
+	private long freeMemory()
 	{
 		return runtime.freeMemory()/1024/1024;
 	}
 	
 	/**Accessor method for the total memory available to the JVM, in megabytes (MB).
 	  *@return the total number of megabytes available to the JVM*/
-	public long totalMemory()
+	private long totalMemory()
 	{
 		return runtime.totalMemory()/1024/1024;
 	}
 	
 	/**Accessor method for the maximum memory available to the JVM, in megabytes (MB).
 	  *@return the maximum number of megabytes available to the JVM.*/
-	public long maxMemory()
+	private long maxMemory()
 	{
 		return runtime.maxMemory()/1024/1024;
 	}
 	
 	/**Accessor method for the number of available processors to be utilized by the JVM.
 	  *@return the number processors available to the JVM*/
-	public int availableProcessors()
+	private int availableProcessors()
 	{
 		return runtime.availableProcessors();
 	}
 	
-	/**Accessor method for the number of threads currently being executed by the server.
-	  *@return the number of running threads*/
-	public int runningThreads()
-	{
-		//if server is running: server + usagemonitor +
-		//consolemanager + GUI + client connections
-		//
-		if(this.server != null)
-		{
-			return ChatRoom.getGlobalMembersSize() + 4;
-		}
-		//if server suspended: usagemonitor + consolemanager + GUI
-		else
-		{
-			return 3;
-		}
-	}
-	
 	/**Accessor method for the number of objects broadcasted by the server. Initially 0.
 	  *@return the number of objects communicated by the server*/
-	public long objectsCommunicated()
+	private long objectsCommunicated()
 	{
 		if(this.server != null)
-		{
 			return this.server.getObjectsSent();
-		}
 		else
-		{
 			return 0;
-		}
 	}
 	
 	/**Accessor method for the number of objects broadcasted by the server. Initially 0.
 	  *@return the number of objects communicated by the server*/
-	public long filesCommunicated()
+	private long filesCommunicated()
 	{
 		if(this.server != null)
-		{
-			return this.server.getFilesTransfered();
-		}
+			return this.server.getFilesTransferred();
 		else
-		{
 			return 0;
-		}
 	}
 	
 	/**Accessor method for the server port number. Displays 0 when the server is suspended.
 	  *@return the server port number*/
-	public int serverPort()
+	private int serverPort()
 	{
 		if(this.server != null)
-		{
 			return AbstractServer.serverPortNumber;
-		}
 		else
-		{
 			return 0;
-		}
 	}
 	
 	/**Accessor method for the server up time. Reported _d _h _m _s, returns 0 if server is suspended.
 	  *@return a string representing the current server uptime*/
-	public String serverUpTime()
+	private String serverUpTime()
 	{
 		int time = this.serverUpTime;
 		
@@ -396,43 +353,35 @@ public class UsageMonitor extends JPanel implements Runnable
 	/**Accessor method for the maximum number of concurrent connections to the server. Returns
 	  *1 if the server is suspended.
 	  *@return the maximum number of concurrent server connections*/
-	public int serverMaxConnections()
+	private int serverMaxConnections()
 	{
 		if(this.server != null)
-		{
 			return AbstractServer.maxConnectedUsers;
-		}
 		else
-		{
 			return 0;
-		}
 	}
 	
 	/**Accessor method for the number of clients connected to the server. Returns 0 if the
 	  *server is suspended.
 	  *@return the number of clients connected to the server.*/
-	public int serverConnectedUsers()
+	private int serverConnectedUsers()
 	{
 		if(this.server != null)
-		{
 			return ChatRoom.getGlobalMembersSize();
-		}
 		else
-		{
 			return 0;
-		}
 	}
 	
 	/**Accessor method for the server version. Returns 0.0.0 if the server is suspended.
 	  *@return the server version*/
-	public String serverVersion()
+	private String serverVersion()
 	{
 		return AbstractIRC.SERVER_VERSION;
 	}
 	
 	/**Accessor method for the most recent client version. Returns 0.0.0 if the server is suspended.
 	  *@return the most recent client version*/
-	public String clientVersion()
+	private String clientVersion()
 	{
 		return AbstractIRC.CLIENT_VERSION;
 	}
@@ -440,16 +389,12 @@ public class UsageMonitor extends JPanel implements Runnable
 	/**Accessor method for the status of the server. Returns true of the server is running, and
 	  *returns false if the server is suspended.
 	  *@return true if server is running, false if server is suspended.*/
-	public String serverStatus()
+	private String serverStatus()
 	{
 		if(this.server != null)
-		{
-			return new String("Running");
-		}
+			return "Running";
 		else
-		{
-			return new String("Suspended");
-		}
+			return "Suspended";
 	}
 	
 	/**Accessor method for an instance of {@code UsageMonitor}.

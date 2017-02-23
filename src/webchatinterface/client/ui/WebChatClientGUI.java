@@ -70,24 +70,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	 *the serializable interface.*/
 	private static final long serialVersionUID = 1513399388840792982L;
 	
-	/**The master container for all sub-containers within the user interface*/
-	private Container masterPane;
-	
-	/**The container for all components used to display and send messages*/
-	private Container chatPane;
-	
-	/**The window menu bar*/
-	private JMenuBar menuBar;
-	
-	/**The menu bar menu containing menu items for general actions*/
-	private JMenu file;
-	
-	/**The menu bar menu containing menu items for specific actions*/
-	private JMenu edit;
-	
-	/**The menu bar menu containing menu items for help actions*/
-	private JMenu help;
-	
 	/**The menu option for displaying the authentication dialog*/
 	private JMenuItem signIn;
 	
@@ -96,9 +78,9 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	
 	/**The menu option for disconnecting from the server and for closing the client thread*/
 	private JMenuItem signOut;
-	
+
 	/**The menu for displaying menu items for setting the client availability*/
-	private JMenu setAvailablility;
+	private JMenuItem setAvailiblility;
 	
 	/**The menu option for setting the client availability to away*/
 	private JMenuItem availabilityAway;
@@ -233,16 +215,22 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		FrameUtilities.setFrameIcon(this, ResourceLoader.getInstance().getFrameIcon());
 		
 		//---BUILD MENU BAR---//
-		this.menuBar = new JMenuBar();
+		Container masterPane;
+		Container chatPane;
+		JMenuBar menuBar;
+		JMenu file;
+		JMenu edit;
+		JMenu help;
+		menuBar = new JMenuBar();
 		
-		this.file = new JMenu("File");
-		this.setAvailablility = new JMenu("Set Availability");
-		this.edit = new JMenu("Edit");
-		this.help = new JMenu("Help");
+		file = new JMenu("File");
+		this.setAvailiblility = new JMenu("Set Availability");
+		edit = new JMenu("Edit");
+		help = new JMenu("Help");
 		
-		this.menuBar.add(file);
-		this.menuBar.add(edit);
-		this.menuBar.add(help);
+		menuBar.add(file);
+		menuBar.add(edit);
+		menuBar.add(help);
 		
 		this.quickSignIn = new JMenuItem("Quick Sign In");
 		this.signIn = new JMenuItem("Sign In...");
@@ -282,33 +270,32 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.checkVersion.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_K, ActionEvent.ALT_MASK));
 		this.getHelp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK));
 		this.aboutApp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.ALT_MASK));
-		
-		
-		this.file.add(this.quickSignIn);
-		this.file.add(this.signIn);
-		this.file.add(this.signOut);
-		this.file.addSeparator();
-		this.setAvailablility.add(this.availabilityAvailable);
-		this.setAvailablility.add(this.availabilityBusy);
-		this.setAvailablility.add(this.availabilityAway);
-		this.setAvailablility.add(this.availabilityAppearOffline);
-		this.file.add(this.setAvailablility);
-		this.file.add(this.showConnectedUsers);
-		this.file.addSeparator();
-		this.file.add(this.exit);
-		this.edit.add(this.enterPrivateChatroom);
-		this.edit.add(this.exitPrivateChatroom);
-		this.edit.addSeparator();
-		this.edit.add(this.sendImage);
-		this.edit.add(this.sendFile);
-		this.edit.addSeparator();
-		this.edit.add(this.clearChat);
-		this.edit.add(this.setWindowColors);
-		this.edit.add(this.setSimpleView);
-		this.help.add(this.checkVersion);
-		this.help.addSeparator();
-		this.help.add(this.aboutApp);
-		this.help.add(this.getHelp);
+
+		file.add(this.quickSignIn);
+		file.add(this.signIn);
+		file.add(this.signOut);
+		file.addSeparator();
+		this.setAvailiblility.add(this.availabilityAvailable);
+		this.setAvailiblility.add(this.availabilityBusy);
+		this.setAvailiblility.add(this.availabilityAway);
+		this.setAvailiblility.add(this.availabilityAppearOffline);
+		file.add(this.setAvailiblility);
+		file.add(this.showConnectedUsers);
+		file.addSeparator();
+		file.add(this.exit);
+		edit.add(this.enterPrivateChatroom);
+		edit.add(this.exitPrivateChatroom);
+		edit.addSeparator();
+		edit.add(this.sendImage);
+		edit.add(this.sendFile);
+		edit.addSeparator();
+		edit.add(this.clearChat);
+		edit.add(this.setWindowColors);
+		edit.add(this.setSimpleView);
+		help.add(this.checkVersion);
+		help.addSeparator();
+		help.add(this.aboutApp);
+		help.add(this.getHelp);
 		
 		this.quickSignIn.addActionListener(this);
 		this.signIn.addActionListener(this);
@@ -333,12 +320,12 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.setJMenuBar(menuBar);
 		
 		//---BUILD WINDOW---//
-		this.masterPane = super.getContentPane();
-		this.masterPane.setLayout(new BorderLayout());
+		masterPane = super.getContentPane();
+		masterPane.setLayout(new BorderLayout());
 		
-		this.chatPane = new Container();
-		this.chatPane.setLayout(new BorderLayout(0,5));
-		this.chatArea.addKeyListener(this);
+		chatPane = new Container();
+		chatPane.setLayout(new BorderLayout(0,5));
+		chatArea.addKeyListener(this);
 		
 		//Scrollable Chat Panel
 		DefaultCaret caret = (DefaultCaret)this.chatArea.getCaret();
@@ -372,12 +359,12 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.send.setRolloverEnabled(false);
 		this.send.addActionListener(this);
 		
-		this.chatPane.add(chatScroll, BorderLayout.CENTER);
-		this.chatPane.add(messageInScroll, BorderLayout.SOUTH);
+		chatPane.add(chatScroll, BorderLayout.CENTER);
+		chatPane.add(messageInScroll, BorderLayout.SOUTH);
 		
-		this.masterPane.add(this.statusBar, BorderLayout.NORTH);
-		this.masterPane.add(this.chatPane);
-		this.masterPane.add(this.send, BorderLayout.EAST);
+		masterPane.add(this.statusBar, BorderLayout.NORTH);
+		masterPane.add(chatPane);
+		masterPane.add(this.send, BorderLayout.EAST);
 		
 		//---ADD WINDOW LISTENER---//
 		this.addWindowListener(this);
@@ -449,10 +436,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	  *JMenuItems that are not used while the client is authenticated.*/
 	private void enableClientMenus()
 	{
-		this.quickSignIn.setEnabled(false);
-		this.signIn.setEnabled(false);
 		this.signOut.setEnabled(true);
-		this.setAvailablility.setEnabled(true);
+		this.setAvailiblility.setEnabled(true);
 		this.availabilityAvailable.setEnabled(true);
 		this.availabilityBusy.setEnabled(true);
 		this.availabilityAway.setEnabled(true);
@@ -469,6 +454,9 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.aboutApp.setEnabled(true);
 		this.checkVersion.setEnabled(true);
 		this.getHelp.setEnabled(true);
+
+		this.quickSignIn.setEnabled(false);
+		this.signIn.setEnabled(false);
 	}
 	
 	/**Disables JMenuItems associated with the {@code WebChatClient}, and enables
@@ -477,14 +465,17 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	{
 		this.quickSignIn.setEnabled(true);
 		this.signIn.setEnabled(true);
+		this.exit.setEnabled(true);
+		this.aboutApp.setEnabled(true);
+		this.getHelp.setEnabled(true);
+
 		this.signOut.setEnabled(false);
-		this.setAvailablility.setEnabled(false);
+		this.setAvailiblility.setEnabled(false);
 		this.availabilityAvailable.setEnabled(false);
 		this.availabilityBusy.setEnabled(false);
 		this.availabilityAway.setEnabled(false);
 		this.availabilityAppearOffline.setEnabled(false);
 		this.showConnectedUsers.setEnabled(false);
-		this.exit.setEnabled(true);
 		this.enterPrivateChatroom.setEnabled(false);
 		this.exitPrivateChatroom.setEnabled(false);
 		this.clearChat.setEnabled(false);
@@ -492,9 +483,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.sendFile.setEnabled(false);
 		this.setWindowColors.setEnabled(false);
 		this.setSimpleView.setEnabled(false);
-		this.aboutApp.setEnabled(true);
 		this.checkVersion.setEnabled(false);
-		this.getHelp.setEnabled(true);
 	}
 	
 	/**Change the cursor style when hovering over the graphical user interface. Used to indicate
@@ -523,13 +512,9 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			Authenticator auth = new Authenticator();
 			
 			if(tryQuick)
-			{
 				auth.quickAuthenticate();
-			}
 			else
-			{
 				auth.showDialog();
-			}
 			
 			//Start WebChatClient Thread
 			this.client = new WebChatClient(this, auth);
@@ -581,9 +566,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.disconnect("Please Sign In");
 		}
 		else
-		{
 			this.chatArea.setText("You are already logged out");
-		}
 	}
 	
 	/**Closes IO streams, resets user interface fields and state.
@@ -638,9 +621,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 					"Get Help", JOptionPane.INFORMATION_MESSAGE);
 		}
 		else
-		{
 			this.displayMessage(new Message("You Are Running The Most Recent Version :)", "CLIENT", "0"));
-		}
 	}
 	
 	/**Process a given command based on the {@code COMMAND} instance variable.
@@ -689,33 +670,19 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			//If Server Closes
 			case Command.CONNECTION_SUSPENDED:
 				if(com.getReason() == Command.REASON_BLACKLISTED)
-				{
 					this.disconnect("Disconnected; You are Blacklisted");
-				}
 				else if(com.getReason() == Command.REASON_INCONSISTENT_USER_ID)
-				{
 					this.disconnect("Disconnected; Inconsistent User Information");
-				}
 				else if(com.getReason() == Command.REASON_KICKED)
-				{
 					this.disconnect("Disconnected; You Were Kicked");
-				}
 				else if(com.getReason() == Command.REASON_ROOM_CLOSED)
-				{
 					this.disconnect("Disconnected; Chatroom Closed");
-				}
 				else if(com.getReason() == Command.REASON_SERVER_CLOSED)
-				{
 					this.disconnect("Disconnected; Server Closed");
-				}
 				else if(com.getReason() == Command.REASON_SERVER_FULL)
-				{
 					this.disconnect("Disconnected; Server Full");
-				}
 				else
-				{
 					this.disconnect("Disconnected;");
-				}
 				break;
 			//If Denied Connection to Server
 			case Command.CONNECTION_DENIED:
@@ -751,28 +718,18 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		try
 		{
 			if(!this.clientUser.isSignedIn())
-			{
 				this.chatArea.setText("Please Authenticate");
-			}
 			//Send MultimediaMessage Object
 			else if(object instanceof TransferBuffer)
-			{
 				this.client.send((TransferBuffer) object);
-			}
 			//Send Message Object
 			else if(object instanceof Message)
-			{
 				this.client.send((Message) object);
-			}
 			//Send Command Object
 			else if(object instanceof Command)
-			{
 				this.client.send((Command) object);
-			}
 			else
-			{
 				throw new IOException();
-			}
 		}
 		catch(IOException e)
 		{
@@ -855,27 +812,18 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		{
 			this.clientUser.setAvailability(availability);
 			this.statusBar.setAvailability(availability);
-			
-			switch(availability)
-			{
-				case ClientUser.AVAILABLE:
-					this.send(new Command(Command.CLIENT_AVAILABILITY_AVAILABLE, this.clientUser.getUsername(), this.clientUser.getUserID()));
-					break;
-				case ClientUser.BUSY:
-					this.send(new Command(Command.CLIENT_AVAILABILITY_BUSY, this.clientUser.getUsername(), this.clientUser.getUserID()));
-					break;
-				case ClientUser.AWAY:
-					this.send(new Command(Command.CLIENT_AVAILABILITY_AWAY, this.clientUser.getUsername(), this.clientUser.getUserID()));
-					break;
-				case ClientUser.APPEAR_OFFLINE:
-					this.send(new Command(Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE, this.clientUser.getUsername(), this.clientUser.getUserID()));
-					break;
-			}
+
+			if(availability == ClientUser.AVAILABLE)
+				this.send(new Command(Command.CLIENT_AVAILABILITY_AVAILABLE, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			else if(availability == ClientUser.BUSY)
+				this.send(new Command(Command.CLIENT_AVAILABILITY_BUSY, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			else if(availability == ClientUser.AWAY)
+				this.send(new Command(Command.CLIENT_AVAILABILITY_AWAY, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			else if(availability == ClientUser.APPEAR_OFFLINE)
+				this.send(new Command(Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE, this.clientUser.getUsername(), this.clientUser.getUserID()));
 		}
 		else
-		{
 			this.chatArea.setText("Please Authenticate");
-		}
 	}
 
 	/**Initiates orderly connection release procedures, and exits the application.*/
@@ -903,9 +851,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.send(com);
 		}
 		else
-		{
 			this.chatArea.setText("Please Authenticate");
-		}
 	}
 	
 	/**Displays a FileDialog dialog to choose a file. Invokes the client send() method with a reference
@@ -939,9 +885,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			}
 		}
 		else
-		{
 			this.chatArea.setText("Please Authenticate");
-		}
 	}
 	
 	/**Retrieves text from the message input text area, build a Message object, send the message to the server
@@ -964,18 +908,14 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			}
 		}
 		else
-		{
 			this.chatArea.setText("Please Authenticate");
-		}
 	}
 	
 	/**Display the ConnectedUsersDialog.*/
 	private void showConnectedUsersDialog()
 	{
 		if(this.clientUser.isSignedIn())
-		{
 			(new ConnectedUsersDialog(this.client, this.clientUser)).start();
-		}
 	}
 	
 	/**Display a list of connected users with buttons to allow the user to choose a client connected to the 
@@ -1000,7 +940,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 				AbstractClient.logException(e);
 			}
 			
-			//Decalre Availability ImageIcons
+			//Declare Availability ImageIcons
 			Object availableIcon;
 			Object busyIcon;
 			Object awayIcon;
@@ -1033,9 +973,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			for(Object[] user : connectedUsers)
 			{
 				if((Integer)user[3] == ClientUser.APPEAR_OFFLINE || (Integer)user[3] == ClientUser.OFFLINE)
-				{
 					size--;
-				}
 			}
 			
 			Object[][] table = new Object[size][columnLabel.length];
@@ -1065,13 +1003,9 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 				
 				//Assign Client Information to Object[][]
 				if(connectedUsers[o][1].equals(this.clientUser.getUserID()))
-				{
 					table[i][1] = "Me";
-				}
 				else
-				{
 					table[i][1] = connectedUsers[o][0];
-				}
 			}
 			
 			//Declare and Initialize JTable with Data and Column Labels
@@ -1081,7 +1015,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	            private static final long serialVersionUID = -986803268686380681L;
 
 				//  Returning the Class of each column will allow different
-	            //  renderers to be used based on Class
+	            //  renderer to be used based on Class
 	            @Override
 				public Class<?> getColumnClass(int column)
 	            {
@@ -1111,18 +1045,14 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 				public void actionPerformed(ActionEvent arg0)
 				{
 					if(clientConnections.getSelectedRow() == -1)
-					{
 						dialogPanel.dispose();
-					}
 					else
 					{
 						try
 						{
 							Object[] recipient = connectedUsers[clientConnections.getSelectedRow()];
-							if(((String)recipient[1]).equals(WebChatClientGUI.this.clientUser.getUserID()))
-							{
+							if(recipient[1].equals(WebChatClientGUI.this.clientUser.getUserID()))
 								WebChatClientGUI.this.chatArea.printConsole(new Message("Unable to Enter Private Chatroom with Yourself", "CLIENT", "0"));
-							}
 							else
 							{
 								WebChatClientGUI.this.client.send(new Command(Command.PRIVATE_CHATROOM_REQUEST, recipient, WebChatClientGUI.this.clientUser.getUsername(), WebChatClientGUI.this.clientUser.getUserID()));
@@ -1316,7 +1246,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		else if(event.getKeyCode() != KeyEvent.VK_ENTER && this.clientUser.isSignedIn())
 		{
 			//If User Has Not Already Typed
-			if(hasTyped == false)
+			if(!hasTyped)
 			{
 				//Change Variable
 				hasTyped = true;

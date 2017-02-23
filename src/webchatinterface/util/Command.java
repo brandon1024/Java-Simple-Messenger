@@ -46,7 +46,7 @@ public class Command extends TransportEntity implements Serializable
 	/**Command code for awknowledging a {@code SUSPEND_CONNECTION} or {@code SUSPEND_KICKED} 
 	  *command. Client or server application transmits a {@code SUSPEND_ACKNOWLEDGE} before 
 	  *closing the data streams.*/
-	public static final int CONNECTION_SUSPENDED_AWKKNOWLEDGE = 5;
+	public static final int CONNECTION_SUSPENDED_AWKNOWLEDGE = 5;
 	
 	/**Command code for retrieving the most recent client version from the server. Server 
 	  *will respond with {@code CLIENT_VERSION} command, wherein the message body is a 

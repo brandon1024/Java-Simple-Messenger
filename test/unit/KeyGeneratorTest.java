@@ -50,7 +50,7 @@ public class KeyGeneratorTest
 		testAlphanumericMixedCaseAlgorithm();
 		testAlphanumericLowerCaseAlgorithm();
 		testAlphanumericUpperCaseAlgorithm();
-		testnumericAlgorithm();
+		testNumericAlgorithm();
 		testAlphabeticAlgorithm();
 	}
 	
@@ -202,7 +202,7 @@ public class KeyGeneratorTest
 	}
 	
 	@Test
-	public void testnumericAlgorithm()
+	public void testNumericAlgorithm()
 	{
 		String key1 = KeyGenerator.generateKey(256, KeyGenerator.NUMERIC);
 		String key2 = KeyGenerator.generateKey(256, KeyGenerator.NUMERIC);
@@ -229,7 +229,6 @@ public class KeyGeneratorTest
 		}
 		
 		assertTrue("total number of characters incorrect", digit == 512);
-		assertTrue("number of digits in key does not satisfy acceptable ranges", digit > 512/4 || digit < 512/2);
 	}
 	
 	@Test
@@ -279,7 +278,7 @@ public class KeyGeneratorTest
 		assertTrue("number of uppercase letters in key does not satisfy acceptable ranges", uppercase > 512/4 || uppercase < 512/2);
 	}
 
-	public boolean helperIsValidKey(String algorithm, String key)
+	private boolean helperIsValidKey(String algorithm, String key)
 	{
 		int lowercase = 0, uppercase = 0, digit = 0;
 		for(int index = 0; index < key.length(); index++)
@@ -302,33 +301,18 @@ public class KeyGeneratorTest
 		switch(algorithm)
 		{
 			case KeyGenerator.ALPHANUMERIC_MIXED_CASE:
-				if(digit > 0 && lowercase > 0 && uppercase > 0)
-					return true;
-				else
-					return false;
+				return (digit > 0 && lowercase > 0 && uppercase > 0);
 			case KeyGenerator.ALPHANUMERIC_LOWER_CASE:
-				if(digit > 0 && lowercase > 0 && uppercase == 0)
-					return true;
-				else
-					return false;
+				return (digit > 0 && lowercase > 0 && uppercase == 0);
 			case KeyGenerator.ALPHANUMERIC_UPPER_CASE:
-				if(digit > 0 && lowercase == 0 && uppercase > 0)
-					return true;
-				else
-					return false;
+				return (digit > 0 && lowercase == 0 && uppercase > 0);
 			case KeyGenerator.ALPHABETIC:
-				if(digit == 0 && lowercase > 0 && uppercase > 0)
-					return true;
-				else
-					return false;
+				return (digit == 0 && lowercase > 0 && uppercase > 0);
 			case KeyGenerator.NUMERIC:
-				if(digit > 0 && lowercase == 0 && uppercase == 0)
-					return true;
-				else
-					return false;
+				return (digit > 0 && lowercase == 0 && uppercase == 0);
+			default:
+				return false;
 		}
-		
-		return false;
 	}
 	
 	@Test

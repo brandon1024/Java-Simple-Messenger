@@ -43,9 +43,6 @@ public class TransferProgressDialog extends JFrame
 	
 	/**Default Color object for the JProgressBar foreground. Used to describe a paused transfer.*/
 	public static final Color PROGRESS_BLUE = new Color(0, 102, 255);
-
-	/**Master container for the dialog. Content pane for superclass. Contains the dialog components.*/
-	private Container masterPane;
 	
 	/**The JProgressBar, used to display the progress of the transfer.*/
 	private JProgressBar progress;
@@ -79,9 +76,9 @@ public class TransferProgressDialog extends JFrame
 		super.setVisible(true);
 		super.setResizable(false);
 		super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		
-		this.masterPane = super.getContentPane();
-		this.masterPane.setLayout(new BorderLayout());
+
+		Container masterPane = super.getContentPane();
+		masterPane.setLayout(new BorderLayout());
 		
 		this.progress = new JProgressBar(0,100);
 		this.progress.setValue(0);
@@ -98,8 +95,8 @@ public class TransferProgressDialog extends JFrame
 		informationContainer.add(this.speedLabel, BorderLayout.LINE_START);
 		informationContainer.add(this.progressLabel, BorderLayout.LINE_END);
 		
-		this.masterPane.add(this.progress, BorderLayout.PAGE_START);
-		this.masterPane.add(informationContainer, BorderLayout.CENTER);
+		masterPane.add(this.progress, BorderLayout.PAGE_START);
+		masterPane.add(informationContainer, BorderLayout.CENTER);
 	}
 	
 	/**Mutator method for the JProgressBar progress value.
@@ -107,20 +104,6 @@ public class TransferProgressDialog extends JFrame
 	public void setProgressValue(int value)
 	{
 		this.progress.setValue(value);
-	}
-	
-	/**Mutator method for the minimum JProgressBar progress value.
-	  *@param minValue minmimum value for the progress bar*/
-	public void setProgressMin(int minValue)
-	{
-		this.progress.setMinimum(minValue);
-	}
-	
-	/**Mutator method for the maximum JProgressBar progress value.
-	  *@param maxValue maximum value for the progress bar*/
-	public void setProgressMax(int maxValue)
-	{
-		this.progress.setMinimum(maxValue);
 	}
 	
 	/**Mutator method for the JProgressBar string value.
@@ -131,14 +114,13 @@ public class TransferProgressDialog extends JFrame
 	}
 	
 	/**Mutator method for the foreground color of the JProgressBar
-	  *@color color the new foreground color of the JProgressBar*/
+	  *@param color the new foreground color of the JProgressBar*/
 	public void setProgressColor(Color color)
 	{
 		this.progress.setForeground(color);
 	}
 	
-	/**Mutator method for the information JLabel text.
-	  *@param important transfer information*/
+	/**Mutator method for the information JLabel text.*/
 	public void setInformationLabelText(String information)
 	{
 		this.informationLabel.setText(information);
@@ -161,9 +143,7 @@ public class TransferProgressDialog extends JFrame
 	/**Set a descriptive window title. The title bar text is
 	  *appended to the default window title.
 	  *<p>
-	  *{@code super.setTitle("File Transfer - " + titleBar)}
-	  *@param titlebar description of transfer to be displayed in the window
-	  *title*/
+	  *{@code super.setTitle("File Transfer - " + titleBar)}*/
 	public void setWindowTitleBarText(String titleBar)
 	{
 		this.setTitle("File Transfer - " + titleBar);

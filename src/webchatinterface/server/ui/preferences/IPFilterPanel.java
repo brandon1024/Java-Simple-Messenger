@@ -56,7 +56,7 @@ public class IPFilterPanel extends PreferencePanel
 		super.add(body, BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildIPFilterPanel()
+	private JPanel buildIPFilterPanel()
 	{
 		JPanel IPFilterSettingsPanel = new JPanel();
 		IPFilterSettingsPanel.setLayout(new BorderLayout(5,5));
@@ -87,13 +87,9 @@ public class IPFilterPanel extends PreferencePanel
 	public String[] requestChangedFields()
 	{
 		if(this.edited)
-		{
 			return new String[]{"IP Address Filter"};
-		}
 		else
-		{
 			return new String[0];
-		}
 	}
 	
 	public void save(){}

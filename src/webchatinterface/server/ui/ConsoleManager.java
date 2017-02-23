@@ -39,18 +39,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	/**Serial Version UID is used as a version control for the class that implements
 	 *the serializable interface.*/
 	private static final long serialVersionUID = -2782518871912013243L;
-
-	/**Default console style; black foreground with white background*/
-	public static final int STYLE_DEFAULT = 0;
-	
-	/**Stylized console; white foreground with charcoal background*/
-	public static final int STYLE_CHARCOAL = 1;
-	
-	/**Stylized console; green foreground with black background*/
-	public static final int STYLE_HACKER_GREEN = 2;
-	
-	/**Stylized console; black foreground with purple background*/
-	public static final int STYLE_PURPLE = 3;
 	
 	/**The queue of messages to be appended to JTextPane*/
 	private DynamicQueue<ConsoleMessage> printQueue;
@@ -112,14 +100,12 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 			while(!this.printQueue.isEmpty())
 			{
 				ConsoleMessage message = this.printQueue.dequeue();
-				
 				AbstractServer.logString(message.getMessage() + "\n");
 				
 				try
 				{
 					if(message.isWarning())
 					{
-						
 						this.doc.setParagraphAttributes(doc.getLength(), 1, this.warningAttribute, false);
 						this.doc.insertString(this.doc.getLength(), message.getMessage() + "\n", this.warningAttribute);
 					}
@@ -178,7 +164,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	/**Method used to retrieve the system time at the instance of being invoked. 
 	  @return a string of format yyyyMMdd_HHmmss
 	  */
-	public String getSystemTimestamp()
+	private String getSystemTimestamp()
 	{
 		return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
 	}
@@ -186,7 +172,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	/**Removes all stored objects in the print queue, and clears all the text in the 
 	  *JTextPane.
 	  */
-	public void clearConsole(boolean clearCache)
+	private void clearConsole(boolean clearCache)
 	{
 		synchronized(this)
 		{
@@ -227,7 +213,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		private String message;
 		
 		private boolean warning;
-		
+
 		public ConsoleMessage(String message, boolean warning)
 		{
 			this.message = message;
@@ -239,7 +225,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 			return message;
 		}
 
-		public boolean isWarning()
+		boolean isWarning()
 		{
 			return warning;
 		}

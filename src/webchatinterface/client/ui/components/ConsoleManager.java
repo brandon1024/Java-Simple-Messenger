@@ -16,7 +16,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -182,23 +181,15 @@ public class ConsoleManager extends JTextPane implements Runnable
 	public void start()
 	{
 		if(this.isRunning())
-		{
 			return;
-		}
 		
 		this.isRunning = true;
 		(new Thread(this)).start();
 	}
 	
-	/**Stop the ConsoleManager thread.*/
-	public void stop()
-	{
-		this.isRunning = false;
-	}
-	
 	/**Accessor method for the state of the ConsoleManager thread.
-	  *@returns true of the ConsoleManager is running, false otherwise.*/
-	public boolean isRunning()
+	  *@return true of the ConsoleManager is running, false otherwise.*/
+	private boolean isRunning()
 	{
 		return this.isRunning;
 	}
@@ -398,9 +389,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 					}
 					
 					if(this.cachedMessages.size() >= 100)
-					{
 						this.cachedMessages.clear();
-					}
 				}
 			}
 			
@@ -504,18 +493,14 @@ public class ConsoleManager extends JTextPane implements Runnable
 			{
 				formattedTimestamp = (messageTime[3] - 12) + ":";
 				if(messageTime[4] < 10)
-				{
 					formattedTimestamp += "0";
-				}
 				formattedTimestamp += messageTime[4] + "pm";
 			}
 			else
 			{
 				formattedTimestamp = messageTime[3] + ":";
 				if(messageTime[4] < 10)
-				{
 					formattedTimestamp += "0";
-				}
 				formattedTimestamp += messageTime[4] + "am";
 			}
 			
@@ -546,18 +531,12 @@ public class ConsoleManager extends JTextPane implements Runnable
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date);
 		
 		if(UTC_Offset / 1000 / 60 / 60 >= 0)
-		{
 			timestamp += "+";
-		}
 		else
-		{
 			timestamp += "-";
-		}
 		
 		if(Math.abs(UTC_Offset / 1000 / 60 / 60) < 10)
-		{
 			timestamp += "0";
-		}
 
 		timestamp += Math.abs(UTC_Offset / 1000 / 60 / 60) + ":";
 		timestamp += UTC_Offset % (1000 * 60 * 60) + "0";
@@ -604,7 +583,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		else
 		{
-			String size = "";
+			String size;
 			if(file.length() / 1024 / 1024 > 1)
 				size = file.length() / 1024 / 1024 + "MB";
 			else if(file.length() / 1024 > 1)
@@ -612,7 +591,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 			else
 				size = file.length() + "B";
 			
-			FileButton fileButton = new FileButton(file, transferManifest);
+			FileButton fileButton = new FileButton(file);
 			ConsoleMessage component = new ConsoleMessage(fileButton, size, this.formatTimestamp(transferManifest.getTimeStamp()), transferManifest);
 			
 			synchronized(this)
@@ -658,9 +637,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 			this.consoleQueue.removeAll();
 		
 			for(ConsoleMessage message : this.cachedMessages)
-			{
 				this.consoleQueue.enqueue(message);
-			}
 		}
 	}
 	
@@ -772,15 +749,8 @@ public class ConsoleManager extends JTextPane implements Runnable
 			this.consoleQueue.removeAll();
 		
 			for(ConsoleMessage message : this.cachedMessages)
-			{
 				this.consoleQueue.enqueue(message);
-			}
 		}
-	}
-	
-	public int getStyleID()
-	{
-		return this.style;
 	}
 	
 	/**Overridden {@code paintComponent()} method. Relies on private {@code style} field to paint
@@ -847,9 +817,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *600 pixels and the height does not exceed 250 pixels.
 		  *<p>
 		  *The ImageButton also has a custom action listener, allowing it to open the enlarged image
-		  *in a JFrame for easy viewing.
-		  *@param message The {@code TransferBuffer} object that wraps the image to be displayed
-		  *in the underlying JButton*/
+		  *in a JFrame for easy viewing.*/
 		public ImageButton(File file, Command transferManifest)
 		{
 			//Construct JButton
@@ -922,27 +890,24 @@ public class ConsoleManager extends JTextPane implements Runnable
 							{
 								try
 								{
-									File source = file;
 									File destination = new File(fileLocation + "//" + filename);
 
 									//copy file from source to destination
-									FileInputStream fis = new FileInputStream(source);
+									FileInputStream fis = new FileInputStream(file);
 									FileOutputStream fos = new FileOutputStream(destination);
 									
 									byte[] buffer = new byte[1024];
 						            int len;
 						            
-						            while ((len = fis.read(buffer)) > 0) {
+						            while ((len = fis.read(buffer)) > 0)
 						            	fos.write(buffer, 0, len);
-						            }
 						            
 						            fis.close();
 						            fos.close();
 									
 									Desktop.getDesktop().open(destination);
 								}
-								catch (FileNotFoundException e){}
-								catch (IOException e){}
+								catch (Exception e){}
 							}
 						}
 					});
@@ -954,7 +919,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 					{
 						dialogFrame.setIconImage(ImageIO.read(ConsoleManager.class.getResource("/webchatinterface/client/resources/CLIENTICON.png")));
 					}
-					catch(IOException | IllegalArgumentException e){}
+					catch(Exception e){}
 					
 					dialogFrame.setResizable(true);
 					dialogFrame.setVisible(true);
@@ -978,9 +943,8 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *<p>
 		  *The FileButton also has a custom action listener, allowing the file to be saved to a directory
 		  *as given by the client through a FileDialog.
-		  *@param file The {@code file} object that this FileButton object will wrap
-		  *@param transferManifest the file transfer manifest command*/
-		public FileButton(File file, Command transferManifest)
+		  *@param file The {@code file} object that this FileButton object will wrap*/
+		public FileButton(File file)
 		{
 			//Construct JButton
 			super();
@@ -1008,28 +972,22 @@ public class ConsoleManager extends JTextPane implements Runnable
 					{
 						try
 						{
-							File source = file;
 							File destination = new File(fileLocation + "//" + filename);
 
 							//copy file from source to destination
-							FileInputStream fis = new FileInputStream(source);
+							FileInputStream fis = new FileInputStream(file);
 							FileOutputStream fos = new FileOutputStream(destination);
 							
 							byte[] buffer = new byte[1024];
 				            int len;
 				            
-				            while ((len = fis.read(buffer)) > 0) {
+				            while ((len = fis.read(buffer)) > 0)
 				            	fos.write(buffer, 0, len);
-				            }
 				            
 				            fis.close();
 				            fos.close();
 							
 							Desktop.getDesktop().open(destination);
-						}
-						catch (FileNotFoundException e)
-						{
-							AbstractClient.logException(e);
 						}
 						catch (IOException e)
 						{
@@ -1043,7 +1001,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 	
 	/**The {@code ConsoleMessage} class represents a single text, image or file message that the
 	  *ConsoleManager class will use to append to the console. The ConsoleMessage is able to
-	  *reprsent three types of messages, and depending on the type of message, the object fields 
+	  *represent three types of messages, and depending on the type of message, the object fields
 	  *will have the information necessary to append to the console.*/
 	private class ConsoleMessage
 	{
@@ -1100,8 +1058,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *@param file The FileButton component that represents the file message
 		  *@param size The size of the file. Note, the message field of this ConsoleMessage object
 		  *obtains this parameter
-		  *param timestamp The timestamp of when the message was issued
-		  *@param transfermManifest The file transfer manifest command*/
+		  *param timestamp The timestamp of when the message was issued*/
 		public ConsoleMessage(FileButton file, String size, String timestamp, Command transferManifest)
 		{
 			this.message = size;
@@ -1115,8 +1072,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		
 		/**Constructs a new ConsoleMessage that represents an image message object.
 		  *@param image The ImageButton component that represents the image message
-		  *@param timestamp The timestamp of when the message was issued
-		  *@param transfermManifest The file transfer manifest command*/
+		  *@param timestamp The timestamp of when the message was issued*/
 		public ConsoleMessage(ImageButton image, String timestamp, Command transferManifest)
 		{
 			this.message = null;
@@ -1159,7 +1115,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 			return this.timestamp;
 		}
 		
-		/**Return the FileButtom object if this ConsoleMessage represents
+		/**Return the FileButton object if this ConsoleMessage represents
 		  *a file. If this instance represents a String or image message,
 		  *this method returns null.
 		  *@return the FileButton object associated with the message, or null if
@@ -1170,7 +1126,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Return the ImageButton object if this ConsoleMessage represents
-		  *an image messafe. If this instance represents a String or file message,
+		  *an image message. If this instance represents a String or file message,
 		  *this method returns null.
 		  *@return the ImageButton object associated with the message, or null if
 		  *this object does not represent an image message*/
@@ -1188,7 +1144,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *<li>IMAGE: 1
 		  *<li>FILE: 2
 		  *</ul>
-		  *@return the sender field of this instace*/
+		  *@return the sender field of this instance*/
 		public int getType()
 		{
 			return this.type;
@@ -1204,9 +1160,9 @@ public class ConsoleManager extends JTextPane implements Runnable
 		private static final ConsoleManager INSTANCE = new ConsoleManager();
 	}
 	
-	/**Accessor method for the insatnce of ConsoleManager. InstanceHolder is loaded only on the first
+	/**Accessor method for the instance of ConsoleManager. InstanceHolder is loaded only on the first
 	  *execution of getInstance().
-	  *@returns the single instance of ConsoleManager.*/
+	  *@return the single instance of ConsoleManager.*/
 	public static ConsoleManager getInstance()
 	{
 		return InstanceHolder.INSTANCE;

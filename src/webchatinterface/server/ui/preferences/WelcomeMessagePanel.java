@@ -83,7 +83,7 @@ public class WelcomeMessagePanel extends PreferencePanel
 		super.add(body, BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildWelcomeMessageEditorPanel()
+	private JPanel buildWelcomeMessageEditorPanel()
 	{
 		JPanel welcomeMessageEditorPanel = new JPanel();
 		welcomeMessageEditorPanel.setLayout(new BorderLayout(5,5));
@@ -120,19 +120,13 @@ public class WelcomeMessagePanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(!this.newMemberMessageEditor.getText().equals(AbstractServer.newMemberGuestWelcomeMessage))
-		{
 			changedFields.add("New Member Welcome Message");
-		}
 		
 		if(!this.returningMemberMessageEditor.getText().equals(AbstractServer.returningMemberWelcomeMessage))
-		{
 			changedFields.add("Returning Member Welcome Message");
-		}
 		
 		if(this.alwaysSendWelcomeMessageCheckBox.isSelected() != AbstractServer.alwaysSendWelcomeMessage)
-		{
 			changedFields.add("Enable/Disable Always Send Welcome Message");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}

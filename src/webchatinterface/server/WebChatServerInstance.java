@@ -88,8 +88,6 @@ public class WebChatServerInstance implements Runnable
 	  *command broadcasting
 	  *@param consoleMng The server console manager. Used to append messages and status to
 	  *the graphical user interface console.
-	  *@param logger A reference to the logger responsible for logging thrown exceptions to 
-	  *a log file in the application directory
 	  *@param socket The client-server socket.
 	  *@throws IOException if an IOException is thrown while establishing Object Input and Output
 	  *streams from the client-server socket.
@@ -160,9 +158,7 @@ public class WebChatServerInstance implements Runnable
 			this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 		}
 		else
-		{
 			this.consoleMng.printConsole("Client Authentication Failed: Connection Denied", false);
-		}
 		
 		//If not verified, exit.
 		while(this.verified)
@@ -178,13 +174,9 @@ public class WebChatServerInstance implements Runnable
 					this.validateMessage((TransferBuffer)message);
 					
 					if(this.verified)
-					{
 						this.broadcastHlp.broadcastMessage((TransferBuffer)message, this.room);
-					}
 					else
-					{
 						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
-					}	
 				}
 				else if(message != null && message instanceof Message)
 				{
@@ -199,9 +191,7 @@ public class WebChatServerInstance implements Runnable
 						this.broadcastHlp.broadcastMessage((Message)message, this.room);
 					}
 					else
-					{
 						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
-					}
 				}
 				else if(message != null && message instanceof Command)
 				{
@@ -213,7 +203,7 @@ public class WebChatServerInstance implements Runnable
 						switch(((Command)message).getCommand())
 						{
 							case Command.CONNECTION_SUSPENDED:
-							case Command.CONNECTION_SUSPENDED_AWKKNOWLEDGE:
+							case Command.CONNECTION_SUSPENDED_AWKNOWLEDGE:
 								this.consoleMng.printConsole("User Disconnected: " + this.socket.getInetAddress().getHostAddress() + "; Closing Connection", false);
 								this.verified = false;
 								break;
@@ -250,9 +240,7 @@ public class WebChatServerInstance implements Runnable
 								for(WebChatServerInstance client : ChatRoom.getGlobalMembers())
 								{
 									if(client.getUserID().equals(recipient[1]))
-									{
 										client.send((Command)message);
-									}
 								}
 								break;
 							case Command.PRIVATE_CHATROOM_AUTHORIZED:
@@ -263,9 +251,7 @@ public class WebChatServerInstance implements Runnable
 									if(client.getUserID().equals(recipient[1]))
 									{
 										client.send((Command)message);
-										
 										ChatRoom newPrivateRoom = new ChatRoom();
-										
 										this.setRoom(newPrivateRoom);
 										client.setRoom(newPrivateRoom);
 									}
@@ -280,9 +266,7 @@ public class WebChatServerInstance implements Runnable
 									WebChatServerInstance[] roomMembers = this.room.getConnectedClients();
 									
 									for(WebChatServerInstance member : roomMembers)
-									{
 										member.setRoom(ChatRoom.publicRoom);
-									}
 								}
 								break;
 							case Command.FILE_TRANSFER:
@@ -298,20 +282,16 @@ public class WebChatServerInstance implements Runnable
 										+ "\nBuffer Size: " + bufferSize + "bytes"
 										+ "\nTransfer ID: " + fileTransferID, false);
 								this.broadcastHlp.broadcastCommand((Command)message);
-								this.server.addFilesTransfered();
+								this.server.addFilesTransferred();
 								break;
 						}
 					}
 					else
-					{
 						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
-					}
 				}
 				
 				if(!this.verified)
-				{
 					break;
-				}
 			}
 			catch(EOFException e)
 			{
@@ -420,8 +400,8 @@ public class WebChatServerInstance implements Runnable
 								break;
 							}
 							
-							String username = "Guest" + KeyGenerator.generate64bitKey(KeyGenerator.NUMERIC);
-							String userID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
+							String username = "Guest" + KeyGenerator.generateKey16(KeyGenerator.NUMERIC);
+							String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 							
 							this.client.setUsername(username);
 							this.client.setUserID(userID);
@@ -437,7 +417,7 @@ public class WebChatServerInstance implements Runnable
 							String emailAddress = (String)data[3];
 							String username = (String)data[4];
 							byte[] password = (byte[])data[5];
-							String userID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
+							String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 							
 							if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
 							{
@@ -633,7 +613,7 @@ public class WebChatServerInstance implements Runnable
 	  *from the old chatroom, mutates the room field of this instance, and adds this instance
 	  *to the new room.
 	  *@param room The new chatroom to connect to.*/
-	public void setRoom(ChatRoom room)
+	private void setRoom(ChatRoom room)
 	{
 		this.room.removeMember(this);
 		this.room = room;
@@ -691,13 +671,13 @@ public class WebChatServerInstance implements Runnable
 	  *<p>
 	  *Format:
 	  *Instance: INSTANCE_ID
-	  *Address: HOSTADDRESS
+	  *Address: HOST ADDRESS
 	  *Local Port: LOCAL SERVER PORT
 	  *Remote Port: REMOTE SERVER PORT
 	  *Username: USERNAME
 	  *Verified: TRUE/FALSE
 	  *@return a textual representation of this client-server connection instance.*/
-	public String paramString()
+	private String paramString()
 	{
 		return "\nInstance: " + this.INSTANCE_ID +
 				"\nAddress: " + this.socket.getInetAddress().getHostAddress() +

@@ -153,9 +153,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 						model.addRow(new String[]{panel.getID(), mod});
 						
 						if(panel.getID().equals("Connection Settings") || panel.getID().equals("Security Settings") || panel.getID().equals("Logging"))
-						{
 							requiresRestart = true;
-						}
 					}
 				}
 				
@@ -165,9 +163,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 				dialogPanel.add(scroll, BorderLayout.CENTER);
 				
 				if(requiresRestart)
-				{
 					dialogPanel.add(new JLabel("This modified property requires the server to restart."), BorderLayout.PAGE_END);
-				}
 				
 				String[] options = {"Confirm and Restart", "Confirm and Restart Later", "Cancel"};
 				int returnValue = JOptionPane.showOptionDialog(this, dialogPanel, 
@@ -221,9 +217,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 	public void restoreSavedSettings()
 	{
 		for(PreferencePanel panel : panels)
-		{
 			panel.populatePanel();
-		}
 	}
 	
 	public void restoreGlobalSettings()
@@ -260,9 +254,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		AbstractServer.textFont = new Font("Courier New", Font.PLAIN, 12);
 		
 		for(PreferencePanel panel : panels)
-		{
 			panel.populatePanel();
-		}
 	}
 	
 	private JTree buildTree()
@@ -294,9 +286,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		
 		tree.expandPath(new TreePath(parentNode.getPath()));
 		for(int i = 0; i < tree.getRowCount(); i++)
-		{
 		    tree.expandRow(i);
-		}
 		
 		return tree;
 	}
@@ -341,21 +331,13 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 	public void actionPerformed(ActionEvent e)
 	{
 		if(e.getSource() == this.applyButton)
-		{
 			this.close(true);
-		}
 		else if(e.getSource() == this.okButton)
-		{
 			this.close(true);
-		}
 		else if(e.getSource() == this.cancelButton)
-		{
 			this.close(false);
-		}
 		else if(e.getSource() == this.helpButton)
-		{
-			
-		}
+		{}//do something
 	}
 	
 	public void valueChanged(TreeSelectionEvent e)
@@ -363,9 +345,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode)this.settingTree.getLastSelectedPathComponent();
 		
 		if(node == null)
-		{
 			return;
-		}
 		else
 		{
 			Object nodeIdentifier = node.getUserObject();

@@ -32,38 +32,34 @@ public class SecuritySettingsPanel extends PreferencePanel
 	
 	private JCheckBox blacklistInconsistentUserIDCheckBox;
 	
-	private ComboBoxItem[] security;
-	
-	private ComboBoxItem[] supportedUserIDKeyAlgorithms;
-	
 	public SecuritySettingsPanel(String header)
 	{
 		super(header);
 		this.hashingAlgorithmField = new JTextField(15);
 		this.keyGeneratorAlgorithmField = new JTextField(15);
 		this.blacklistInconsistentUserIDCheckBox = new JCheckBox("Blacklist Account and IP Address if User ID Inconsistent");
+
+		ComboBoxItem[] security = new ComboBoxItem[8];
+		security[0] = new ComboBoxItem("32-bit Security", new Integer(32));
+		security[1] = new ComboBoxItem("64-bit Security", new Integer(64));
+		security[2] = new ComboBoxItem("128-bit Security", new Integer(128));
+		security[3] = new ComboBoxItem("256-bit Security", new Integer(256));
+		security[4] = new ComboBoxItem("512-bit Security", new Integer(512));
+		security[5] = new ComboBoxItem("1024-bit Security", new Integer(1024));
+		security[6] = new ComboBoxItem("2048-bit Security", new Integer(2048));
+		security[7] = new ComboBoxItem("4096-bit Security", new Integer(4096));
 		
-		this.security = new ComboBoxItem[8];
-		this.security[0] = new ComboBoxItem("32-bit Security", new Integer(32));
-		this.security[1] = new ComboBoxItem("64-bit Security", new Integer(64));
-		this.security[2] = new ComboBoxItem("128-bit Security", new Integer(128));
-		this.security[3] = new ComboBoxItem("256-bit Security", new Integer(256));
-		this.security[4] = new ComboBoxItem("512-bit Security", new Integer(512));
-		this.security[5] = new ComboBoxItem("1024-bit Security", new Integer(1024));
-		this.security[6] = new ComboBoxItem("2048-bit Security", new Integer(2048));
-		this.security[7] = new ComboBoxItem("4096-bit Security", new Integer(4096));
+		this.saltLengthComboBox = new JComboBox<Object>(security);
+		this.userIDKeyLengthComboBox = new JComboBox<Object>(security);
+
+		ComboBoxItem[] supportedUserIDKeyAlgorithms = new ComboBoxItem[5];
+		supportedUserIDKeyAlgorithms[0] = new ComboBoxItem("ALPHANUMERIC_MIXED_CASE", "ALPHANUMERIC_MIXED_CASE");
+		supportedUserIDKeyAlgorithms[1] = new ComboBoxItem("ALPHANUMERIC_LOWER_CASE", "ALPHANUMERIC_LOWER_CASE");
+		supportedUserIDKeyAlgorithms[2] = new ComboBoxItem("ALPHANUMERIC_UPPER_CASE", "ALPHANUMERIC_UPPER_CASE");
+		supportedUserIDKeyAlgorithms[3] = new ComboBoxItem("NUMERIC", "NUMERIC");
+		supportedUserIDKeyAlgorithms[4] = new ComboBoxItem("ALPHABETIC", "ALPHABETIC");
 		
-		this.saltLengthComboBox = new JComboBox<Object>(this.security);
-		this.userIDKeyLengthComboBox = new JComboBox<Object>(this.security);
-		
-		this.supportedUserIDKeyAlgorithms = new ComboBoxItem[5];
-		this.supportedUserIDKeyAlgorithms[0] = new ComboBoxItem("ALPHANUMERIC_MIXED_CASE", "ALPHANUMERIC_MIXED_CASE");
-		this.supportedUserIDKeyAlgorithms[1] = new ComboBoxItem("ALPHANUMERIC_LOWER_CASE", "ALPHANUMERIC_LOWER_CASE");
-		this.supportedUserIDKeyAlgorithms[2] = new ComboBoxItem("ALPHANUMERIC_UPPER_CASE", "ALPHANUMERIC_UPPER_CASE");
-		this.supportedUserIDKeyAlgorithms[3] = new ComboBoxItem("NUMERIC", "NUMERIC");
-		this.supportedUserIDKeyAlgorithms[4] = new ComboBoxItem("ALPHABETIC", "ALPHABETIC");
-		
-		this.supportedUserIDKeyAlgorithmsComboBox = new JComboBox<Object>(this.supportedUserIDKeyAlgorithms);
+		this.supportedUserIDKeyAlgorithmsComboBox = new JComboBox<Object>(supportedUserIDKeyAlgorithms);
 		
 		this.populatePanel();
 		
@@ -88,9 +84,9 @@ public class SecuritySettingsPanel extends PreferencePanel
 				+ "lookup tables, reverse lookup tables, and rainbow tables as methods of obtaining client passwords.\n\n"
 				+ "Changing the confidential user information settings may introduce vulnerabilities into the user account "
 				+ "store. It is recommended to use recommended settings.\n\n"
-				+ "For a list of supported hashing algorithms, see \"Message Digest Algorithms\" specified in the Java™ "
+				+ "For a list of supported hashing algorithms, see \"Message Digest Algorithms\" specified in the Javaï¿½ "
 				+ "Cryptography Architecture Standard Algorithm Name Documentation. http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#MessageDigest\n\n"
-				+ "For a list of supported salt generation algorithms, see \"SecureRandom Number Generation (RNG) Algorithms\" specified in the Java™ "
+				+ "For a list of supported salt generation algorithms, see \"SecureRandom Number Generation (RNG) Algorithms\" specified in the Javaï¿½ "
 				+ "Cryptography Architecture Standard Algorithm Name Documentation. http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SecureRandom";
 		accountStorePanel.add(super.createInformationPanel(info));
 		
@@ -118,7 +114,7 @@ public class SecuritySettingsPanel extends PreferencePanel
 		return accountStorePanel;
 	}
 	
-	protected JPanel buildUserIDPanel()
+	private JPanel buildUserIDPanel()
 	{
 		JPanel userIDPanel = new JPanel();
 		userIDPanel.setLayout(new BoxLayout(userIDPanel, BoxLayout.PAGE_AXIS));
@@ -127,8 +123,8 @@ public class SecuritySettingsPanel extends PreferencePanel
 		String info = "Connection Security:\nEach client connected to the server is assigned a unique "
 				+ "user identification key. This key is used to distinguish between users, and used as connection "
 				+ "control and message validation. Each message received by a client is verified against the user "
-				+ "idenfitication key on record. If the user identification key does not match, the client will be "
-				+ "disconnected immediately. An inconsistent ID suggests suspicous behavior on the part of the client.";
+				+ "identification key on record. If the user identification key does not match, the client will be "
+				+ "disconnected immediately. An inconsistent ID suggests suspicious behavior on the part of the client.";
 		userIDPanel.add(super.createInformationPanel(info));
 		
 		JPanel innerPanel = new JPanel();
@@ -158,40 +154,28 @@ public class SecuritySettingsPanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(!this.hashingAlgorithmField.getText().equals(AbstractServer.messageDigestHashingAlgorithm))
-		{
 			changedFields.add("Message Digest Hashing Algorithm");
-		}
 		
 		if(!this.keyGeneratorAlgorithmField.getText().equals(AbstractServer.secureRandomSaltAlgorithm))
-		{
 			changedFields.add("Secure Random Salt Generator");
-		}
 		
 		ComboBoxItem item1 = (ComboBoxItem)(this.saltLengthComboBox.getSelectedItem());
 		Integer value1 = (Integer)(item1.getValue());
 		if(value1.intValue() != AbstractServer.secureRandomSaltLength)
-		{
 			changedFields.add("Secure Random Salt Length");
-		}
 		
 		ComboBoxItem item2 = (ComboBoxItem)(this.userIDKeyLengthComboBox.getSelectedItem());
 		Integer value2 = (Integer)(item2.getValue());
 		if(value2.intValue() != AbstractServer.userIDKeyLength)
-		{
 			changedFields.add("User ID Key Length");
-		}
 		
 		ComboBoxItem item3 = (ComboBoxItem)(this.supportedUserIDKeyAlgorithmsComboBox.getSelectedItem());
 		String value3 = (String)(item3.getValue());
 		if(!value3.equals(AbstractServer.userIDAlgorithm))
-		{
 			changedFields.add("User ID Key Generator Algorithm");
-		}
 		
 		if(blacklistInconsistentUserIDCheckBox.isSelected() != AbstractServer.blacklistAccountIPInconsistentUserID)
-		{
 			changedFields.add("Enable/Disable Blacklist Account/IP On Inconsistent User ID");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}

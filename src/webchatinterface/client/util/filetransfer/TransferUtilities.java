@@ -36,13 +36,13 @@ public class TransferUtilities
 	public static String computeTransferSpeedText(long bufferSize, long timeElapsedMillis)
 	{
 		String text;
-		double bytesTransfered = bufferSize;
-		double speed = bytesTransfered / (double)timeElapsedMillis;
+		double bytesTransferred = bufferSize;
+		double speed = bytesTransferred / (double)timeElapsedMillis;
 		
 		if(speed > 1073741824.0)
 		{
-			bytesTransfered = bytesTransfered / 1073741824.0;
-			speed = bytesTransfered / timeElapsedMillis;
+			bytesTransferred = bytesTransferred / 1073741824.0;
+			speed = bytesTransferred / timeElapsedMillis;
 			speed = Math.round(speed*100.0)/100.0;
 			
 			if(speed < 500)
@@ -52,22 +52,20 @@ public class TransferUtilities
 		}
 		else if(speed > 1048576.0)
 		{
-			bytesTransfered = bytesTransfered / 1048576.0;
-			speed = bytesTransfered / timeElapsedMillis;
+			bytesTransferred = bytesTransferred / 1048576.0;
+			speed = bytesTransferred / timeElapsedMillis;
 			speed = Math.round(speed*100.0)/100.0;
 			text = "Speed: " + speed + "MB/s";
 		}
 		else if(speed > 1024.0)
 		{
-			bytesTransfered = bytesTransfered / 1024.0;
-			speed = bytesTransfered / timeElapsedMillis;
+			bytesTransferred = bytesTransferred / 1024.0;
+			speed = bytesTransferred / timeElapsedMillis;
 			speed = Math.round(speed*100.0)/100.0;
 			text = "Speed: " + speed + "kB/s";
 		}
 		else
-		{
 			text = "Speed: " + speed + "B/s";
-		}
 		
 		return text;
 	}

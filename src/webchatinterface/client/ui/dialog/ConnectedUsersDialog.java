@@ -60,8 +60,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	  *exit the frame.*/
 	private volatile boolean isRunning;
 	
-	/**Static block used to initialize status icons. If an exception is thrown while reading the image 
-	  *files, the static icon variables will contain empty strings.*/
 	static
 	{
 		try
@@ -109,9 +107,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	public void start()
 	{
 		if(this.isRunning())
-		{
 			return;
-		}
 		
 		this.isRunning = true;
 		(new Thread(this)).start();
@@ -126,7 +122,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	{
 		super.setVisible(true);
 		
-		Object[][] data = null;
+		Object[][] data;
 		Object[][] previousData = null;
 		DefaultTableModel tableModel = new DefaultTableModel();
 		tableModel.addColumn("");
@@ -139,7 +135,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
             private static final long serialVersionUID = -986803268686380681L;
             
             //  Returning the Class of each column will allow different
-            //  renderers to be used based on Class
+            //  renderer to be used based on Class
             @Override
 			public Class<?> getColumnClass(int column)
             {
@@ -165,9 +161,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 			data = this.client.getConnectedUsers();
 			
 			if(previousData == null)
-			{
 				previousData = data;
-			}
 			else if(Arrays.equals(data, previousData))
 			{
 				try
@@ -181,25 +175,21 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 				continue;
 			}
 			else
-			{
 				previousData = data;
-			}
 			
 			//remove all data from table
 			if(tableModel.getRowCount() > 0)
 			{
 			    for(int i = tableModel.getRowCount() - 1; i > -1; i--)
-			    {
 			    	tableModel.removeRow(i);
-			    }
 			}
 			
-			for(int i = 0; i < data.length; i++)
+			for(Object[] dataElement : data)
 			{
 				Object[] row = new Object[4];
 				
 				//Switch Client Availability
-				switch((Integer)data[i][3])
+				switch((Integer)dataElement[3])
 				{
 					case ClientUser.AVAILABLE:
 						row[0] = AVAILABLE_ICON;
@@ -219,16 +209,12 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 				}
 				
 				//Assign Client Information to Object[][]
-				if(data[i][1].equals(this.clientUser.getUserID()))
-				{
-					row[1] = data[i][0] + "(Me)";
-				}
+				if(dataElement[1].equals(this.clientUser.getUserID()))
+					row[1] = dataElement[0] + "(Me)";
 				else
-				{
-					row[1] = data[i][0];
-				}
+					row[1] = dataElement[0];
 				
-				row[3] = data[i][4];
+				row[3] = dataElement[4];
 				
 				tableModel.addRow(row);
 			}
@@ -259,7 +245,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	/**Accessor method for the state of the ConnectedUsersDialog thread. If the thread is running,
 	  *{@code isRunning()} will return true. Otherwise, the method will return false.
 	  *@return true if thread is running, false if thread is suspended*/
-	public boolean isRunning()
+	private boolean isRunning()
 	{
 		return this.isRunning;
 	}

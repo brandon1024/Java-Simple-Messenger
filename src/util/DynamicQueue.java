@@ -53,9 +53,7 @@ public class DynamicQueue<E1>
 	public E1 dequeue()
 	{
 		if(this.length == 0)
-		{
 			return null;
-		}
 		else if(this.length == 1)
 		{
 			this.length--;

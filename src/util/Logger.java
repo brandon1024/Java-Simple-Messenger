@@ -43,69 +43,10 @@ public class Logger
 		this.isClosed = false;
 		
 		if(!(new File(logFileDirectory)).isDirectory())
-		{
 			(new File(logFileDirectory)).mkdir();
-		}
 		
 		//Attempt to Build Log File and File Writer
 		File logFile = new File(logFileDirectory + "LOG " + Logger.getSystemTimestamp() + ".txt");
-		
-		try
-		{
-			if(logFile.exists())
-				throw new RuntimeException(logFile.getName() + " already exists");
-			else
-				logFile.createNewFile();
-			
-			this.fileOutput = new FileWriter(logFile);
-		}
-		catch (IOException e)
-		{
-			this.isClosed = true;
-		}
-	}
-	
-	/**Construct a new Logger object given a reference to a FileWriter stream, and log file directory.
-	  *@param fileOutput The FileWriter stream used to write text to the log file
-	  *@param logFileDirectory The directory to which the log files should be stored*/
-	public Logger(FileWriter fileOutput, String logFileDirectory)
-	{
-		if(fileOutput == null)
-			throw new NullPointerException("null FileWriter reference");
-		
-		if(logFileDirectory == null)
-			throw new NullPointerException("null file directory");
-		
-		this.logFileDirectory = logFileDirectory;
-		this.fileOutput = fileOutput;
-		this.isClosed = false;
-	}
-	
-	/**Construct a new Logger object given a directory to which log files should be stored and 
-	  *a specified file name. If the FileWriter stream cannot be established, the logger will be 
-	  *marked as closed.
-	 *@param logFileDirectory The directory to which the log files should be stored*/
-	public Logger(String logFileDirectory, String fileName)
-	{
-		this.logFileDirectory = logFileDirectory;
-		this.isClosed = false;
-		
-		if(!(new File(logFileDirectory)).isDirectory())
-		{
-			(new File(logFileDirectory)).mkdir();
-		}
-		
-		if(logFileDirectory == null)
-			throw new NullPointerException("null file directory");
-		
-		if(fileName == null)
-			throw new NullPointerException("null file name");
-		
-		if(fileName.isEmpty())
-			throw new RuntimeException("invalid file name; file name must not be empty");
-		
-		//Attempt to Build Log File and File Writer
-		File logFile = new File(logFileDirectory + fileName + ".txt");
 		
 		try
 		{
@@ -132,17 +73,13 @@ public class Logger
 	public synchronized void logException(Exception e)
 	{
 		if(this.isClosed)
-		{
 			return;
-		}
 		
 		try
 		{
 			String stackTrace = "";
 			for(StackTraceElement element : e.getStackTrace())
-			{
 				stackTrace += "\t" + element.toString() + "\n";
-			}
 			stackTrace += "\n";
 			
 			this.fileOutput.write(Logger.getSystemTimestamp() + ": EXCEPTION THROWN" + "\n");
@@ -164,9 +101,7 @@ public class Logger
 	public synchronized void logString(String str)
 	{
 		if(this.isClosed)
-		{
 			return;
-		}
 		
 		try
 		{
@@ -183,21 +118,16 @@ public class Logger
 	  *with {@code LOG}.*/
 	public void clearLogs()
 	{
-		for(File f : (new File(this.logFileDirectory)).listFiles())
+		File[] files =  (new File(this.logFileDirectory)).listFiles();
+
+		if(files == null)
+			return;
+
+		for(File f : files)
 		{
 			if(f.getName().startsWith("LOG"))
-			{
 				f.delete();
-			}
 		}
-	}
-	
-	/**Returns the state of the logger. If the logger is closed, calls to logException()
-	  *and logString() will simply return.
-	  *@return the state of the Logger*/
-	public boolean isClosed()
-	{
-		return this.isClosed;
 	}
 	
 	/**Closes the logger and associated file stream.*/

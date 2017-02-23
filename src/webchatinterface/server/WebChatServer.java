@@ -67,15 +67,6 @@ public class WebChatServer implements Runnable
 	  *before clients can connect.
 	  *@param consoleMng The server console manager. Used to append messages
 	  *and status to the graphical user interface console.
-	  *@param logger A reference to the logger responsible for logging thrown exceptions to 
-	  *a log file in the application directory
-	  *@param broadcastHlp The BroadcastHelper instance used to help faciliate message and
-	  *command broadcasting
-	  *@param address The server bind address. If null, default address is used.
-	  *@param port The server port number. If port number is out of range, default 
-	  *port number 5100 is used.
-	  *@param maxConnections the maximum number of concurrent client connections
-	  *to the server.
 	  */
 	public WebChatServer(ConsoleManager consoleMng)
 	{
@@ -108,9 +99,7 @@ public class WebChatServer implements Runnable
 			this.consoleMng.printConsole("Using Default Port " + AbstractServer.serverPortNumber, false);
 		}
 		else
-		{
 			this.consoleMng.printConsole("Using Port " + AbstractServer.serverPortNumber, false);
-		}
 		
 		//Start BroadcastHelper Thread
 		this.broadcastHlp.start();
@@ -133,17 +122,13 @@ public class WebChatServer implements Runnable
 		
 		//disconnect all connected users
 		for(WebChatServerInstance member : ChatRoom.getGlobalMembers())
-		{
 			member.disconnect(Command.REASON_SERVER_CLOSED);
-		}
 		
 		//close ServerSocket
 		try
 		{
 			if(this.servSocket != null)
-			{
 				this.servSocket.close();
-			}
 		}
 		catch (IOException e)
 		{
@@ -159,10 +144,8 @@ public class WebChatServer implements Runnable
 	  *<p>If {@code address} field is null, the server socket is not
 	  *bound to any IP address. The server will stop if an exception is
 	  *thrown by the server socket, and a description of the error will
-	  *be logged by the {@code ConsoleManager}.
-	  *@see #address
-	  *@see #port*/
-	public void listen()
+	  *be logged by the {@code ConsoleManager}.*/
+	private void listen()
 	{
 		try
 		{
@@ -170,21 +153,17 @@ public class WebChatServer implements Runnable
 			this.consoleMng.printConsole("Opening Socket on Port " + AbstractServer.serverPortNumber, false);
 			
 			if(AbstractServer.serverBindIPAddress.equals("default"))
-			{
 				this.servSocket = new ServerSocket(AbstractServer.serverPortNumber);
-			}
 			else
-			{
 				this.servSocket = new ServerSocket(AbstractServer.serverPortNumber, 50, InetAddress.getByName(AbstractServer.serverBindIPAddress));
-			}
 			
-			this.consoleMng.printConsole("Sucessfully Opened Socket on Port " + AbstractServer.serverPortNumber, false);
+			this.consoleMng.printConsole("Successfully Opened Socket on Port " + AbstractServer.serverPortNumber, false);
 			this.consoleMng.printConsole("Awaiting Client Connection...", false);
 			
 			//While Server is Running
 			while(this.RUN)
 			{
-				boolean loopCTRL = false;
+				boolean loopCTRL;
 				Socket socket;
 				
 				//handle blacklisted users and full server
@@ -211,9 +190,7 @@ public class WebChatServer implements Runnable
 						loopCTRL = true;
 					}
 					else
-					{
 						loopCTRL = false;
-					}
 				}
 				while(loopCTRL);
 				
@@ -254,11 +231,7 @@ public class WebChatServer implements Runnable
 	  *<p>
 	  *Unlike {@code blackListUser()}, the client is able to reconnect
 	  *immediately after being disconnected.
-	  *@param clientServerConnection The client connection instance to be disconnected
-	  *@return Returns true if the client connection was found and the client was successfully
-	  *disconnected. Returns false if the client connection was not found and could not
-	  *be disconnected.
-	  *@see Command#CONNECTION_KICKED*/
+	  *@param clientServerConnection The client connection instance to be disconnected*/
 	public void disconnectUser(WebChatServerInstance clientServerConnection, int reason)
 	{
 		clientServerConnection.disconnect(reason);
@@ -269,8 +242,7 @@ public class WebChatServer implements Runnable
 	  *client will be prevented from connecting to the server, unless the
 	  *blacklist configuration file, found in the temporary directory, is changed or removed.
 	  *@param clientServerConnection The client connection instance to be disconnected
-	  *and permanantly prevented from future connections to the server.
-	  *@see Command#CONNECTION_KICKED*/
+	  *and permanently prevented from future connections to the server.*/
 	public void blackListUser(WebChatServerInstance clientServerConnection)
 	{
 		try
@@ -280,7 +252,6 @@ public class WebChatServer implements Runnable
 			
 			try
 			{
-				//output blacklist details to file
 				blackListOut.writeObject(clientServerConnection.getIP());
 			}
 			catch (IOException e)
@@ -291,12 +262,7 @@ public class WebChatServer implements Runnable
 			
 			blackListOut.close();
 		}
-		catch (FileNotFoundException e)
-		{
-			this.consoleMng.printConsole("Unable to Blacklist User; unable to access BLACKLIST.dat", true);
-			AbstractServer.logException(e);
-		}
-		catch(IOException e)
+		catch (IOException e)
 		{
 			this.consoleMng.printConsole("Unable to Blacklist User; unable to access BLACKLIST.dat", true);
 			AbstractServer.logException(e);
@@ -304,10 +270,10 @@ public class WebChatServer implements Runnable
 	}
 	
 	/**Determines whether a given IP address is blacklisted. It tests this by comparing
-	  *the string paramter to the blacklist configuration file found in the temporary directory.
+	  *the string parameter to the blacklist configuration file found in the temporary directory.
 	  *@param IP The IP address to check against the blacklist configuration file.
 	  *@return Returns true if the given IP address is blacklisted, false otherwise.*/
-	public boolean isBlackListed(String IP)
+	private boolean isBlackListed(String IP)
 	{
 		//read from blacklist file to determine if user is blacklisted
 		try
@@ -337,10 +303,6 @@ public class WebChatServer implements Runnable
 				}
 			}
 		}
-		catch(EOFException e)
-		{
-			AbstractServer.logException(e);
-		}
 		catch(Exception e)
 		{
 			AbstractServer.logException(e);
@@ -357,7 +319,7 @@ public class WebChatServer implements Runnable
 		{
 			FileOutputStream blackListFileOut = new FileOutputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat", true);
 			ObjectOutputStream blackListOut = new ObjectOutputStream(blackListFileOut);
-			blackListOut.writeObject(new String(""));
+			blackListOut.writeObject("");
 			blackListOut.close();
 			
 			this.consoleMng.printConsole("Successfully Relieved Blacklisted Users", false);
@@ -374,20 +336,6 @@ public class WebChatServer implements Runnable
 		}
 	}
 	
-	/**Broadcasts a {@code Message} object to all connected clients.
-	  *@param message The message to broadcast to all connected clients.*/
-	public void broadcast(Message message)
-	{
-		this.broadcastHlp.broadcastMessage(message);
-	}
-	
-	/**Broadcasts a {@code Command} object to all connected clients.
-	  *@param com The command to broadcast to all connected clients.*/
-	public void broadcast(Command com)
-	{
-		this.broadcastHlp.broadcastCommand(com);
-	}
-	
 	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
 	  *an automated server message with specific broadcast frequency.
 	  *@see webchatinterface.server.util.BroadcastHelper#showBroadcastMessageDialog()*/
@@ -401,8 +349,9 @@ public class WebChatServer implements Runnable
 	  *<p>
 	  *[Username][User ID][User IP][Availability][Room]
 	  *...
-	  *@return a two dimentional array with information regarding each client connected to the
+	  *@return a two dimensional array with information regarding each client connected to the
 	  *server.*/
+
 	public Object[][] getConnectedUsers()
 	{
 		int size = ChatRoom.getGlobalMembersSize();
@@ -429,7 +378,7 @@ public class WebChatServer implements Runnable
 	  *through the server to clients. This includes all {@code Message}, {@code Command}, and
 	  *{@code MultimediaMessage} objects.
 	  *@see #objectsSent*/
- 	public void addObjectSent()
+	public void addObjectSent()
 	{
 		this.objectsSent++;
 	}
@@ -445,7 +394,7 @@ public class WebChatServer implements Runnable
 	
 	/**Increments the counter for the number of files transfered
 	  *through the server to clients.*/
-	public void addFilesTransfered()
+	public void addFilesTransferred()
 	{
 		this.filesTransfered++;
 	}
@@ -453,7 +402,7 @@ public class WebChatServer implements Runnable
 	/**Accessor method for the number of files transfered through the server to
 	  *clients.
 	  *@return the total number of files transfered by the server*/
-	public long getFilesTransfered()
+	public long getFilesTransferred()
 	{
 		return this.filesTransfered;
 	}

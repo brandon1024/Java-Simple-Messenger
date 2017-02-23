@@ -116,9 +116,7 @@ public class StylePreferencesPanel extends PreferencePanel
 		
 		this.supportedSizes = new Integer[16];
 		for(int i = 5; i <= 20; i++)
-		{
-			this.supportedSizes[i-5] = new Integer(i);
-		}
+			this.supportedSizes[i-5] = i;
 		this.fontSizeComboBox = new JComboBox<Integer>(this.supportedSizes);
 		
 		this.fontBoldRadioButton = new JRadioButton("Bold");
@@ -138,21 +136,14 @@ public class StylePreferencesPanel extends PreferencePanel
 			{
 				int constval;
 				if(StylePreferencesPanel.this.fontBoldRadioButton.isSelected())
-				{
 					constval = Font.BOLD;
-				}
 				else if(StylePreferencesPanel.this.fontItalicRadioButton.isSelected())
-				{
 					constval = Font.ITALIC;
-				}
 				else if(StylePreferencesPanel.this.fontBoldItalicRadioButton.isSelected())
-				{
 					constval = Font.ITALIC | Font.BOLD;
-				}
 				else
-				{
 					constval = Font.PLAIN;
-				}
+
 				Font font = new Font((String)fontFamilyComboBox.getSelectedItem(), constval, (int)fontSizeComboBox.getSelectedItem());
 				StylePreferencesPanel.this.previewPane.setFont(font);
 				StylePreferencesPanel.this.textFont = font;
@@ -177,7 +168,7 @@ public class StylePreferencesPanel extends PreferencePanel
 		super.add(body, BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildColorSettingsPanel()
+	private JPanel buildColorSettingsPanel()
 	{
 		JPanel colorSettingsPanel = new JPanel();
 		colorSettingsPanel.setLayout(new BoxLayout(colorSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -197,8 +188,8 @@ public class StylePreferencesPanel extends PreferencePanel
 		
 		return colorSettingsPanel;
 	}
-	
-	protected JPanel buildFontSettingsPanel()
+
+	private JPanel buildFontSettingsPanel()
 	{
 		JPanel fontSettingsPanel = new JPanel();
 		fontSettingsPanel.setLayout(new BoxLayout(fontSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -226,8 +217,8 @@ public class StylePreferencesPanel extends PreferencePanel
 		
 		return fontSettingsPanel;
 	}
-	
-	protected JPanel buildPreviewPanel()
+
+	private JPanel buildPreviewPanel()
 	{
 		JPanel previewPanel = new JPanel();
 		previewPanel.setLayout(new BoxLayout(previewPanel, BoxLayout.PAGE_AXIS));
@@ -242,19 +233,13 @@ public class StylePreferencesPanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(!this.backgroundColor.equals(AbstractServer.backgroundColor))
-		{
 			changedFields.add("Background Color");
-		}
 		
 		if(!this.foregroundColor.equals(AbstractServer.foregroundColor))
-		{
 			changedFields.add("Foreground Color");
-		}
 		
 		if(!this.textFont.equals(AbstractServer.textFont))
-		{
 			changedFields.add("Text Font");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}
@@ -282,34 +267,22 @@ public class StylePreferencesPanel extends PreferencePanel
 		for(String font : this.supportedFonts)
 		{
 			if(font.equals(AbstractServer.textFont.getFamily()))
-			{
 				this.fontFamilyComboBox.setSelectedItem(font);
-			}
 		}
 		
 		for(Integer size : this.supportedSizes)
 		{
-			if(size.intValue() == AbstractServer.textFont.getSize())
-			{
+			if(size == AbstractServer.textFont.getSize())
 				this.fontSizeComboBox.setSelectedItem(size);
-			}
 		}
 		
 		if(AbstractServer.textFont.isBold())
-		{
 			this.fontBoldRadioButton.setSelected(true);
-		}
 		else if(AbstractServer.textFont.isItalic())
-		{
 			this.fontItalicRadioButton.setSelected(true);
-		}
 		else if(AbstractServer.textFont.isPlain())
-		{
 			this.fontPlainRadioButton.setSelected(true);
-		}
 		else
-		{
 			this.fontBoldItalicRadioButton.setSelected(true);
-		}
 	}
 }

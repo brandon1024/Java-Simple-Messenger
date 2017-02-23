@@ -8,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 
 import javax.imageio.ImageIO;
 import javax.swing.JCheckBox;
@@ -27,13 +26,11 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.text.DefaultCaret;
 
-import util.Logger;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
 import webchatinterface.server.WebChatServerInstance;
 import webchatinterface.server.ui.preferences.PreferencesDialog;
-import webchatinterface.server.util.BroadcastHelper;
 import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
 
@@ -56,18 +53,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	/**The master container for all sub-containers within the
 	  *user interface*/
 	private Container masterPane;
-	
-	/**The window menu bar*/
-	private JMenuBar menuBar;
-	
-	/**The menu bar menu containing menu items for general actions*/
-	private JMenu serverMenu;
-	
-	/**The menu bar menu containing menu items for specific actions*/
-	private JMenu edit;
-	
-	/**The menu bar menu containing menu items for help actions*/
-	private JMenu help;
 	
 	/**The menu option for running the {@code WebChatServer} with the 
 	  *current settings*/
@@ -140,9 +125,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		
 		//Build Server Temp Folder if Does Not Exist
 		if(!(new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY)).isDirectory())
-		{
 			(new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY)).mkdir();
-		}
 		
 		//Build Blacklist File if Does Not Exist
 		if(!(new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat").exists()))
@@ -170,7 +153,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	
 	/**Constructs the user interface for the server. Initializes and
 	  *displays all window components and their action listeners.*/
-	public WebChatServerGUI()
+	private WebChatServerGUI()
 	{
 		super.setTitle("Web Chat Server Interface - Suspended");
 		super.setSize(800,600);  
@@ -200,15 +183,19 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		}
 		
 		//---BUILD MENU BAR---//
-		this.menuBar = new JMenuBar();
+		JMenuBar menuBar;
+		JMenu serverMenu;
+		JMenu edit;
+		JMenu help;
+		menuBar = new JMenuBar();
 		
-		this.serverMenu = new JMenu("Server");
-		this.edit = new JMenu("Edit");
-		this.help = new JMenu("Help");
+		serverMenu = new JMenu("Server");
+		edit = new JMenu("Edit");
+		help = new JMenu("Help");
 		
-		this.menuBar.add(serverMenu);
-		this.menuBar.add(edit);
-		this.menuBar.add(help);
+		menuBar.add(serverMenu);
+		menuBar.add(edit);
+		menuBar.add(help);
 		
 		this.runServer = new JMenuItem("Run Server");
 		this.suspendServer = new JMenuItem("Suspend Server");
@@ -223,20 +210,20 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		this.aboutApp = new JMenuItem("About Web Chat Server Interface");
 		this.getHelp = new JMenuItem("Get Help");
 		
-		this.serverMenu.add(runServer);
-		this.serverMenu.add(suspendServer);
-		this.serverMenu.addSeparator();
-		this.serverMenu.add(kickUser);
-		this.serverMenu.add(showConnectedUsers);
-		this.serverMenu.add(broadcastMessage);
-		this.serverMenu.addSeparator();
-		this.serverMenu.add(exit);
+		serverMenu.add(runServer);
+		serverMenu.add(suspendServer);
+		serverMenu.addSeparator();
+		serverMenu.add(kickUser);
+		serverMenu.add(showConnectedUsers);
+		serverMenu.add(broadcastMessage);
+		serverMenu.addSeparator();
+		serverMenu.add(exit);
 		
-		this.edit.add(showAccountManager);
-		this.edit.add(showPreferencesDialog);
+		edit.add(showAccountManager);
+		edit.add(showPreferencesDialog);
 		
-		this.help.add(aboutApp);
-		this.help.add(getHelp);
+		help.add(aboutApp);
+		help.add(getHelp);
 		
 		this.runServer.addActionListener(this);
 		this.suspendServer.addActionListener(this);
@@ -288,7 +275,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	  *the usage monitor. If the server is not running, the call will be ignored.
 	  *@see WebChatServer#suspend()
 	  *@see WebChatServerInstance*/
-	public void suspendServer()
+	private void suspendServer()
 	{
 		//if the server is running
 		if(this.running)
@@ -307,9 +294,8 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	  *and run the threaded object.
 	  *<p>
 	  *The usage monitor is updated to display server analytics. If the server is already running 
-	  *the call will be ignored.
-	  *@see webchatinterface.server.WebChatServer#WebChatServer(ConsoleManager consoleMng, Logger logger, BroadcastHelper broadcastHlp, InetAddress address, int port, int maxConnections)*/
-	public void runServer()
+	  *the call will be ignored.*/
+	private void runServer()
 	{
 		if(!this.running)
 		{
@@ -340,7 +326,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	
 	/**Display the kick user dialog, and allow the server user to kick and/or blacklist a 
 	  *client connection.*/
-	public void showKickUserDialog()
+	private void showKickUserDialog()
 	{
 		//If the server is running
 		if(this.running)
@@ -356,9 +342,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			{
 				WebChatServerInstance[] clients = room.getConnectedClients();
 				for(WebChatServerInstance member : clients)
-				{
 					connectedUsers.addItem(member);
-				}
 			}
 			
 			//Add Components to Dialog
@@ -391,9 +375,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		}
 		//if server suspended
 		else
-		{
 			this.consoleMng.printConsole("No Connected Users; Server is Suspended", true);
-		}
 	}
 	
 	/**Display the connected users dialog. Displays a list of all users connected to the server in
@@ -401,54 +383,39 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	  *<p>
 	  *Format:
 	  *{@code [AVAIL ICON][AVAILABILITY][INSTANCE ID][USERNAME][IP ADDRESS][ROOM][USER ID]}*/
-	public void showConnectedUsersDialog()
+	private void showConnectedUsersDialog()
 	{
 		//if server running
 		if(this.running)
-		{
 			(new ConnectedUsersDialog(this.server)).start();
-		}
 		else
-		{
 			this.consoleMng.printConsole("No Connected Users; Server is Suspended", true);
-		}
 	}
 
 	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
 	  *an automated server message with specific broadcast frequency.
 	  *@see webchatinterface.server.util.BroadcastHelper#showBroadcastMessageDialog()*/
-	public void showBroadcastMessageDialog()
+	private void showBroadcastMessageDialog()
 	{
 		//if server running
 		if(this.running)
-		{
 			this.server.showBroadcastMessageDialog();
-		}
 		else
-		{
 			consoleMng.printConsole("Cannot Broadcast Message; Server is Suspended", true);
-		}
 	}
 	
 	/**Delete all server blacklist records.
 	  *@see util.Logger#clearLogs()*/
 	public void clearBlacklistRecords()
 	{
-		File blacklistFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat");
-		
-		if(blacklistFile.exists())
-		{
-			blacklistFile.delete();
-			this.consoleMng.printConsole("Successfully Relieved Blacklisted Users", false);
-		}
+		if(this.running)
+			this.server.clearBlackListRecord();
 		else
-		{
-			this.consoleMng.printConsole("No Blacklist File Found", true);
-		}
+			this.consoleMng.printConsole("Cannot Clear Blacklist Records; Server is Suspended", true);
 	}
 	
 	/**Toggle the Usage Monitor lower pane.*/
-	public void showUsageMonitor(boolean show)
+	private void showUsageMonitor(boolean show)
 	{
 		//If Usage Monitor is Visible
 		if(show)
@@ -464,7 +431,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	}
 	
 	/**Gracefully exit the server application.*/
-	public void exit()
+	private void exit()
 	{
 		if(this.running)
 		{
@@ -475,13 +442,9 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 				"Exit", JOptionPane.OK_CANCEL_OPTION);
 
 			if(result == JOptionPane.OK_OPTION)
-			{
 				this.suspendServer();
-			}
 			else
-			{
 				return;
-			}
 		}
 		
 		try
@@ -493,7 +456,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	}
 	
 	/**Display the 'About Application' dialog.*/
-	public void showAboutDialog()
+	private void showAboutDialog()
 	{
 		//display About dialog
 		String about = "Web Chat Interface"
@@ -509,7 +472,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	}
 	
 	/**Display the 'Help' dialog.*/
-	public void showHelpDialog()
+	private void showHelpDialog()
 	{
 		//display Help dialog
 		String help = "Need help?"
@@ -532,53 +495,33 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	{
 		//Run Server
 		if(event.getSource() == this.runServer)
-		{
 			this.runServer();
-		}
 		//Suspend Server
 		else if(event.getSource() == this.suspendServer)
-		{
 			this.suspendServer();
-		}
 		//Kick Connected User
 		else if(event.getSource() == this.kickUser)
-		{
 			this.showKickUserDialog();
-		}
 		//Show Connected Users
 		else if(event.getSource() == this.showConnectedUsers)
-		{
 			this.showConnectedUsersDialog();
-		}
 		//Broadcast Message to Connected Users
 		else if(event.getSource() == this.broadcastMessage)
-		{
 			this.showBroadcastMessageDialog();
-		}
 		//Exit Server Application Gracefully
 		else if(event.getSource() == this.exit)
-		{
 			this.exit();
-		}
 		else if(event.getSource() == this.showAccountManager)
-		{
 			AccountListDialog.displayAccountList();
-		} 
 		//Exit Server Application Gracefully
 		else if(event.getSource() == this.showPreferencesDialog)
-		{
 			(new PreferencesDialog(this)).showDialog();
-		}
 		//About Application
 		else if(event.getSource() == this.aboutApp)
-		{
 			this.showAboutDialog();
-		}
 		//Get Help
 		else if(event.getSource() == this.getHelp)
-		{
 			this.showHelpDialog();
-		}
 	}
 	
 	/**Execute orderly termination procedures. If the server is running, the server

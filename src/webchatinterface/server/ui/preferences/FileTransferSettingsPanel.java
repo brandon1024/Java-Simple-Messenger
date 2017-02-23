@@ -38,7 +38,7 @@ public class FileTransferSettingsPanel extends PreferencePanel
 		super.add(Box.createRigidArea(new Dimension(0,120)), BorderLayout.PAGE_END);
 	}
 	
-	protected JPanel buildTransferSettingsPanel()
+	private JPanel buildTransferSettingsPanel()
 	{
 		JPanel transferSettingsPanel = new JPanel();
 		transferSettingsPanel.setLayout(new BoxLayout(transferSettingsPanel, BoxLayout.PAGE_AXIS));
@@ -84,14 +84,10 @@ public class FileTransferSettingsPanel extends PreferencePanel
 		ArrayList<String> changedFields = new ArrayList<String>();
 		
 		if(Integer.parseInt(this.transferBufferSizeField.getText()) != AbstractServer.fileTransferBufferSize)
-		{
 			changedFields.add("File Transfer Buffer Size");
-		}
 		
 		if(Integer.parseInt(this.fileTransferSizeLimitField.getText()) != AbstractServer.fileTransferSizeLimit)
-		{
 			changedFields.add("File Transfer Size Limit");
-		}
 		
 		return changedFields.toArray(new String[0]);
 	}

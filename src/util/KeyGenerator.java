@@ -73,9 +73,7 @@ public final class KeyGenerator
 		else if(KeyGenerator.NUMERIC.equalsIgnoreCase(algorithm))
 		{
 			for(int pos = 0; pos < keySize; pos++)
-			{
 				key[pos] = (char)(48 + numberChooser.nextInt(10));
-			}
 		}
 		else if(KeyGenerator.ALPHANUMERIC_LOWER_CASE.equalsIgnoreCase(algorithm))
 		{
@@ -92,13 +90,9 @@ public final class KeyGenerator
 			for(int pos = 0; pos < keySize; pos++)
 			{
 				if(charTypeChooser.nextInt(2) == 0)
-				{
 					key[pos] = (char)(characterChooser.nextInt(26) + 65);
-				}
 				else
-				{
 					key[pos] = (char)(48 + numberChooser.nextInt(10));
-				}
 			}
 		}
 		else if(KeyGenerator.ALPHANUMERIC_MIXED_CASE.equalsIgnoreCase(algorithm))
@@ -113,16 +107,12 @@ public final class KeyGenerator
 						key[pos] = (char)(characterChooser.nextInt(26) + 97);
 				}
 				else
-				{
 					key[pos] = (char)(48 + numberChooser.nextInt(10));
-				}
 			}
 		}
 		else if(KeyGenerator.TEST.equalsIgnoreCase(algorithm))
-		{
-			return new String("PASS");
-		}
-		
+			return "PASS";
+
 		return new String(key);
 	}
 	

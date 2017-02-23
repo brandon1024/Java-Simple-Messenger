@@ -40,8 +40,8 @@ import webchatinterface.util.Command;
 
 public class FileTransferExecutor implements Runnable
 {
-	public static final int MODE_SEND = 0;
-	public static final int MODE_RECEIVE = 1;
+	private static final int MODE_SEND = 0;
+	private static final int MODE_RECEIVE = 1;
 	private TransferProgressDialog dialog;
 	private WebChatClientGUI userInterface;
 	private WebChatClient client;
@@ -78,7 +78,7 @@ public class FileTransferExecutor implements Runnable
 		this.transferRunning = true;
 		this.mode = FileTransferExecutor.MODE_SEND;
 		this.file = file;
-		this.transferID = KeyGenerator.generate256bitKey(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
+		this.transferID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
 		this.dialog = new TransferProgressDialog();
 		(new Thread(this)).start();
 	}
@@ -136,7 +136,7 @@ public class FileTransferExecutor implements Runnable
 			FileInputStream fos = new FileInputStream(file);
 			
 			//Initiate File Transfer with Transfer Manifest Command
-			Object[] transferData = {new Long(numberOfPackets), new Long(bytesTotal), new Long(bufferSize), this.transferID, file.getName()};
+			Object[] transferData = {numberOfPackets, bytesTotal, bufferSize, this.transferID, file.getName()};
 			this.transferManifest = new Command(Command.FILE_TRANSFER, transferData, this.clientUser.getUsername(), this.clientUser.getUserID());
 			this.client.send(this.transferManifest);
 			

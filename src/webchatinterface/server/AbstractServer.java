@@ -99,7 +99,7 @@ public abstract class AbstractServer
 	}
 	
 	/**Load saved settings from configuration file config.ini in application directory.*/
-	public static void loadState() throws IOException
+	private static void loadState() throws IOException
 	{
 		File configFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "config.ini");
 		

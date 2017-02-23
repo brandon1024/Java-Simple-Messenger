@@ -108,7 +108,7 @@ public class Authenticator
 	  *are updated, and may be accessed using accessor methods.
 	  *@throws AuthenticationException if information entered by the user is invalid
 	  *@throws AuthenticationAbortedException if the authentication was aborted by the user*/
-	public void showDialog() throws AuthenticationException, AuthenticationAbortedException
+	public void showDialog() throws AuthenticationException
 	{
 		//Attempt to Load Previous Settings
 		try
@@ -121,7 +121,7 @@ public class Authenticator
 		}
 		
 		//---REQUEST SETTINGS FROM USER---//
-		boolean saveSettings = false;
+		boolean saveSettings;
 
 		JPanel dialogPanel = new JPanel();
 		dialogPanel.setLayout(new GridLayout(1,2, 10, 0));
@@ -138,7 +138,7 @@ public class Authenticator
 		JCheckBox loginAsGuest = new JCheckBox("Login as Guest");
 		
 		usernameField.setText(this.username);
-		passwordField.setText((this.password == null) ? new String() : new String(this.password));
+		passwordField.setText((this.password == null) ? "" : new String(this.password));
 		hostAddressField.setText(this.hostAddress);
 		portField.setText(this.portNumber == null ? null : this.portNumber.toString());
 		
@@ -221,22 +221,16 @@ public class Authenticator
 				this.password = new byte[pass.length];
 				
 				if(pass.length < 6)
-				{
 					throw new AuthenticationException("Your password is too short. Password must be a minimum of 6 characters.");
-				}
 				
 				for(char character : pass)
 				{
-					if(character > Byte.MAX_VALUE || character < Byte.MIN_VALUE)
-					{
+					if(character > Byte.MAX_VALUE)
 						throw new AuthenticationException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-					}
 				}
 				
 				for(int i = 0; i < this.password.length; i++)
-				{
 					this.password[i] = (byte)pass[i];
-				}
 				
 				Arrays.fill(pass, Character.MIN_VALUE);
 				passwordField.setText("");
@@ -370,41 +364,29 @@ public class Authenticator
 				this.password = new byte[pass.length];
 				
 				if(pass.length < 6)
-				{
 					throw new AuthenticationException("Your password is too short. Password must be a minimum of 6 characters.");
-				}
 				
 				for(char character : pass)
 				{
-					if(character > Byte.MAX_VALUE || character < Byte.MIN_VALUE)
-					{
+					if(character > Byte.MAX_VALUE)
 						throw new AuthenticationException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-					}
 				}
 				
 				for(int i = 0; i < this.password.length; i++)
-				{
 					this.password[i] = (byte)pass[i];
-				}
 				
 				Arrays.fill(pass, Character.MIN_VALUE);
 				password.setText("");
 				confirmPassword.setText("");
 			}
 			else
-			{
 				throw new AuthenticationAbortedException("Authentication Aborted by User");
-			}
 		}
 		else
-		{
 			throw new AuthenticationAbortedException("Authentication Aborted by User");
-		}
 			
 		if(saveSettings)
-		{
 			this.savePreset();
-		}
 	}
 	
 	/**Attempt to load saved preset from application temporary directory. Assigns preset settings to
@@ -483,36 +465,28 @@ public class Authenticator
 	}
 	
 	/**Accessor method for the username field of the {@code Authenticator} object.
-	  *@return the username specified by the user
-	  *@throws AuthenticationException if the user did not specify a username, or the
-	  *{@code getUsername()} was invoked before the {@code showDialog()} method has executed*/
+	  *@return the username specified by the user*/
 	public String getUsername()
 	{
 		return this.username;
 	}
 	
 	/**Accessor method for the user password field of the {@code Authenticator} object.
-	  *@return the account password
-	  *@throws AuthenticationException if the {@code getPassword()} was invoked before the
-	  *{@code showDialog()} method has executed*/
+	  *@return the account password*/
 	public byte[] getPassword()
 	{
 		return this.password;
 	}
 	
 	/**Accessor method for the host address field of the {@code Authenticator} object.
-	  *@return the server host address specified by the user
-	  *@throws AuthenticationException if the {@code getHostAddress()} was invoked before the
-	  *{@code showDialog()} method has executed*/
+	  *@return the server host address specified by the user*/
 	public String getHostAddress()
 	{
 		return this.hostAddress;
 	}
 	
 	/**Accessor method for the port number field of the {@code Authenticator} object.
-	  *@return the server port number specified by the user
-	  *@throws AuthenticationException if the {@code getPortNumber()} was invoked before the
-	  *{@code showDialog()} method has executed*/
+	  *@return the server port number specified by the user*/
 	public int getPortNumber()
 	{
 		return this.portNumber.intValue();

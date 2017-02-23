@@ -33,19 +33,6 @@ public class Preset implements Serializable
 	  *@param username the preset username
 	  *@param hostAddress the preset host address
 	  *@param port the preset port number*/
-	public Preset(String username, byte[] password, String hostAddress, int port)
-	{
-		this.username = username;
-		this.password = password;
-		this.hostAddress = hostAddress;
-		this.port = Integer.valueOf(port);
-	}
-	
-	/**Constructs a serializable preset object, with the given fields for the username, server host 
-	  *address, and server port number.
-	  *@param username the preset username
-	  *@param hostAddress the preset host address
-	  *@param port the preset port number*/
 	public Preset(String username, byte[] password, String hostAddress, Integer port)
 	{
 		this.username = username;
