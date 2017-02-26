@@ -281,7 +281,7 @@ public class WebChatClient implements Runnable
 	/***/
 	private void processMessage(Message message)
 	{
-		this.graphicalUserInterface.displayMessage((Message)message);
+		this.graphicalUserInterface.displayMessage(message);
 	}
 	
 	/***/

@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -28,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
 import webchatinterface.AbstractIRC;
+import webchatinterface.helpers.TimeHelper;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServerInstance;
 import webchatinterface.server.ui.ConsoleManager;
@@ -60,9 +60,7 @@ public class BroadcastHelper implements Runnable
 	/**Builds a {@code BroadcastHelper} instance. Assigns parameters to instance variables, and attemps
 	  *to load all saved ScheduledServerMessages.
 	  *@param consoleMng The server console manager. Used to append messages
-	  *and status to the graphical user interface console.
-	  *@param logger A reference to the logger responsible for logging thrown exceptions to 
-	  *a log file in the application directory*/
+	  *and status to the graphical user interface console.*/
 	public BroadcastHelper(ConsoleManager consoleMng)
 	{
 		this.consoleMng = consoleMng;
@@ -73,7 +71,7 @@ public class BroadcastHelper implements Runnable
 	  *scheduledServerMessage ArrayList.*/
 	private void loadScheduledMessages()
 	{
-		try(ObjectInputStream objectIn = new ObjectInputStream(new FileInputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "SCHEDULED_MESSAGES.dat"));)
+		try(ObjectInputStream objectIn = new ObjectInputStream(new FileInputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "SCHEDULED_MESSAGES.dat")))
 		{
 			while(true)
 			{
@@ -104,18 +102,15 @@ public class BroadcastHelper implements Runnable
 	{
 		try(ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "SCHEDULED_MESSAGES.dat", false)))
 		{
-			for(int i = 0; i < this.scheduledServerMessage.size(); i++)
+			for(ScheduledServerMessage message : this.scheduledServerMessage)
 			{
 				try
 				{
-					ScheduledServerMessage message = this.scheduledServerMessage.get(i);
-					
 					objectOut.writeObject(message);
 				}
 				catch (IOException e)
 				{
 					AbstractServer.logException(e);
-					continue;
 				}
 			}
 		}
@@ -139,7 +134,7 @@ public class BroadcastHelper implements Runnable
 			{
 				if(message.repeatDaily)
 				{
-					String time = this.getSystemTimestamp();
+					String time = TimeHelper.formatTimestamp(Calendar.getInstance(), "HHmm");
 					int hour = Integer.parseInt(time.substring(0,2));
 					int minute = Integer.parseInt(time.substring(2));
 					
@@ -434,13 +429,6 @@ public class BroadcastHelper implements Runnable
 
 			this.consoleMng.printConsole("Successfully Deleted All Saved Server Message", false);
 		}
-	}
-	
-	/**Method used to retrieve the system time at the instance of being invoked. 
-	  @return a string of format HHmm*/
-	private String getSystemTimestamp()
-	{
-		return new SimpleDateFormat("HHmm").format(Calendar.getInstance().getTime());
 	}
 	
 	/**Broadcast a Message object to all clients connected to the server within the

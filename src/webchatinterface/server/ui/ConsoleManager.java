@@ -1,7 +1,6 @@
 package webchatinterface.server.ui;
 
 import java.awt.Color;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -14,6 +13,7 @@ import javax.swing.text.StyledDocument;
 
 import util.DynamicQueue;
 import webchatinterface.AbstractIRC;
+import webchatinterface.helpers.TimeHelper;
 import webchatinterface.server.AbstractServer;
 
 /**@author Brandon Richardson
@@ -142,7 +142,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	{
 		synchronized(this)
 		{
-			ConsoleMessage consoleMessage = new ConsoleMessage(this.getSystemTimestamp() + ": " + message, warning);
+			ConsoleMessage consoleMessage = new ConsoleMessage(TimeHelper.formatTimestamp(Calendar.getInstance(), "yyyyMMdd_HHmmss") + ": " + message, warning);
 			this.printQueue.enqueue(consoleMessage);
 			this.printCache.add(consoleMessage);
 		}
@@ -161,14 +161,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		}
 	}
 	
-	/**Method used to retrieve the system time at the instance of being invoked. 
-	  @return a string of format yyyyMMdd_HHmmss
-	  */
-	private String getSystemTimestamp()
-	{
-		return new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
-	}
-	
 	/**Removes all stored objects in the print queue, and clears all the text in the 
 	  *JTextPane.
 	  */
@@ -178,9 +170,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		{
 			this.printQueue.removeAll();
 			if(clearCache)
-			{
 				this.printCache.clear();
-			}
 		}
 		
 		super.setText("");
@@ -203,9 +193,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		
 		this.clearConsole(false);
 		for(ConsoleMessage message : this.printCache)
-		{
 			this.printQueue.enqueue(message);
-		}
 	}
 	
 	private class ConsoleMessage

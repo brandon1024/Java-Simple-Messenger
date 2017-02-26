@@ -45,28 +45,13 @@ import webchatinterface.client.util.Preset;
 
 public class Authenticator
 {
-	/***/
 	private boolean guest;
-	
-	/***/
 	private boolean newAccount;
-	
-	/***/
 	private String emailAddress;
-	
-	/**The username specified by the user*/
 	private String username;
-	
-	/***/
 	private byte[] password;
-	
-	/**The server host address specified by the user*/
 	private String hostAddress;
-	
-	/**The server port number specified by the user*/
 	private Integer portNumber;
-	
-	/**The directory for the saved preset file in the application temporary directory*/
 	private String presetFileLocation;
 	
 	/**Constructor for the {@code Authenticator} object.*/
@@ -397,20 +382,17 @@ public class Authenticator
 		File presetFile = new File(this.presetFileLocation + "PRESET.dat");
 		
 		//---ATTEMPT TO READ PRESET FROM FILE---//
-		try
+		try(ObjectInputStream presetIn = new ObjectInputStream(new FileInputStream(presetFile)))
 		{
-			ObjectInputStream presetIn = new ObjectInputStream(new FileInputStream(presetFile));
 			Preset savedPreset = (Preset)presetIn.readObject();
 			
 			if(savedPreset != null)
 			{
 				this.username = savedPreset.getUsername();
 				this.password = savedPreset.getPassword();
-				this.hostAddress = savedPreset.getHostAddress();;
+				this.hostAddress = savedPreset.getHostAddress();
 				this.portNumber = savedPreset.getPort();
 			}
-			
-			presetIn.close();
 		}
 		catch(IOException | ClassNotFoundException e)
 		{
@@ -435,12 +417,10 @@ public class Authenticator
 		}
 		
 		//---ATTEMPT TO SAVE PRESET TO FILE---//
-		try
+		try(ObjectOutputStream presetOut = new ObjectOutputStream(new FileOutputStream(presetFile)))
 		{
 			Preset savedPreset = new Preset(this.username, this.password, this.hostAddress, this.portNumber);
-			ObjectOutputStream presetOut = new ObjectOutputStream(new FileOutputStream(presetFile));
 			presetOut.writeObject(savedPreset);
-			presetOut.close();
 		}
 		catch(IOException e)
 		{
@@ -489,7 +469,7 @@ public class Authenticator
 	  *@return the server port number specified by the user*/
 	public int getPortNumber()
 	{
-		return this.portNumber.intValue();
+		return this.portNumber;
 	}
 	
 	/***/

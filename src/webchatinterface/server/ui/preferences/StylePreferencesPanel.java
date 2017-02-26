@@ -28,31 +28,20 @@ public class StylePreferencesPanel extends PreferencePanel
 	private static final long serialVersionUID = 7958241337977537948L;
 	
 	private Color backgroundColor;
-	
 	private Color foregroundColor;
-	
 	private Font textFont;
-	
+
 	private JButton foregroundColorButton;
-	
 	private JButton backgroundColorButton;
-	
 	private JComboBox<String> fontFamilyComboBox;
-	
 	private JComboBox<Integer> fontSizeComboBox;
-	
 	private JRadioButton fontBoldRadioButton;
-	
 	private JRadioButton fontItalicRadioButton;
-	
 	private JRadioButton fontPlainRadioButton;
-	
 	private JRadioButton fontBoldItalicRadioButton;
-	
 	private JTextArea previewPane;
-	
+
 	private String[] supportedFonts;
-	
 	private Integer[] supportedSizes;
 	
 	public StylePreferencesPanel(String header)
@@ -73,7 +62,7 @@ public class StylePreferencesPanel extends PreferencePanel
 				"20160804_093316: 20160804_093316: Using Server IP default\n" +
 				"20160804_093316: 20160804_093316: Using Port 5100\n" +
 				"20160804_093316: 20160804_093316: Opening Socket on Port 5100\n" +
-				"20160804_093316: 20160804_093316: Sucessfully Opened Socket on Port 5100\n" +
+				"20160804_093316: 20160804_093316: Successfully Opened Socket on Port 5100\n" +
 				"20160804_093316: 20160804_093316: Awaiting Client Connection...");
 		this.previewPane.setFont(this.textFont);
 		this.previewPane.setWrapStyleWord(true);
@@ -247,6 +236,7 @@ public class StylePreferencesPanel extends PreferencePanel
 	public void save()
 	{
 		AbstractServer.backgroundColor = this.backgroundColor;
+		AbstractServer.foregroundColor = this.foregroundColor;
 		AbstractServer.textFont = this.textFont;
 	}
 

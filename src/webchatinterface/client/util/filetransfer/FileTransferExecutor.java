@@ -40,8 +40,6 @@ import webchatinterface.util.Command;
 
 public class FileTransferExecutor implements Runnable
 {
-	private static final int MODE_SEND = 0;
-	private static final int MODE_RECEIVE = 1;
 	private TransferProgressDialog dialog;
 	private WebChatClientGUI userInterface;
 	private WebChatClient client;
@@ -68,22 +66,15 @@ public class FileTransferExecutor implements Runnable
 	
 	public void start(File file) throws RuntimeException
 	{
-		if(this.transferRunning)
-		{
-			RuntimeException e = new RuntimeException("Concurrent file transfers are not supported on a single instance of FileTransferExecutor");
-			AbstractClient.logException(e);
-			throw e;
-		}
-		
-		this.transferRunning = true;
-		this.mode = FileTransferExecutor.MODE_SEND;
-		this.file = file;
-		this.transferID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
-		this.dialog = new TransferProgressDialog();
-		(new Thread(this)).start();
+		this.start(file, null);
 	}
 	
 	public void start(Command transferManifest) throws RuntimeException
+	{
+		this.start(null, transferManifest);
+	}
+
+	private void start(File file, Command transferManifest)
 	{
 		if(this.transferRunning)
 		{
@@ -91,25 +82,24 @@ public class FileTransferExecutor implements Runnable
 			AbstractClient.logException(e);
 			throw e;
 		}
-		
+
 		this.transferRunning = true;
+		this.file = file;
 		this.transferManifest = transferManifest;
-		this.transferID = (String)((Object[]) this.transferManifest.getMessage())[3];
-		this.mode = FileTransferExecutor.MODE_RECEIVE;
+		this.mode = file != null ? TransferUtilities.MODE_SEND : TransferUtilities.MODE_RECEIVE;
+		this.transferID = file != null ? KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE) : (String)((Object[]) this.transferManifest.getMessage())[3];
+		this.dialog = file != null ? new TransferProgressDialog() : null;
+
 		(new Thread(this)).start();
 	}
 	
 	public void run() throws RuntimeException
 	{
-		if(this.mode == FileTransferExecutor.MODE_SEND)
-		{
+		if(this.mode == TransferUtilities.MODE_SEND)
 			this.send();
-		}
-		else if(this.mode == FileTransferExecutor.MODE_RECEIVE)
-		{
+		else if(this.mode == TransferUtilities.MODE_RECEIVE)
 			this.receive();
-		}
-		else if(this.mode == -1)
+		else
 		{
 			RuntimeException e = new RuntimeException("FileTransferExecutor thread was not initialized properly; use start(file, mode) to start thread");
 			AbstractClient.logException(e);
@@ -119,35 +109,30 @@ public class FileTransferExecutor implements Runnable
 	
 	private void send()
 	{
-		try
+		try(FileInputStream fis = new FileInputStream(file))
 		{
 			//Define Variables
 			final long bufferSize = 4096L;
 			final long bytesTotal = this.file.length();
 			long bytesRead = 0L;
 			long bytesRemaining = bytesTotal;
-			long numberOfPackets = bytesTotal / bufferSize;
-			numberOfPackets += (bytesTotal % bufferSize > 0) ? 1 : 0;
+			long numberOfPackets = bytesTotal / bufferSize + (bytesTotal % bufferSize > 0 ? 1 : 0);
 			
 			//Update Dialog
 			this.updateTransferDialog(0, 0, bytesTotal, 0, this.file.getName());
 			
-			//Open Streams
-			FileInputStream fos = new FileInputStream(file);
-			
 			//Initiate File Transfer with Transfer Manifest Command
-			Object[] transferData = {numberOfPackets, bytesTotal, bufferSize, this.transferID, file.getName()};
+			Object[] transferData = {numberOfPackets, bytesTotal, bufferSize, this.transferID, this.file.getName()};
 			this.transferManifest = new Command(Command.FILE_TRANSFER, transferData, this.clientUser.getUsername(), this.clientUser.getUserID());
 			this.client.send(this.transferManifest);
 			
 			//Send Buffers
 			while(bytesRemaining > 0)
 			{
-				int time = TransferUtilities.getSystemTimestamp();
+				long time = System.currentTimeMillis();
+				byte[] array = (bytesRemaining < bufferSize) ? new byte[(int)bytesRemaining] : new byte[(int)bufferSize];
 				
-				byte[] array = (bytesRemaining < bufferSize) ? new byte[(int) bytesRemaining] : new byte[(int)bufferSize];
-				
-				fos.read(array);
+				fis.read(array);
 				bytesRead += array.length;
 				bytesRemaining -= array.length;
 				
@@ -157,14 +142,11 @@ public class FileTransferExecutor implements Runnable
 				//Send Message and Close Streams
 				this.client.send(message);
 				
-				long timeElapsedMillis = (TransferUtilities.getSystemTimestamp() - time) / 1000;
+				long timeElapsedMillis = (System.currentTimeMillis() - time) / 1000;
 				this.updateTransferDialog(bytesRead, array.length, bytesTotal, timeElapsedMillis, this.file.getName());
 			}
 			
-			//Close Stream
-			fos.close();
-			
-			//Wait for Confirmation from Server
+			//Update Dialog
 			this.updateTransferDialogComplete();
 		}
 		catch(IOException e)
@@ -185,9 +167,8 @@ public class FileTransferExecutor implements Runnable
 		File file = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + fileName);
 		file.deleteOnExit();
 		
-		try
+		try(FileOutputStream fos = new FileOutputStream(file))
 		{
-			FileOutputStream fos = new FileOutputStream(file);
 			int timeoutCounter = 0;
 			
 			while(bytesRemaining > 0)
@@ -215,12 +196,10 @@ public class FileTransferExecutor implements Runnable
 				
 				if(timeoutCounter == 120)
 				{
-					fos.close();
 					throw new TransferTimedOutException("File Transfer Timed Out (120 seconds); bytes remaining " + bytesRemaining + "B of total " + bytesTotal + "B");
 				}
 			}
-			
-			fos.close();
+
 			this.userInterface.displayFile(file, this.transferManifest);
 		}
 		catch(TransferTimedOutException | IOException e)
@@ -243,7 +222,7 @@ public class FileTransferExecutor implements Runnable
 		this.dialog.setTitle("Filename: " + filename);
 		this.dialog.setInformationLabelText(filename);
 		this.dialog.setSpeedLabelText(TransferUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
-		this.dialog.setProgressValue(TransferUtilities.progressPercentageInt(bytesRead, bytesTotal, 0));
+		this.dialog.setProgressValue(TransferUtilities.progressPercentageInt(bytesRead, bytesTotal));
 		this.dialog.setProgressString(TransferUtilities.computePercentCompletionText(bytesRead, bytesTotal));
 		this.dialog.setProgressLabelText(TransferUtilities.computeProgressText(bytesRead, bytesTotal));	
 	}
@@ -274,9 +253,9 @@ public class FileTransferExecutor implements Runnable
 	private void updateTransferDialogError()
 	{
 		this.dialog.setProgressColor(TransferProgressDialog.PROGRESS_RED);
-		this.dialog.setProgressString("ERROR OCCURED");
-		this.dialog.setProgressLabelText("ERROR OCCURED");
-		this.dialog.setWindowTitleBarText("ERROR OCCURED");
+		this.dialog.setProgressString("ERROR OCCURRED");
+		this.dialog.setProgressLabelText("ERROR OCCURRED");
+		this.dialog.setWindowTitleBarText("ERROR OCCURRED");
 	}
 	
 	public String getTransferID()

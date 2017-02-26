@@ -18,11 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -41,6 +38,7 @@ import javax.swing.text.StyledDocument;
 
 import util.DynamicQueue;
 import webchatinterface.client.AbstractClient;
+import webchatinterface.helpers.TimeHelper;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -405,13 +403,12 @@ public class ConsoleManager extends JTextPane implements Runnable
 	  *If the parameter format is incorrect, the method will return null;
 	  *@param messageTimestamp the unformatted timestamp of format {@code YYYY-MM-DDThh:mm:ss+00:00} to
 	  *be formatted to 12-hour time format
-	  *@return the formatted timestamp in 12-hour time format, or null if format is incorrect
-	  *@see ConsoleManager#getSystemTimestamp()*/
+	  *@return the formatted timestamp in 12-hour time format, or null if format is incorrect*/
 	private String formatTimestamp(String messageTimestamp)
 	{
 		try
 		{
-			String systemTimestamp = this.getSystemTimestamp();
+			String systemTimestamp = TimeHelper.formatTimestampUTC(Calendar.getInstance());
 			int[] systemTime = new int[8];
 			systemTime[0] = Integer.parseInt(systemTimestamp.substring(0, 4)); //year
 			systemTime[1] = Integer.parseInt(systemTimestamp.substring(5, 7)); //month
@@ -511,37 +508,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 			AbstractClient.logException(e);
 			return null;
 		}
-	}
-	
-	/**Build and return a string containing the local system time expressed according
-	  *to ISO 8601 with UTC timezone offset.
-	  *<p>
-	  *Format:
-	  *<ul>
-	  *<li>{@code YYYY-MM-DDThh:mm:ss+00:00}
-	  *</ul>
-	  *@return the current system time expressed according to ISO 8601 with UTC timezone offset*/
-	private String getSystemTimestamp()
-	{
-		Calendar cal = Calendar.getInstance();
-		TimeZone tz = TimeZone.getDefault();
-		Date date = cal.getTime();
-		int UTC_Offset = tz.getOffset(cal.getTimeInMillis());
-				
-		String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date);
-		
-		if(UTC_Offset / 1000 / 60 / 60 >= 0)
-			timestamp += "+";
-		else
-			timestamp += "-";
-		
-		if(Math.abs(UTC_Offset / 1000 / 60 / 60) < 10)
-			timestamp += "0";
-
-		timestamp += Math.abs(UTC_Offset / 1000 / 60 / 60) + ":";
-		timestamp += UTC_Offset % (1000 * 60 * 60) + "0";
-		
-		return timestamp;
 	}
 	
 	/**Enqueue a new {@code Message} object.

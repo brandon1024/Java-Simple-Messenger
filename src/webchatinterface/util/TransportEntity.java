@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import webchatinterface.helpers.TimeHelper;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -63,7 +64,7 @@ public abstract class TransportEntity implements Serializable
 	{
 		this.SENDER = sender;
 		this.SENDER_ID = senderID;
-		this.TIMESTAMP = this.getSystemTimestamp();
+		this.TIMESTAMP = TimeHelper.formatTimestampUTC(Calendar.getInstance());
 		this.ID = messageIdentification++;
 	}
 	
@@ -94,43 +95,6 @@ public abstract class TransportEntity implements Serializable
 	public int getMessageID()
 	{
 		return this.ID;
-	}
-	
-	/**Build and return a string containing the local system time expressed according
-	  *to ISO 8601 with UTC timezone offset.
-	  *<p>
-	  *Format:
-	  *<ul>
-	  *<li>{@code YYYY-MM-DDThh:mm:ss+00:00}</li>
-	  *</ul>
-	  *@return the current system time expressed according to ISO 8601 with UTC timezone offset*/
-	private String getSystemTimestamp()
-	{
-		Calendar cal = Calendar.getInstance();
-		TimeZone tz = TimeZone.getDefault();
-		Date date = cal.getTime();
-		int UTC_Offset = tz.getOffset(cal.getTimeInMillis());
-				
-		String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date);
-		
-		if(UTC_Offset / 1000 / 60 / 60 >= 0)
-		{
-			timestamp += "+";
-		}
-		else
-		{
-			timestamp += "-";
-		}
-		
-		if(Math.abs(UTC_Offset / 1000 / 60 / 60) < 10)
-		{
-			timestamp += "0";
-		}
-
-		timestamp += Math.abs(UTC_Offset / 1000 / 60 / 60) + ":";
-		timestamp += UTC_Offset % (1000 * 60 * 60) + "0";
-		
-		return timestamp;
 	}
 	
 	/**Build and return a textual representation of this transport entity object.

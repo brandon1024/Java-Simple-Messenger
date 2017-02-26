@@ -1,7 +1,6 @@
 package webchatinterface.server.ui.preferences;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,21 +33,12 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 	private static final long serialVersionUID = 6276982860422704135L;
 	
 	private WebChatServerGUI userInterface;
-	
-	private JPanel masterPane;
-	
 	private PreferencePanel currentPanel;
-	
 	private PreferencePanel[] panels;
-	
 	private JTree settingTree;
-	
 	private JButton applyButton;
-	
 	private JButton okButton;
-	
 	private JButton cancelButton;
-
 	private JButton helpButton;
 	
 	public PreferencesDialog(WebChatServerGUI userInterface)
@@ -60,17 +50,16 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		super.setResizable(false);
 		
 		this.userInterface = userInterface;
-		this.masterPane = (JPanel)super.getContentPane();
-		this.masterPane.setLayout(new BorderLayout(5,5));
-		this.masterPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		this.getContentPane().setLayout(new BorderLayout(5,5));
+		((JPanel)this.getContentPane()).setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		
 		this.settingTree = this.buildTree();
 		this.buildSettingsPanels();
 		this.currentPanel = this.panels[0];
-		
-		this.masterPane.add(this.settingTree, BorderLayout.LINE_START);
-		this.masterPane.add(this.currentPanel);
-		this.masterPane.add(this.buildButtonPanel(), BorderLayout.PAGE_END);
+
+		this.getContentPane().add(this.settingTree, BorderLayout.LINE_START);
+		this.getContentPane().add(this.currentPanel);
+		this.getContentPane().add(this.buildButtonPanel(), BorderLayout.PAGE_END);
 	}
 	
 	public void showDialog()
@@ -94,9 +83,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 			JTable table = new JTable(new DefaultTableModel(new String[]{"Panel", "Property"}, 0));
 			DefaultTableModel model = (DefaultTableModel) table.getModel();
 			for(String mod : (this.panels[8]).requestChangedFields())
-			{
 				model.addRow(new String[]{this.panels[8].getID(), mod});
-			}
 			JScrollPane scroll = new JScrollPane(table);
 			
 			dialogPanel.add(new JLabel("Confirm Modified Properties?"), BorderLayout.PAGE_START);
@@ -222,36 +209,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 	
 	public void restoreGlobalSettings()
 	{
-		AbstractServer.startServerWhenApplicationStarts = false;
-		AbstractServer.openMinimized = false;
-		AbstractServer.showResourceMonitor = true;
-		AbstractServer.alwaysSendWelcomeMessage = false;
-		AbstractServer.newMemberGuestWelcomeMessage = "";
-		AbstractServer.returningMemberWelcomeMessage = "";
-		AbstractServer.serverBindIPAddress = "default";
-		AbstractServer.serverPortNumber = 5100;
-		AbstractServer.maxConnectedUsers = 200;
-		AbstractServer.loginTimeoutSeconds = 0;
-		AbstractServer.fileTransferBufferSize = 4096;
-		AbstractServer.fileTransferSizeLimit = 104857600;
-		AbstractServer.messageDigestHashingAlgorithm = "SHA-256";
-		AbstractServer.secureRandomSaltAlgorithm = "SHA1PRNG";
-		AbstractServer.secureRandomSaltLength = 32;
-		AbstractServer.userIDKeyLength = 256;
-		AbstractServer.userIDAlgorithm = "ALPHANUMERIC_MIXED_CASE";
-		AbstractServer.blacklistAccountIPInconsistentUserID = true;
-		AbstractServer.loggingEnabled = true;
-		AbstractServer.logOnlyWarningsExceptions = false;
-		AbstractServer.logOnlyServerActivity = false;
-		AbstractServer.logAllActivity = true;
-		AbstractServer.logAllToSingleFile = false;
-		AbstractServer.logFileFormat = "LOG";
-		AbstractServer.logFileSizeLimit = 0;
-		AbstractServer.deleteLogAfterSessions = 0;
-		AbstractServer.showTimestampsInLogFiles = true;
-		AbstractServer.foregroundColor = Color.BLACK;
-		AbstractServer.backgroundColor = Color.WHITE;
-		AbstractServer.textFont = new Font("Courier New", Font.PLAIN, 12);
+		AbstractServer.loadDefaultSettings();
 		
 		for(PreferencePanel panel : panels)
 			panel.populatePanel();
@@ -343,24 +301,18 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 	public void valueChanged(TreeSelectionEvent e)
 	{
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode)this.settingTree.getLastSelectedPathComponent();
-		
-		if(node == null)
-			return;
-		else
+		Object nodeIdentifier = node.getUserObject();
+
+		for(PreferencePanel panel : this.panels)
 		{
-			Object nodeIdentifier = node.getUserObject();
-			
-			for(PreferencePanel panel : this.panels)
+			if(panel.getID().equals(nodeIdentifier))
 			{
-				if(panel.getID().equals(nodeIdentifier))
-				{
-					this.masterPane.remove(this.currentPanel);
-					this.currentPanel = panel;
-					this.masterPane.add(this.currentPanel, BorderLayout.CENTER);
-					this.revalidate();
-		            this.repaint();
-					break;
-				}
+				this.getContentPane().remove(this.currentPanel);
+				this.currentPanel = panel;
+				this.getContentPane().add(this.currentPanel, BorderLayout.CENTER);
+				this.revalidate();
+				this.repaint();
+				break;
 			}
 		}
 	}
