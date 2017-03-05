@@ -3,7 +3,7 @@ package webchatinterface.client.ui;
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.communication.WebChatClient;
-import webchatinterface.client.util.console.ConsoleManager;
+import webchatinterface.client.ui.components.ConsoleManager;
 import webchatinterface.client.ui.components.StatusBar;
 import webchatinterface.client.ui.dialog.AboutApplicationDialog;
 import webchatinterface.client.ui.dialog.ConnectedUsersDialog;

@@ -1,15 +1,16 @@
 package webchatinterface.client.ui.components;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Desktop;
-import java.awt.FileDialog;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import util.DynamicQueue;
+import webchatinterface.client.AbstractClient;
+import webchatinterface.helpers.TimeHelper;
+import webchatinterface.util.ClientUser;
+import webchatinterface.util.Command;
+import webchatinterface.util.Message;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,28 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextPane;
-import javax.swing.WindowConstants;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
-import util.DynamicQueue;
-import webchatinterface.client.AbstractClient;
-import webchatinterface.helpers.TimeHelper;
-import webchatinterface.util.ClientUser;
-import webchatinterface.util.Command;
-import webchatinterface.util.Message;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -56,7 +35,7 @@ import webchatinterface.util.Message;
   *messages. Users are distingued by the SENDER_ID field of the Message objects. 
   *If the SENDER_ID field matches the userID defined in WebChatClientGUI, the message is right
   *justified in the JTextPane. Otherwise, the message is left justified. Above the message, the 
-  *username of the sender is displayed in a smaller font size. Similarily, below the message, the
+  *username of the sender is displayed in a smaller font size. Similarly, below the message, the
   *time sent is displayed in a smaller font size.
   *<p>
   *Images are also displayed in the JTextPane, justified similar to simple text messages. These
@@ -74,60 +53,23 @@ import webchatinterface.util.Message;
 
 public class ConsoleManager extends JTextPane implements Runnable
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
 	private static final long serialVersionUID = 2619250731419205387L;
 
-	/**Default console style; black foreground with white background*/
 	public static final int STYLE_INITIALIZED = 0;
-	
-	/**Stylized console; white foreground with charcoal background*/
 	public static final int STYLE_AUTHENTICATED = 1;
-	
-	/**Stylized console; green foreground with black background*/
 	public static final int STYLE_AUTHENTICATED_HACKER = 2;
-	
-	/**Stylized console; green foreground with black background*/
 	public static final int STYLE_AUTHENTICATED_RED = 3;
-	
-	/**Stylized console; black foreground with purple background*/
 	public static final int STYLE_AUTHENTICATED_ORANGE = 4;
-	
-	/**Queue of ConsoleMessage objects waiting to be appended to the underlying JTextPane*/
 	private DynamicQueue<ConsoleMessage> consoleQueue;
-	
-	/**A list of cached ConsoleMessages. This ArrayList is used to repopulate the
-	  *console conversation when the user selects to change the console style, which
-	  *requires clearing the console*/
 	private ArrayList<ConsoleMessage> cachedMessages;
-	
-	/**The StyledDocument for the underlying JTextPane*/
 	private StyledDocument doc;
-	
-	/**Attribute Set for current user message header*/
 	private MutableAttributeSet currentUserStyleHeader;
-	
-	/**Attribute Set for current user message body*/
 	private MutableAttributeSet currentUserStyleText;
-	
-	/**Attribute Set for other users message header*/
 	private MutableAttributeSet otherUsersStyleHeader;
-	
-	/**Attribute Set for other users message body*/
 	private MutableAttributeSet otherUsersStyleText;
-	
-	/**Current style ID*/
 	private int style;
-	
-	/**Allows messages to be displayed in a simple top down view, as opposed to the
-	  *more complex justified view.*/
 	private boolean simpleView = false;
-
-	/**Control variable for the ConsoleManager thread.*/
 	private volatile boolean isRunning = false;
-	
-	/**The ClientUser object representing a model of the user, the user status, and parameters.
-	  *@see webchatinterface.util.ClientUser*/
 	private ClientUser client;
 	
 	/**Builds a {@code ConsoleManager} object. Constructs the underlying JTextPane framework, print 
@@ -223,171 +165,96 @@ public class ConsoleManager extends JTextPane implements Runnable
 				
 				if(message == null)
 					continue;
-				
-				String messageBody = message.getMessage();
-				String sender = message.getSender();
-				String senderID = message.getSenderID();
-				String timestamp = message.getTimestamp();
-				FileButton file = message.getFile();
-				ImageButton image = message.getImage();
-				int type = message.getType();
-				
-				if(type == ConsoleMessage.MESSAGE)
+
+				try
 				{
-					if(this.simpleView)
+					if(message.getType() == ConsoleMessage.MESSAGE)
 					{
-						try
+						if(this.simpleView)
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + messageBody + "\n", this.otherUsersStyleText);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + message.getMessage() + "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							this.doc.insertString(this.doc.getLength(), messageBody + "\n", this.currentUserStyleText);
-							this.doc.insertString(this.doc.getLength(), "Sent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getMessage() + "\n", this.currentUserStyleText);
+							this.doc.insertString(this.doc.getLength(), "Sent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Match Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
-							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.otherUsersStyleHeader);
-							this.doc.insertString(this.doc.getLength(), messageBody + "\n", this.otherUsersStyleText);
-							this.doc.insertString(this.doc.getLength(), "Sent: " + timestamp + "\n\n", this.otherUsersStyleHeader);
-						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-				}
-				else if(type == ConsoleMessage.IMAGE)
-				{
-					if(this.simpleView)
-					{
-						try
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + "\n", this.otherUsersStyleText);
-							super.insertComponent(image);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getMessage() + "\n", this.otherUsersStyleText);
+							this.doc.insertString(this.doc.getLength(), "Sent: " + message.getTimestamp() + "\n\n", this.otherUsersStyleHeader);
+						}
+					}
+					else if(message.getType() == ConsoleMessage.IMAGE)
+					{
+						if(this.simpleView)
+						{
+							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + "\n", this.otherUsersStyleText);
+							super.insertComponent(message.getImage());
 							this.doc.insertString(this.doc.getLength(), "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							super.insertComponent(image);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							super.insertComponent(message.getImage());
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Matche Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
-							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.otherUsersStyleHeader);
-							super.insertComponent(image);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
-						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-				}
-				else if(type == ConsoleMessage.FILE)
-				{
-					if(this.simpleView)
-					{
-						try
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + "\n", this.otherUsersStyleText);
-							super.insertComponent(file);
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.otherUsersStyleHeader);
+							super.insertComponent(message.getImage());
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
+						}
+					}
+					else if(message.getType() == ConsoleMessage.FILE)
+					{
+						if(this.simpleView)
+						{
+							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + "\n", this.otherUsersStyleText);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.otherUsersStyleHeader);
 							this.doc.insertString(this.doc.getLength(), "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							
-							//Insert FileButton Component
-							super.insertComponent(file);
-							
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.currentUserStyleHeader);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Matche Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n\n", this.otherUsersStyleHeader);
-							
-							//Insert FileButton Component
-							super.insertComponent(file);
-							
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.otherUsersStyleHeader);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n\n", this.otherUsersStyleHeader);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.otherUsersStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
+
+						if(this.cachedMessages.size() >= 100)
+							this.cachedMessages.clear();
 					}
-					
-					if(this.cachedMessages.size() >= 100)
-						this.cachedMessages.clear();
+
+				}
+				catch(BadLocationException e)
+				{
+					AbstractClient.logException(e);
 				}
 			}
 			
