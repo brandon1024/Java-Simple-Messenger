@@ -1,47 +1,9 @@
 package webchatinterface.client.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FileDialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.IOException;
-import java.net.UnknownHostException;
-
-import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-import javax.swing.text.DefaultCaret;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.communication.WebChatClient;
-import webchatinterface.client.ui.components.ConsoleManager;
+import webchatinterface.client.util.console.ConsoleManager;
 import webchatinterface.client.ui.components.StatusBar;
 import webchatinterface.client.ui.dialog.AboutApplicationDialog;
 import webchatinterface.client.ui.dialog.ConnectedUsersDialog;
@@ -52,9 +14,18 @@ import webchatinterface.client.util.authentication.AuthenticationAbortedExceptio
 import webchatinterface.client.util.authentication.AuthenticationException;
 import webchatinterface.client.util.authentication.Authenticator;
 import webchatinterface.util.ClientUser;
-import webchatinterface.util.TransferBuffer;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
+import webchatinterface.util.TransferBuffer;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.text.DefaultCaret;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -72,6 +43,9 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	
 	/**The menu option for displaying the authentication dialog*/
 	private JMenuItem signIn;
+
+	/**The menu option for displaying the New Account Dialog dialog*/
+	private JMenuItem signUp;
 	
 	/**The menu option for attempting to authenticate with saved preset*/
 	private JMenuItem quickSignIn;
@@ -80,7 +54,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem signOut;
 
 	/**The menu for displaying menu items for setting the client availability*/
-	private JMenuItem setAvailiblility;
+	private JMenuItem setAvailability;
 	
 	/**The menu option for setting the client availability to away*/
 	private JMenuItem availabilityAway;
@@ -224,7 +198,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		menuBar = new JMenuBar();
 		
 		file = new JMenu("File");
-		this.setAvailiblility = new JMenu("Set Availability");
+		this.setAvailability = new JMenu("Set Availability");
 		edit = new JMenu("Edit");
 		help = new JMenu("Help");
 		
@@ -234,6 +208,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		
 		this.quickSignIn = new JMenuItem("Quick Sign In");
 		this.signIn = new JMenuItem("Sign In...");
+		this.signUp = new JMenuItem("Sign Up...");
 		this.signOut = new JMenuItem("Log Out");
 		this.availabilityAvailable = new JMenuItem("Available");
 		this.availabilityBusy = new JMenuItem("Busy");
@@ -254,6 +229,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		
 		this.quickSignIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, ActionEvent.ALT_MASK));
 		this.signIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+		this.signUp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.ALT_MASK));
 		this.signOut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
 		this.availabilityAvailable.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
 		this.availabilityBusy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK));
@@ -273,13 +249,14 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 
 		file.add(this.quickSignIn);
 		file.add(this.signIn);
+		file.add(this.signUp);
 		file.add(this.signOut);
 		file.addSeparator();
-		this.setAvailiblility.add(this.availabilityAvailable);
-		this.setAvailiblility.add(this.availabilityBusy);
-		this.setAvailiblility.add(this.availabilityAway);
-		this.setAvailiblility.add(this.availabilityAppearOffline);
-		file.add(this.setAvailiblility);
+		this.setAvailability.add(this.availabilityAvailable);
+		this.setAvailability.add(this.availabilityBusy);
+		this.setAvailability.add(this.availabilityAway);
+		this.setAvailability.add(this.availabilityAppearOffline);
+		file.add(this.setAvailability);
 		file.add(this.showConnectedUsers);
 		file.addSeparator();
 		file.add(this.exit);
@@ -299,6 +276,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		
 		this.quickSignIn.addActionListener(this);
 		this.signIn.addActionListener(this);
+		this.signUp.addActionListener(this);
 		this.signOut.addActionListener(this);
 		this.availabilityAvailable.addActionListener(this);
 		this.availabilityBusy.addActionListener(this);
@@ -324,7 +302,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		masterPane.setLayout(new BorderLayout());
 		
 		chatPane = new Container();
-		chatPane.setLayout(new BorderLayout(0,5));
+		chatPane.setLayout(new BorderLayout(0,0));
 		chatArea.addKeyListener(this);
 		
 		//Scrollable Chat Panel
@@ -354,7 +332,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			AbstractClient.logException(e);
 			this.send = new JButton("SEND");
 		}
-		
+
 		this.send.setFocusPainted(false);
 		this.send.setRolloverEnabled(false);
 		this.send.addActionListener(this);
@@ -437,7 +415,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	private void enableClientMenus()
 	{
 		this.signOut.setEnabled(true);
-		this.setAvailiblility.setEnabled(true);
+		this.setAvailability.setEnabled(true);
 		this.availabilityAvailable.setEnabled(true);
 		this.availabilityBusy.setEnabled(true);
 		this.availabilityAway.setEnabled(true);
@@ -457,6 +435,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 
 		this.quickSignIn.setEnabled(false);
 		this.signIn.setEnabled(false);
+		this.signUp.setEnabled(false);
 	}
 	
 	/**Disables JMenuItems associated with the {@code WebChatClient}, and enables
@@ -465,12 +444,13 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	{
 		this.quickSignIn.setEnabled(true);
 		this.signIn.setEnabled(true);
+		this.signUp.setEnabled(true);
 		this.exit.setEnabled(true);
 		this.aboutApp.setEnabled(true);
 		this.getHelp.setEnabled(true);
 
 		this.signOut.setEnabled(false);
-		this.setAvailiblility.setEnabled(false);
+		this.setAvailability.setEnabled(false);
 		this.availabilityAvailable.setEnabled(false);
 		this.availabilityBusy.setEnabled(false);
 		this.availabilityAway.setEnabled(false);
@@ -509,12 +489,12 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			}
 			
 			//Construct Authenticator Object and Show Input Dialog
-			Authenticator auth = new Authenticator();
+			Authenticator auth = new Authenticator(this);
 			
 			if(tryQuick)
 				auth.quickAuthenticate();
 			else
-				auth.showDialog();
+				auth.showAuthenticationDialog();
 			
 			//Start WebChatClient Thread
 			this.client = new WebChatClient(this, auth);
@@ -539,6 +519,57 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		{
 			this.disconnect("Port Parameter Outside Specified Range of Valid Port Values" +
 				"\nPlease Enter Port Between 0 and 65535 inclusive.");
+			AbstractClient.logException(e);
+		}
+		catch(AuthenticationAbortedException e)
+		{
+			this.disconnect("Please Authenticate");
+			AbstractClient.logException(e);
+		}
+		catch (AuthenticationException e)
+		{
+			this.disconnect(e.getMessage());
+			AbstractClient.logException(e);
+		}
+	}
+
+	private void createNewAccount()
+	{
+		try
+		{
+			if(this.clientUser.isSignedIn())
+			{
+				this.chatArea.printConsole(new Message("You Are Already Signed In", "CLIENT", "0"));
+				return;
+			}
+
+			//Construct Authenticator Object and Show Input Dialog
+			Authenticator auth = new Authenticator(this);
+			auth.showNewAccountDialog();
+
+			//Start WebChatClient Thread
+			this.client = new WebChatClient(this, auth);
+			this.client.start();
+		}
+		catch(UnknownHostException e)
+		{
+			this.disconnect("IP Address of Host Could Not Be Determined");
+			AbstractClient.logException(e);
+		}
+		catch(IOException e)
+		{
+			this.disconnect("Unable to Establish Connection to Host");
+			AbstractClient.logException(e);
+		}
+		catch(SecurityException e)
+		{
+			this.disconnect("Security Manager: Operation not allowed");
+			AbstractClient.logException(e);
+		}
+		catch(IllegalArgumentException e)
+		{
+			this.disconnect("Port Parameter Outside Specified Range of Valid Port Values" +
+					"\nPlease Enter Port Between 0 and 65535 inclusive.");
 			AbstractClient.logException(e);
 		}
 		catch(AuthenticationAbortedException e)
@@ -1134,6 +1165,11 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.setCursorStyle(Cursor.WAIT_CURSOR);
 			this.authenticate(false);
 			this.setCursorStyle(Cursor.DEFAULT_CURSOR);
+		}
+		//If User Selected to Sign Up
+		else if(event.getSource() == this.signUp)
+		{
+			this.createNewAccount();
 		}
 		//If User Selected to Disconnect
 		else if(event.getSource() == this.signOut)

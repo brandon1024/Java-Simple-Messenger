@@ -29,7 +29,7 @@ import webchatinterface.util.ClientUser;
  *until the user closes the dialog or the client back-end closes.
  *<p>
  *Clients who are offline or appear offline do not show up in the list. The list contains the client
- *username, availablility, and chatroom.
+ *username, availability, and chatroom.
  */
 
 public class ConnectedUsersDialog extends JFrame implements Runnable, WindowListener

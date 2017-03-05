@@ -1,5 +1,16 @@
 package webchatinterface.client.communication;
 
+import webchatinterface.AbstractIRC;
+import webchatinterface.client.AbstractClient;
+import webchatinterface.client.ui.WebChatClientGUI;
+import webchatinterface.client.util.authentication.AuthenticationException;
+import webchatinterface.client.util.authentication.Authenticator;
+import webchatinterface.client.util.filetransfer.FileTransferExecutor;
+import webchatinterface.util.ClientUser;
+import webchatinterface.util.Command;
+import webchatinterface.util.Message;
+import webchatinterface.util.TransferBuffer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,17 +19,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import webchatinterface.AbstractIRC;
-import webchatinterface.client.AbstractClient;
-import webchatinterface.client.ui.WebChatClientGUI;
-import webchatinterface.client.util.authentication.AuthenticationException;
-import webchatinterface.client.util.authentication.Authenticator;
-import webchatinterface.client.util.filetransfer.FileTransferExecutor;
-import webchatinterface.util.ClientUser;
-import webchatinterface.util.TransferBuffer;
-import webchatinterface.util.Command;
-import webchatinterface.util.Message;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -34,43 +34,14 @@ import webchatinterface.util.Message;
 
 public class WebChatClient implements Runnable
 {
-	/**The graphical user interface wherein messages communicated to the client can be displayed to 
-	  *the user*/
 	private WebChatClientGUI graphicalUserInterface;
-	
-	/**The client socket endpoint for communication between the client and the dedicated server.
-	  *@see java.net.Socket*/
 	private Socket socket;
-	
-	/**The {@code ObjectInputStream} used for communication between through the client socket.
-	  *@see java.io.ObjectInputStream*/
 	private ObjectInputStream messageIn;
-	
-	/**The {@code ObjectInputStream} used for communication between through the client socket.
-	  *@see java.io.ObjectInputStream*/
 	private ObjectOutputStream messageOut;
-	
-	/***/
 	private Authenticator auth;
-	
-	/**The ClientUser object representing a model of the user, the user status, and parameters.
-	 *@see webchatinterface.util.ClientUser*/
 	private ClientUser client;
-	
-	/**A list of all connected users represented in a two dimentional array.
-	  *<p>
-	  *[Username][User ID][User IP][Availability][Room]
-	  *...*/
 	private Object[][] connectedUsers;
-	
-	/**A list of all file transfers currently in progress.
-	  *<p>
-	  *One a FileTransferExecutor thread has finished, the reference to it remains in the list
-	  *until a new TransferBuffer object is received, where the list is iterated and each
-	  *finished thread is removed from the list.*/
 	private ArrayList<FileTransferExecutor> ongoingTransfers;
-	
-	/**Variable used to close the {@code WebChatClient} thread*/
 	private volatile boolean RUN = false;
 	
 	/**Builds a {@code WebChatClient} object. Establishes framework for communication over TCP with 

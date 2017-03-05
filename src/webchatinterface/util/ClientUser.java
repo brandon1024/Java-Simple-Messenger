@@ -67,12 +67,7 @@ public class ClientUser
 	  *@return true if the ClientUser objects fields exist (client is signed in), false otherwise.*/
 	public boolean isSignedIn()
 	{
-		if(this.availability == ClientUser.OFFLINE || this.userID == null || this.username == null)
-		{
-			return false;
-		}
-		
-		return true;
+		return this.availability != ClientUser.OFFLINE && this.userID != null && this.username != null;
 	}
 	
 	/**Removes references to username and userID, and sets the availability to APPEAR_OFFLINE.*/

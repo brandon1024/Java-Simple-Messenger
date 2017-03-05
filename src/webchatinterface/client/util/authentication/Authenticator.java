@@ -1,35 +1,16 @@
 package webchatinterface.client.util.authentication;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
+import webchatinterface.client.ui.WebChatClientGUI;
+import webchatinterface.client.ui.dialog.AuthenticationDialog;
+import webchatinterface.client.ui.dialog.NewAccountDialog;
 import webchatinterface.client.util.Preset;
+import webchatinterface.helpers.EmailHelper;
+import webchatinterface.helpers.UsernameHelper;
+
+import java.io.*;
+import java.util.Arrays;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -45,6 +26,8 @@ import webchatinterface.client.util.Preset;
 
 public class Authenticator
 {
+	private WebChatClientGUI parent;
+
 	private boolean guest;
 	private boolean newAccount;
 	private String emailAddress;
@@ -52,26 +35,16 @@ public class Authenticator
 	private byte[] password;
 	private String hostAddress;
 	private Integer portNumber;
-	private String presetFileLocation;
-	
+
 	/**Constructor for the {@code Authenticator} object.*/
-	public Authenticator()
+	public Authenticator(WebChatClientGUI parent)
 	{
-		this.guest = false;
-		this.newAccount = false;
-		this.emailAddress = null;
-		this.username = null;
-		this.password = null;
-		this.hostAddress = null;
-		this.portNumber = null;
-		this.presetFileLocation = AbstractIRC.CLIENT_APPLCATION_DIRECTORY;
+		this.parent = parent;
 	}
 	
 	/**Attempt accelerated authentication by gathering username, host address and port number from
 	  *preset file. If preset file not found, normal authentication is executed; i.e. 
 	  *{@code showDialog()} is invoked.
-	  *@see webchatinterface.client.util.authentication.Authenticator#loadPreset()
-	  *@see webchatinterface.client.util.authentication.Authenticator#showDialog()
 	  *@throws AuthenticationException if preset file was not found and showDialog() method
 	  *threw an exception due to invalid entered information*/
 	public void quickAuthenticate() throws AuthenticationException
@@ -84,7 +57,7 @@ public class Authenticator
 		catch(FileNotFoundException e)
 		{
 			AbstractClient.logException(e);
-			this.showDialog();
+			this.showAuthenticationDialog();
 		}
 	}
 	
@@ -93,7 +66,65 @@ public class Authenticator
 	  *are updated, and may be accessed using accessor methods.
 	  *@throws AuthenticationException if information entered by the user is invalid
 	  *@throws AuthenticationAbortedException if the authentication was aborted by the user*/
-	public void showDialog() throws AuthenticationException
+	public void showNewAccountDialog() throws AuthenticationException
+	{
+		this.guest = false;
+		this.newAccount = true;
+
+		//---REQUEST SETTINGS FROM USER---//
+		NewAccountDialog nad = new NewAccountDialog(parent);
+		if(nad.showDialog() == 1)
+		{
+			try
+			{
+				this.hostAddress = nad.getHostAddress();
+				this.portNumber = Integer.valueOf(nad.getHostPort());
+			}
+			catch (NumberFormatException e)
+			{
+				AbstractClient.logException(e);
+				throw new AuthenticationException("Invalid Input");
+			}
+
+			this.emailAddress = nad.getEmailAddress();
+			if(!EmailHelper.isValidEmailAddress(this.emailAddress))
+				throw new AuthenticationException("Invalid Email Address");
+
+			this.username = nad.getUsername();
+			if(!UsernameHelper.isValidUsername(this.username))
+				throw new AuthenticationException("Invalid Username");
+
+			char[] pass1 = nad.getPassword();
+			char[] pass2 = nad.getConfirmPassword();
+
+			if(!Arrays.equals(pass1, pass2))
+				throw new AuthenticationException("Passwords Don't Match");
+
+			Arrays.fill(pass2, Character.MIN_VALUE);
+
+			this.password = new byte[pass1.length];
+
+			if(pass1.length < 6)
+				throw new AuthenticationException("Your password is too short. Password must be a minimum of 6 characters.");
+
+			for(char character : pass1)
+			{
+				if(character > Byte.MAX_VALUE)
+					throw new AuthenticationException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
+			}
+
+			for(int i = 0; i < this.password.length; i++)
+				this.password[i] = (byte)pass1[i];
+
+			Arrays.fill(pass1, Character.MIN_VALUE);
+		}
+		else
+			throw new AuthenticationAbortedException("Authentication Aborted by User");
+
+		this.savePreset();
+	}
+
+	public void showAuthenticationDialog() throws AuthenticationException
 	{
 		//Attempt to Load Previous Settings
 		try
@@ -104,92 +135,24 @@ public class Authenticator
 		{
 			AbstractClient.logException(e);
 		}
-		
+
 		//---REQUEST SETTINGS FROM USER---//
-		boolean saveSettings;
+		AuthenticationDialog auth = new AuthenticationDialog(this.parent, this.username, this.password, this.hostAddress, this.portNumber);
 
-		JPanel dialogPanel = new JPanel();
-		dialogPanel.setLayout(new GridLayout(1,2, 10, 0));
-		JPanel hostInfoPanel = new JPanel();
-		hostInfoPanel.setLayout(new BoxLayout(hostInfoPanel, BoxLayout.PAGE_AXIS));
-		JPanel userInfoPanel = new JPanel();
-		userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.PAGE_AXIS));
-		
-		JTextField usernameField = new JTextField(15);
-		JPasswordField passwordField = new JPasswordField(15);
-		JTextField hostAddressField = new JTextField(15);
-		JTextField portField = new JTextField(5);
-		JCheckBox savePresetCheck = new JCheckBox("Save this Preset");
-		JCheckBox loginAsGuest = new JCheckBox("Login as Guest");
-		
-		usernameField.setText(this.username);
-		passwordField.setText((this.password == null) ? "" : new String(this.password));
-		hostAddressField.setText(this.hostAddress);
-		portField.setText(this.portNumber == null ? null : this.portNumber.toString());
-		
-		savePresetCheck.setSelected(this.password == null);
-		
-		usernameField.addKeyListener(new KeyListener()
+		if(auth.showDialog() == 1)
 		{
-			public void keyPressed(KeyEvent arg0){}
-			public void keyReleased(KeyEvent arg0)
+			try
 			{
-				savePresetCheck.setSelected(true);
+				this.hostAddress = auth.getHostAddress();
+				this.portNumber = Integer.valueOf(auth.getPortNumber());
 			}
-			public void keyTyped(KeyEvent arg0){}
-		});
-		
-		loginAsGuest.addActionListener(new ActionListener()
-		{
-			public void actionPerformed(ActionEvent event)
+			catch (NumberFormatException e)
 			{
-				if(loginAsGuest.isSelected())
-				{
-					usernameField.setEditable(false);
-					passwordField.setEditable(false);
-				}
-				else
-				{
-					usernameField.setEditable(true);
-					passwordField.setEditable(true);
-				}
+				AbstractClient.logException(e);
+				throw new AuthenticationException("Invalid Input");
 			}
-		});
-		
-		hostInfoPanel.add(new JLabel("Host Address:"));
-		hostInfoPanel.add(hostAddressField);
-		hostInfoPanel.add(new JLabel("Port:"));
-		hostInfoPanel.add(portField);
-		hostInfoPanel.add(savePresetCheck);
-		
-		userInfoPanel.add(new JLabel("Enter Username:"));
-		userInfoPanel.add(usernameField);
-		userInfoPanel.add(new JLabel("Enter Password:"));
-		userInfoPanel.add(passwordField);
-		userInfoPanel.add(loginAsGuest);
 
-		dialogPanel.add(hostInfoPanel);
-		dialogPanel.add(userInfoPanel);
-		
-		String[] options = {"OK", "New Account", "Cancel"};
-		int returnValue = JOptionPane.showOptionDialog(null, dialogPanel, 
-				"Client Authentication", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-
-		try
-		{
-			saveSettings = savePresetCheck.isSelected();
-			this.hostAddress = hostAddressField.getText();
-			this.portNumber = Integer.valueOf(portField.getText());
-		}
-		catch (NumberFormatException e)
-		{
-			AbstractClient.logException(e);
-			throw new AuthenticationException("Invalid Input");
-		}
-		
-		if (returnValue == 0)
-		{
-			if(loginAsGuest.isSelected())
+			if (auth.getIsGuest())
 			{
 				this.guest = true;
 				this.newAccount = false;
@@ -200,177 +163,30 @@ public class Authenticator
 			{
 				this.guest = false;
 				this.newAccount = false;
-				this.username = usernameField.getText();
-				
-				char[] pass = passwordField.getPassword();
+				this.username = auth.getUsername();
+
+				char[] pass = auth.getPassword();
 				this.password = new byte[pass.length];
-				
-				if(pass.length < 6)
+
+				if (pass.length < 6)
 					throw new AuthenticationException("Your password is too short. Password must be a minimum of 6 characters.");
-				
-				for(char character : pass)
+
+				for (char character : pass)
 				{
-					if(character > Byte.MAX_VALUE)
+					if (character > Byte.MAX_VALUE)
 						throw new AuthenticationException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
 				}
-				
-				for(int i = 0; i < this.password.length; i++)
-					this.password[i] = (byte)pass[i];
-				
+
+				for (int i = 0; i < this.password.length; i++)
+					this.password[i] = (byte) pass[i];
+
 				Arrays.fill(pass, Character.MIN_VALUE);
-				passwordField.setText("");
 			}
-		}
-		else if(returnValue == 1)
-		{
-			this.guest = false;
-			this.newAccount = true;
-			
-			JPanel newAccountDialog = new JPanel();
-			newAccountDialog.setLayout(new BorderLayout(10,0));
-			JPanel inputPane = new JPanel();
-			inputPane.setLayout(new BoxLayout(inputPane, BoxLayout.PAGE_AXIS));
-			JPanel informationPolicy = new JPanel();
-			informationPolicy.setLayout(new BorderLayout());
-			informationPolicy.setBorder(BorderFactory.createTitledBorder("Account Store Policy"));
-			
-			JTextField hAddr = new JTextField(15);
-			JTextField hPort = new JTextField(15);
-			JTextField email = new JTextField(15);
-			JTextField username = new JTextField(15);
-			JPasswordField password = new JPasswordField(15);
-			JPasswordField confirmPassword = new JPasswordField(15);
-			JLabel passwordStrength = new JLabel();
-			passwordStrength.setText("Strength: Poor");
-			passwordStrength.setForeground(Color.RED);
-			passwordStrength.setToolTipText("Password must be a minimum of 6 characters. Valid characters include a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-			
-			inputPane.add(new JLabel("Host Address:"));
-			inputPane.add(hAddr);
-			inputPane.add(new JLabel("Port Number:"));
-			inputPane.add(hPort);
-			inputPane.add(new JLabel("Email Address:"));
-			inputPane.add(email);
-			inputPane.add(new JLabel("New Username:"));
-			inputPane.add(username);
-			inputPane.add(new JLabel("New Password:"));
-			inputPane.add(password);
-			inputPane.add(new JLabel("Confirm Password:"));
-			inputPane.add(confirmPassword);
-			inputPane.add(passwordStrength);
-			
-			password.addKeyListener(new KeyListener()
-			{
-				public void keyPressed(KeyEvent arg0){}
-				public void keyReleased(KeyEvent arg0)
-				{
-					if(password.getPassword().length <= 6)
-					{
-						passwordStrength.setText("Strength: Poor");
-						passwordStrength.setForeground(Color.RED);
-					}
-					else if(password.getPassword().length <= 8)
-					{
-						passwordStrength.setText("Strength: Moderate");
-						passwordStrength.setForeground(Color.BLUE);
-					}
-					else if(password.getPassword().length <= 10)
-					{
-						passwordStrength.setText("Strength: Good");
-						passwordStrength.setForeground(Color.GREEN);
-					}
-					else if(password.getPassword().length > 10)
-					{
-						passwordStrength.setText("Strength: Great");
-						passwordStrength.setForeground(Color.GREEN);
-					}
-				}
-				public void keyTyped(KeyEvent arg0){}
-			});
-			
-			confirmPassword.addKeyListener(new KeyListener()
-			{
-				public void keyPressed(KeyEvent arg0){}
-				public void keyReleased(KeyEvent arg0)
-				{
-					if(Arrays.equals(password.getPassword(), confirmPassword.getPassword()))
-					{
-						passwordStrength.setText("Passwords Match");
-						passwordStrength.setForeground(Color.GREEN);
-					}
-					else
-					{
-						passwordStrength.setText("Passwords do not Match");
-						passwordStrength.setForeground(Color.RED);
-					}
-				}
-				public void keyTyped(KeyEvent arg0){}
-			});
-			
-			JTextArea policy = new JTextArea(6,25);
-			policy.setWrapStyleWord(true);
-			policy.setLineWrap(true);
-			policy.setOpaque(false);
-			policy.setEditable(false);
-			policy.setFocusable(false);
-			policy.setFont(new Font("Arial", Font.PLAIN, 11));
-			
-			String policyText = "Account passwords are stored using secure salted password hashing with SHA-256 level cryptography. "
-					+ "This means passwords are never stored in plain text. Passwords are hashed with 256-bit salts, which prevent "
-					+ "attackers from dictionary and brute-force attacks.";
-			
-			policy.setText(policyText);
-			informationPolicy.add(policy, BorderLayout.CENTER);
-			
-			newAccountDialog.add(inputPane, BorderLayout.CENTER);
-			newAccountDialog.add(informationPolicy, BorderLayout.LINE_END);
-			
-			String[] dialogOptions = {"OK", "Cancel"};
-			int option = JOptionPane.showOptionDialog(null, newAccountDialog, 
-					"New Account", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, dialogOptions, dialogOptions[0]);
-			
-			if(option == 0)
-			{
-				try
-				{
-					this.hostAddress = hostAddressField.getText();
-					this.portNumber = Integer.valueOf(portField.getText());
-				}
-				catch (NumberFormatException e)
-				{
-					AbstractClient.logException(e);
-					throw new AuthenticationException("Invalid Input");
-				}
-				
-				this.emailAddress = email.getText();
-				this.username = username.getText();
-				
-				char[] pass = password.getPassword();
-				this.password = new byte[pass.length];
-				
-				if(pass.length < 6)
-					throw new AuthenticationException("Your password is too short. Password must be a minimum of 6 characters.");
-				
-				for(char character : pass)
-				{
-					if(character > Byte.MAX_VALUE)
-						throw new AuthenticationException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-				}
-				
-				for(int i = 0; i < this.password.length; i++)
-					this.password[i] = (byte)pass[i];
-				
-				Arrays.fill(pass, Character.MIN_VALUE);
-				password.setText("");
-				confirmPassword.setText("");
-			}
-			else
-				throw new AuthenticationAbortedException("Authentication Aborted by User");
 		}
 		else
 			throw new AuthenticationAbortedException("Authentication Aborted by User");
-			
-		if(saveSettings)
+
+		if(auth.getSavePreset())
 			this.savePreset();
 	}
 	
@@ -379,7 +195,7 @@ public class Authenticator
 	  *@throws FileNotFoundException if the preset file could not be found*/
 	private void loadPreset() throws FileNotFoundException
 	{
-		File presetFile = new File(this.presetFileLocation + "PRESET.dat");
+		File presetFile = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + "PRESET.dat");
 		
 		//---ATTEMPT TO READ PRESET FROM FILE---//
 		try(ObjectInputStream presetIn = new ObjectInputStream(new FileInputStream(presetFile)))
@@ -403,7 +219,7 @@ public class Authenticator
 	/**Attempt to save current settings to preset file in application temporary directory.*/
 	private void savePreset()
 	{
-		File presetFile = new File(this.presetFileLocation + "PRESET.dat");
+		File presetFile = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + "PRESET.dat");
 		if(!presetFile.exists())
 		{
 			try
@@ -428,7 +244,6 @@ public class Authenticator
 		}
 	}
 	
-	/***/
 	public boolean isGuest()
 	{
 		return this.guest;
