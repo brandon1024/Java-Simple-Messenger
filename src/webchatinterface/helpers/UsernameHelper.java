@@ -19,7 +19,7 @@ public class UsernameHelper
 
         for(String profaneWord : UsernameHelper.disallowedSubstrings)
         {
-            if(username.contains(profaneWord))
+            if(username.toLowerCase().contains(profaneWord))
                 return false;
         }
 
