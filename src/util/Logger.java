@@ -11,7 +11,7 @@ import java.util.Calendar;
  *@since 06/05/2016
  *<p>
  *The {@code Logger} class manages logging information regarding the state of an application, system,
- *or component, be it simple messages or information regarding exceptions thrown.
+ *or components, be it simple messages or information regarding exceptions thrown.
  *<p>
  *The main purpose of the {@code Logger} class is to aid in application troubleshooting and
  *record keeping. Log files are stored in a desired directory, in plain text files.

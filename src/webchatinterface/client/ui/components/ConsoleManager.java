@@ -46,7 +46,7 @@ import java.util.Calendar;
   *a file is represented by a FileButton object, allowing the user to save the file to the desired
   *directory.
   *<p>
-  *The console manager extends JTextPane, so it may be used as a component in the GUI. However, the 
+  *The console manager extends JTextPane, so it may be used as a components in the GUI. However, the
   *Console Manager uses a print queue to correctly print messages to the console. Therefore, using 
   *methods defined  in JTextPane are strongly discouraged.
   */
@@ -587,8 +587,8 @@ public class ConsoleManager extends JTextPane implements Runnable
 	}
 	
 	/**Overridden {@code paintComponent()} method. Relies on private {@code style} field to paint
-	  *the component according to the desired style.
-	  *@param g The {@code Graphics} object used to paint the component*/
+	  *the components according to the desired style.
+	  *@param g The {@code Graphics} object used to paint the components*/
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -636,7 +636,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		super.paintComponent(g2d);
 	}
 	
-	/**The {@code ImageButton} class represents a clickable image component that may be appeneded
+	/**The {@code ImageButton} class represents a clickable image components that may be appeneded
 	  *to the console JTextPane.*/
 	private class ImageButton extends JButton
 	{
@@ -762,7 +762,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**The {@code FileButton} class represents a clickable component that may be appeneded
+	/**The {@code FileButton} class represents a clickable components that may be appeneded
 	  *to the console JTextPane. The {@code FileButton}, once clicked and a directory is chosen by
 	  *the user, the file is copied from the temporary directory to the desired directory.*/
 	private class FileButton extends JButton
@@ -859,11 +859,11 @@ public class ConsoleManager extends JTextPane implements Runnable
 		/**Field representing a timestamp of when the message was issued*/
 		private final String timestamp;
 		
-		/**Field representing the FileButton component, a clickable component that represents a 
+		/**Field representing the FileButton components, a clickable components that represents a
 		  *TransferBuffer object.*/
 		private final FileButton file;
 		
-		/**Field representing the ImageButton component, a clickable component that represents a 
+		/**Field representing the ImageButton components, a clickable components that represents a
 		  *MultimediaMessage object.*/
 		private final ImageButton image;
 		
@@ -888,7 +888,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Constructs a new ConsoleMessage that represents a file message object.
-		  *@param file The FileButton component that represents the file message
+		  *@param file The FileButton components that represents the file message
 		  *@param size The size of the file. Note, the message field of this ConsoleMessage object
 		  *obtains this parameter
 		  *param timestamp The timestamp of when the message was issued*/
@@ -904,7 +904,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Constructs a new ConsoleMessage that represents an image message object.
-		  *@param image The ImageButton component that represents the image message
+		  *@param image The ImageButton components that represents the image message
 		  *@param timestamp The timestamp of when the message was issued*/
 		public ConsoleMessage(ImageButton image, String timestamp, Command transferManifest)
 		{

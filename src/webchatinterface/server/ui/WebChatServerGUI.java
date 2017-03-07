@@ -3,8 +3,13 @@ package webchatinterface.server.ui;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
-import webchatinterface.server.WebChatServerInstance;
-import webchatinterface.server.ui.preferences.PreferencesDialog;
+import webchatinterface.server.communication.BroadcastHelper;
+import webchatinterface.server.communication.WebChatServerInstance;
+import webchatinterface.server.ui.components.ConsoleManager;
+import webchatinterface.server.ui.components.UsageMonitor;
+import webchatinterface.server.ui.dialog.AccountListDialog;
+import webchatinterface.server.ui.dialog.ConnectedUsersDialog;
+import webchatinterface.server.ui.dialog.PreferencesDialog;
 import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
 
@@ -74,11 +79,11 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem getHelp;
 	
 	/**The server console manager. 
-	  *@see ConsoleManager*/
+	  *@see ConsoleManager */
 	private ConsoleManager consoleMng;
 	
 	/**The server usage monitor. 
-	  *@see UsageMonitor*/
+	  *@see UsageMonitor */
 	private UsageMonitor usageMnt;
 	
 	/**Variable that describes the server state, i.e. whether the 
@@ -383,7 +388,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 
 	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
 	  *an automated server message with specific broadcast frequency.
-	  *@see webchatinterface.server.util.BroadcastHelper#showBroadcastMessageDialog()*/
+	  *@see BroadcastHelper#showBroadcastMessageDialog()*/
 	private void showBroadcastMessageDialog()
 	{
 		//if server running
@@ -464,9 +469,9 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	}
 	
 	/**Respond to an {@code ActionEvent} occured by the user communicating with
-	  *a component in the user interface.
+	  *a components in the user interface.
 	  *@param event the {@code ActionEvent} that occured as a result of the
-	  *user communicating with a component in the user interface
+	  *user communicating with a components in the user interface
 	  *@see java.awt.event.ActionEvent
 	  *@see java.awt.event.ActionListener*/
 	@Override

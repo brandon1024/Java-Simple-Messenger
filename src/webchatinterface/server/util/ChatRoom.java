@@ -3,7 +3,7 @@ package webchatinterface.server.util;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import webchatinterface.server.WebChatServerInstance;
+import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.util.Command;
 
 /**@author Brandon Richardson

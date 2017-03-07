@@ -10,9 +10,9 @@ import webchatinterface.client.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.client.ui.dialog.HelpDialog;
 import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
-import webchatinterface.client.util.authentication.AuthenticationAbortedException;
-import webchatinterface.client.util.authentication.AuthenticationException;
-import webchatinterface.client.util.authentication.Authenticator;
+import webchatinterface.client.authentication.AuthenticationAbortedException;
+import webchatinterface.client.authentication.AuthenticationException;
+import webchatinterface.client.authentication.Authenticator;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -477,7 +477,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	
 	/**Attempt to authenticate the user and initialize the client-server communications.
 	  *@param tryQuick If true, attempt quick authentication. If false, use standard authentication
-	  *@see webchatinterface.client.util.authentication.Authenticator*/
+	  *@see webchatinterface.client.authentication.Authenticator*/
 	private void authenticate(boolean tryQuick)
 	{
 		try
@@ -1141,10 +1141,10 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		HelpDialog.showHelpDialog();
 	}
 	
-	/**Respond to an {@code ActionEvent} occured by the user communicating with a component in the 
+	/**Respond to an {@code ActionEvent} occured by the user communicating with a components in the
 	  *user interface.
 	  *@param event the {@code ActionEvent} that occured as a result of the
-	  *user communicating with a component in the user interface
+	  *user communicating with a components in the user interface
 	  *@see java.awt.event.ActionEvent
 	  *@see java.awt.event.ActionListener*/
 	@Override

@@ -3,9 +3,9 @@ package webchatinterface.client.communication;
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.ui.WebChatClientGUI;
-import webchatinterface.client.util.authentication.AuthenticationException;
-import webchatinterface.client.util.authentication.Authenticator;
-import webchatinterface.client.util.filetransfer.FileTransferExecutor;
+import webchatinterface.client.authentication.AuthenticationException;
+import webchatinterface.client.authentication.Authenticator;
+import webchatinterface.client.filetransfer.FileTransferExecutor;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -362,7 +362,7 @@ public class WebChatClient implements Runnable
 	/**Send a file from local storage to the server. Initializes a new FileTransferExecutor
 	  *thread.
 	  *@param 	file 	the file to be sent to the server
-	  *@see 	webchatinterface.client.util.filetransfer.FileTransferExecutor*/
+	  *@see 	webchatinterface.client.filetransfer.FileTransferExecutor*/
 	public synchronized void send(File file)
 	{
 		(new FileTransferExecutor(this.graphicalUserInterface, this)).start(file);

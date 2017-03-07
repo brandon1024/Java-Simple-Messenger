@@ -1,8 +1,9 @@
 package webchatinterface.server;
 
-import webchatinterface.server.ui.ConsoleManager;
-import webchatinterface.server.util.BlacklistManager;
-import webchatinterface.server.util.BroadcastHelper;
+import webchatinterface.server.communication.WebChatServerInstance;
+import webchatinterface.server.ui.components.ConsoleManager;
+import webchatinterface.server.account.BlacklistManager;
+import webchatinterface.server.communication.BroadcastHelper;
 import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
 
@@ -233,7 +234,7 @@ public class WebChatServer implements Runnable
 	
 	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
 	  *an automated server message with specific broadcast frequency.
-	  *@see webchatinterface.server.util.BroadcastHelper#showBroadcastMessageDialog()*/
+	  *@see BroadcastHelper#showBroadcastMessageDialog()*/
 	public void showBroadcastMessageDialog()
 	{
 		this.broadcastHlp.showBroadcastMessageDialog();
