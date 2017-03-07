@@ -1,22 +1,8 @@
 package webchatinterface.server.ui.preferences;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import webchatinterface.server.AbstractServer;
+import webchatinterface.server.ui.WebChatServerGUI;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTree;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -24,9 +10,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-
-import webchatinterface.server.AbstractServer;
-import webchatinterface.server.ui.WebChatServerGUI;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 public class PreferencesDialog extends JDialog implements ActionListener, WindowListener, TreeSelectionListener
 {
@@ -155,33 +143,23 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 				String[] options = {"Confirm and Restart", "Confirm and Restart Later", "Cancel"};
 				int returnValue = JOptionPane.showOptionDialog(this, dialogPanel, 
 						"Modified Preferences", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-				
+
+				if(returnValue == 2)
+					return;
+
+				for(PreferencePanel panel : this.panels)
+				{
+					try
+					{
+						panel.save();
+					}
+					catch(RuntimeException e){}
+				}
+
 				if(returnValue == 0)
-				{
-					for(PreferencePanel panel : this.panels)
-					{
-						try
-						{
-							panel.save();
-						}
-						catch(RuntimeException e){}
-					}
-					
 					this.userInterface.restartServer();
-				}
-				else if(returnValue == 1)
-				{
-					for(PreferencePanel panel : this.panels)
-					{
-						try
-						{
-							panel.save();
-						}
-						catch(RuntimeException e){}
-					}
-					
+				else
 					this.userInterface.validateSettings();
-				}
 			}
 			else
 			{

@@ -1,29 +1,13 @@
 package webchatinterface.server.ui.preferences;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.Scanner;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
+
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.Scanner;
 
 public class AdvancedSettingsPanel extends PreferencePanel
 {
@@ -80,27 +64,31 @@ public class AdvancedSettingsPanel extends PreferencePanel
 			{
 				try
 				{
-					String text = AdvancedSettingsPanel.this.configurationEditor.getText();
-					int caretPos = AdvancedSettingsPanel.this.configurationEditor.getCaretPosition();
-					int linePos = AdvancedSettingsPanel.this.configurationEditor.getLineOfOffset(caretPos);
-					int startPos = AdvancedSettingsPanel.this.configurationEditor.getLineStartOffset(linePos);
-					int endPos = AdvancedSettingsPanel.this.configurationEditor.getLineEndOffset(linePos) - 1;
-					
-					String line = text.substring(startPos, endPos);
+					//Reference to Editor
+					JTextArea editor = AdvancedSettingsPanel.this.configurationEditor;
+
+					int caretPos = editor.getCaretPosition();
+					int lineIndex = editor.getLineOfOffset(caretPos);
+					int lineStartIndex = editor.getLineStartOffset(lineIndex);
+					int lineEndIndex = editor.getLineEndOffset(lineIndex) - 1;
+
+					if(lineIndex == editor.getLineCount()-1)
+						lineEndIndex++;
+
+					String line = editor.getText().substring(lineStartIndex, lineEndIndex);
 					int index = line.indexOf('=') + 1;
 					
 					if(index == -1)
 						return;
 					
-					startPos += index;
-					
-					int currentSelectionStart = AdvancedSettingsPanel.this.configurationEditor.getSelectionStart();
-					int currentSelectionEnd = AdvancedSettingsPanel.this.configurationEditor.getSelectionStart();
-					if(currentSelectionStart >= startPos && currentSelectionEnd <= endPos)
+					int propertyStartIndex = lineStartIndex + index;
+
+					int currentSelectionStart = editor.getSelectionStart();
+					int currentSelectionEnd = editor.getSelectionStart();
+					if(currentSelectionStart >= propertyStartIndex && currentSelectionEnd <= lineEndIndex)
 						return;
-					
-					AdvancedSettingsPanel.this.configurationEditor.select(startPos, endPos);
-					
+
+					editor.select(propertyStartIndex, lineEndIndex);
 				}
 				catch (BadLocationException e){}
 			}

@@ -99,9 +99,6 @@ public class IPFilterPanel extends PreferencePanel
 	{
 		String[] addresses = BlacklistManager.getBlacklistedAddresses();
 
-		if(addresses.length == 0)
-			return;
-
 		for(String address : addresses)
 			this.IPFilterEditor.append(address + "\n");
 	}

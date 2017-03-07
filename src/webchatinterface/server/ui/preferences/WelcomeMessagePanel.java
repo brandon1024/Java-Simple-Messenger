@@ -1,24 +1,14 @@
 package webchatinterface.server.ui.preferences;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import webchatinterface.server.AbstractServer;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import webchatinterface.server.AbstractServer;
 
 public class WelcomeMessagePanel extends PreferencePanel
 {
@@ -133,8 +123,16 @@ public class WelcomeMessagePanel extends PreferencePanel
 	
 	public void save()
 	{
-		AbstractServer.newMemberGuestWelcomeMessage = this.newMemberMessageEditor.getText();
-		AbstractServer.returningMemberWelcomeMessage = this.returningMemberMessageEditor.getText();
+		String newMemberWelcomeMessage = this.newMemberMessageEditor.getText();
+		newMemberWelcomeMessage = newMemberWelcomeMessage.trim();
+		newMemberWelcomeMessage = (newMemberWelcomeMessage.length() >= 400) ? newMemberWelcomeMessage.substring(0,400) : newMemberWelcomeMessage;
+
+		String returningMemberWelcomeMessage = this.returningMemberMessageEditor.getText();
+		returningMemberWelcomeMessage = returningMemberWelcomeMessage.trim();
+		returningMemberWelcomeMessage = (returningMemberWelcomeMessage.length() >= 400) ? returningMemberWelcomeMessage.substring(0,400) : returningMemberWelcomeMessage;
+
+		AbstractServer.newMemberGuestWelcomeMessage = newMemberWelcomeMessage;
+		AbstractServer.returningMemberWelcomeMessage = returningMemberWelcomeMessage;
 		AbstractServer.alwaysSendWelcomeMessage = this.alwaysSendWelcomeMessageCheckBox.isSelected();
 	}
 	
