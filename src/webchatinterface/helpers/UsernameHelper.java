@@ -17,6 +17,15 @@ public class UsernameHelper
         if(username.length() == 0)
             return false;
 
+        if(username.length() > 64)
+            return false;
+
+        for(char c : username.toCharArray())
+        {
+            if(c <= 32 || c >= 127)
+                return false;
+        }
+
         for(String profaneWord : UsernameHelper.disallowedSubstrings)
         {
             if(username.toLowerCase().contains(profaneWord))

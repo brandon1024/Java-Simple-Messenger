@@ -58,15 +58,6 @@ import java.io.File;
  *<br>	- Minor Bug Fixes
  */
 
-//(Optional)SSL encryption
-//(Optional)Add Client WindowStyleManager class
-//(Optional)File Manager class
-//(Optional)New Application Name? ComNode Interface?
-//(Optional)Dockable ConnectedUsers dialog
-//(Optional)Ping
-//Flagging Users(Reason, flagged username, user who issued the complaint)
-//Add warning to Server Preference for changing hashing algorithm
-
 public interface AbstractIRC
 {
 	/**The version of the client as of the release date*/

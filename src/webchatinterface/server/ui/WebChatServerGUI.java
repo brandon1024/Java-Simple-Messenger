@@ -1,31 +1,5 @@
 package webchatinterface.server.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
-import javax.swing.text.DefaultCaret;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
@@ -33,6 +7,17 @@ import webchatinterface.server.WebChatServerInstance;
 import webchatinterface.server.ui.preferences.PreferencesDialog;
 import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.text.DefaultCaret;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.IOException;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -146,7 +131,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	         public void run()
 	         {
 	        	 WebChatServerGUI userInterface = new WebChatServerGUI();
-	        	 userInterface.setVisible(true);
 	         }
 	      });
 	}
@@ -161,6 +145,11 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		this.buildUI();
 		this.validateSettings();
+		super.setVisible(true);
+		super.setState((AbstractServer.openMinimized) ? Frame.ICONIFIED : Frame.NORMAL);
+
+		if(AbstractServer.startServerWhenApplicationStarts)
+			this.runServer();
 	}
 	
 	/**Initializes and displays all window components and their
@@ -363,7 +352,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 				if(blacklist.isSelected())
 				{
 					this.server.disconnectUser(connection, Command.REASON_BLACKLISTED);
-					this.server.blackListUser(connection);
+					this.server.blacklistUser(connection);
 					this.consoleMng.printConsole("Successfully Blacklisted User: " + connection.toString(), false);
 				}
 				else
@@ -402,16 +391,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.server.showBroadcastMessageDialog();
 		else
 			consoleMng.printConsole("Cannot Broadcast Message; Server is Suspended", true);
-	}
-	
-	/**Delete all server blacklist records.
-	  *@see util.Logger#clearLogs()*/
-	public void clearBlacklistRecords()
-	{
-		if(this.running)
-			this.server.clearBlackListRecord();
-		else
-			this.consoleMng.printConsole("Cannot Clear Blacklist Records; Server is Suspended", true);
 	}
 	
 	/**Toggle the Usage Monitor lower pane.*/

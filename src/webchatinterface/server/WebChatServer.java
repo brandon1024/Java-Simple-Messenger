@@ -1,24 +1,13 @@
 package webchatinterface.server;
 
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-
-import webchatinterface.AbstractIRC;
 import webchatinterface.server.ui.ConsoleManager;
+import webchatinterface.server.util.BlacklistManager;
 import webchatinterface.server.util.BroadcastHelper;
 import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
-import webchatinterface.util.Message;
+
+import java.io.IOException;
+import java.net.*;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -180,7 +169,7 @@ public class WebChatServer implements Runnable
 						this.consoleMng.printConsole("User Prevented from Connecting; server full (" + AbstractServer.maxConnectedUsers + " connections)", true);
 						loopCTRL = true;
 					}
-					else if(isBlackListed(socket.getLocalAddress().getHostName()))
+					else if(BlacklistManager.isBlacklisted(socket.getLocalAddress().getHostName()))
 					{
 						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHlp, this.consoleMng, socket);
 						chatCom.start();
@@ -210,17 +199,17 @@ public class WebChatServer implements Runnable
 		}
 		catch(UnknownHostException e)
 		{
-			this.consoleMng.printConsole("Critical Error Occured; The server bind IP address could not be resolved.", true);
+			this.consoleMng.printConsole("Critical Error Occurred; The server bind IP address could not be resolved.", true);
 			AbstractServer.logException(e);
 		}
 		catch(IOException e)
 		{
-			this.consoleMng.printConsole("Critical Error Occured; I/O error occured when opening server socket", true);
+			this.consoleMng.printConsole("Critical Error Occurred; I/O error Occurred when opening server socket", true);
 			AbstractServer.logException(e);
 		}
 		catch(Exception e)
 		{
-			this.consoleMng.printConsole("Critical Error Occured; Restart Server", true);
+			this.consoleMng.printConsole("Critical Error Occurred; Restart Server", true);
 			AbstractServer.logException(e);
 		}
 	}
@@ -236,104 +225,10 @@ public class WebChatServer implements Runnable
 	{
 		clientServerConnection.disconnect(reason);
 	}
-	
-	/**Disconnects or kicks a client connection from the server, and blacklists the
-	  *client IP address from future connection requests. Subsequently, the
-	  *client will be prevented from connecting to the server, unless the
-	  *blacklist configuration file, found in the temporary directory, is changed or removed.
-	  *@param clientServerConnection The client connection instance to be disconnected
-	  *and permanently prevented from future connections to the server.*/
-	public void blackListUser(WebChatServerInstance clientServerConnection)
+
+	public void blacklistUser(WebChatServerInstance clientServerConnection)
 	{
-		try
-		{
-			FileOutputStream blackListFileOut = new FileOutputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat", true);
-			ObjectOutputStream blackListOut = new ObjectOutputStream(blackListFileOut);
-			
-			try
-			{
-				blackListOut.writeObject(clientServerConnection.getIP());
-			}
-			catch (IOException e)
-			{
-				this.consoleMng.printConsole("Unable to Blacklist User; unable to write to BLACKLIST.dat", true);
-				AbstractServer.logException(e);
-			}
-			
-			blackListOut.close();
-		}
-		catch (IOException e)
-		{
-			this.consoleMng.printConsole("Unable to Blacklist User; unable to access BLACKLIST.dat", true);
-			AbstractServer.logException(e);
-		}
-	}
-	
-	/**Determines whether a given IP address is blacklisted. It tests this by comparing
-	  *the string parameter to the blacklist configuration file found in the temporary directory.
-	  *@param IP The IP address to check against the blacklist configuration file.
-	  *@return Returns true if the given IP address is blacklisted, false otherwise.*/
-	private boolean isBlackListed(String IP)
-	{
-		//read from blacklist file to determine if user is blacklisted
-		try
-		{
-			FileInputStream blackListFileIn = new FileInputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat");
-			ObjectInputStream blackListIn = new ObjectInputStream(blackListFileIn);
-			
-			while(true)
-			{
-				String IPIn;
-				
-				try
-				{
-					IPIn = (String) blackListIn.readObject();
-				}
-				catch (EOFException e)
-				{
-					AbstractServer.logException(e);
-					blackListIn.close();
-					return false;
-				}
-				
-				if(IPIn.equals(IP))
-				{
-					blackListIn.close();
-					return true;
-				}
-			}
-		}
-		catch(Exception e)
-		{
-			AbstractServer.logException(e);
-		}
-		
-		return false;
-	}
-	
-	/**Removes all records of blacklisted IP addresses by appending an empty String to the blacklist 
-	  *configuration file from the server temporary directory.*/
-	public void clearBlackListRecord()
-	{
-		try
-		{
-			FileOutputStream blackListFileOut = new FileOutputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat", true);
-			ObjectOutputStream blackListOut = new ObjectOutputStream(blackListFileOut);
-			blackListOut.writeObject("");
-			blackListOut.close();
-			
-			this.consoleMng.printConsole("Successfully Relieved Blacklisted Users", false);
-		}
-		catch(FileNotFoundException e)
-		{
-			this.consoleMng.printConsole("No Blacklist File Found", true);
-			AbstractServer.logException(e);
-		}
-		catch(IOException e)
-		{
-			this.consoleMng.printConsole("Unable to Clear Blacklist Record", false);
-			AbstractServer.logException(e);
-		}
+		BlacklistManager.blacklistIPAddress(clientServerConnection.getIP());
 	}
 	
 	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
@@ -351,7 +246,6 @@ public class WebChatServer implements Runnable
 	  *...
 	  *@return a two dimensional array with information regarding each client connected to the
 	  *server.*/
-
 	public Object[][] getConnectedUsers()
 	{
 		int size = ChatRoom.getGlobalMembersSize();

@@ -1,25 +1,18 @@
 package webchatinterface.server.ui.preferences;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
+import webchatinterface.server.util.BlacklistManager;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.*;
 
 public class IPFilterPanel extends PreferencePanel
 {
 	private static final long serialVersionUID = 16172777675754695L;
 	
 	private JTextArea IPFilterEditor;
-	
 	private JCheckBox filterAllIPAddressesExceptCheckBox;
-	
 	private boolean edited;
 	
 	public IPFilterPanel(String header)
@@ -63,8 +56,8 @@ public class IPFilterPanel extends PreferencePanel
 		IPFilterSettingsPanel.setBorder(BorderFactory.createTitledBorder("IP Address Filter"));
 		
 		String info = "Filter IP Addresses:\nFilter the following list of IP addresses from connecting to the server. Each address "
-				+ "must be listed individually, seperated by a whitespace character or on a new line. Invalid or incorrect addresses will be ignored.\n\n"
-				+ "If the \"Filter All Addresses\" checkbox below is selected, all addresses will be filtered except those preceeded by an asterisk."
+				+ "must be listed individually, separated by a whitespace character or on a new line. Invalid or incorrect addresses will be ignored.\n\n"
+				+ "If the \"Filter All Addresses\" checkbox below is selected, all addresses will be filtered except those preceded by an asterisk."
 				+ "For example, *xxx.xxx.xxx.xxx";
 		IPFilterSettingsPanel.add(super.createInformationPanel(info), BorderLayout.PAGE_START);
 
@@ -92,7 +85,24 @@ public class IPFilterPanel extends PreferencePanel
 			return new String[0];
 	}
 	
-	public void save(){}
+	public void save()
+	{
+		BlacklistManager.clearBlacklistRecord();
+		String filteredAddresses = this.IPFilterEditor.getText();
+		String[] lines = filteredAddresses.split("\r\n|\r|\n|\\s+");
 
-	protected void populatePanel(){}
+		for(String address : lines)
+			BlacklistManager.blacklistIPAddress(address);
+	}
+
+	protected void populatePanel()
+	{
+		String[] addresses = BlacklistManager.getBlacklistedAddresses();
+
+		if(addresses.length == 0)
+			return;
+
+		for(String address : addresses)
+			this.IPFilterEditor.append(address + "\n");
+	}
 }
