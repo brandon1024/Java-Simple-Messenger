@@ -5,8 +5,6 @@ import java.awt.*;
 
 public class PanelHeaderLabel extends JLabel
 {
-	private static final long serialVersionUID = -6891932713004963935L;
-
 	public PanelHeaderLabel(String text)
 	{
 		super(" " + text);

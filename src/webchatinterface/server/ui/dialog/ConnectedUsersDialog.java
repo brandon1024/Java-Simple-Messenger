@@ -1,30 +1,24 @@
 package webchatinterface.server.ui.dialog;
 
-import java.awt.Container;
-import java.awt.Dimension;
+import webchatinterface.server.WebChatServer;
+import webchatinterface.server.communication.WebChatServerInstance;
+import webchatinterface.server.network.ChatRoom;
+import webchatinterface.util.ClientUser;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.WindowConstants;
-import javax.swing.table.DefaultTableModel;
-
-import webchatinterface.server.WebChatServer;
-import webchatinterface.server.communication.WebChatServerInstance;
-import webchatinterface.server.util.ChatRoom;
-import webchatinterface.util.ClientUser;
-
 /**@author Brandon Richardson
   *@version 1.4.3
   *@since 06/05/2016
   *<p>
-  *The ConnectedUsersDialog class is designed to display a list of users connected that
+  *The ConnectedUserViewer class is designed to display a list of users connected that
   *auto-refreshes to display the most current information. The dialog runs on a seperate thread, and 
   *polls {@code ChatRoom.getGlobalMembers()} periodically for client connection data. The thread runs
   *until the user closes the dialog or the server closes.
@@ -34,33 +28,13 @@ import webchatinterface.util.ClientUser;
 
 public class ConnectedUsersDialog extends JFrame implements Runnable, WindowListener
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = -5653100898102353268L;
-
-	/**Object representing an icon for users with available status*/
 	private static Object AVAILABLE_ICON;
-	
-	/**Object representing an icon for users with busy status*/
 	private static Object BUSY_ICON;
-	
-	/**Object representing an icon for users with away status*/
 	private static Object AWAY_ICON;
-	
-	/**Object representing an icon for users with appear offline status*/
 	private static Object APPEAR_OFFLINE_ICON;
-	
-	/**Object representing an icon for users with offline status*/
 	private static Object OFFLINE_ICON;
-	
-	/**A reference to the server thread. Used to poll {@code isRunning()}*/
 	private WebChatServer server;
-	
-	/**Content pane for the dialog frame.*/
 	private Container masterPane;
-	
-	/**Control variable used to exit the thread when the server closes or the user selected to
-	  *exit the frame.*/
 	private boolean isRunning;
 	
 	static
@@ -83,9 +57,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		}
 	}
 	
-	/**Constructor for a new ConnectedUsersDialog. Constructs the frame
-	  *and sets objects fields.
-	  *@param server A reference to the server. Used to poll {@code isRunning()}*/
 	public ConnectedUsersDialog(WebChatServer server)
 	{
 		super("Connected Clients");
@@ -105,8 +76,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		this.isRunning = false;
 	}
 
-	/**Starts the ConnectedUsersDialog thread. If the thread is already running,
-	  *start() will simply return.*/
 	public void start()
 	{
 		if(this.isRunning())
@@ -116,11 +85,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		(new Thread(this)).start();
 	}
 	
-	/**Executed when the thread starts. Periodically polls the list of connected users
-	  *and displays the information in a table. The table will automatically refresh every second.
-	  *The thread will run until the control variable isRunning is false, or the server thread
-	  *terminates.*/
-	@Override
 	public void run()
 	{
 		WebChatServerInstance[] data;
@@ -247,17 +211,11 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		}
 	}
 	
-	/**Accessor method for the state of the ConnectedUsersDialog thread. If the thread is running,
-	  *{@code isRunning()} will return true. Otherwise, the method will return false.
-	  *@return true if thread is running, false if thread is suspended*/
 	private boolean isRunning()
 	{
 		return this.isRunning;
 	}
 
-	/**Close the dialog and running thread in an ordered manner.
-	  *@param event the WindowEvent fired by the frame*/
-	@Override
 	public void windowClosed(WindowEvent event)
 	{
 		this.isRunning = false;
@@ -265,9 +223,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		super.dispose();
 	}
 
-	/**Close the dialog and running thread in an ordered manner.
-	  *@param event the WindowEvent fired by the frame*/
-	@Override
 	public void windowClosing(WindowEvent event)
 	{
 		this.isRunning = false;
@@ -275,14 +230,9 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		super.dispose();
 	}
 
-	@Override
 	public void windowActivated(WindowEvent event){}
-	@Override
 	public void windowDeactivated(WindowEvent event){}
-	@Override
 	public void windowDeiconified(WindowEvent event){}
-	@Override
 	public void windowIconified(WindowEvent event){}
-	@Override
 	public void windowOpened(WindowEvent event){}
 }

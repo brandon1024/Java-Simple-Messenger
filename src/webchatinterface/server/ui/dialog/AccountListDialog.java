@@ -46,7 +46,6 @@ public class AccountListDialog
 		
 		try
 		{
-			
 			String[][] accountList = AccountManager.retrieveBasicAccountList();
 			for(int n = 0; n < accountList[0].length; n++)
 			{

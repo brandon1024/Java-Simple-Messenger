@@ -6,7 +6,6 @@ import webchatinterface.client.communication.WebChatClient;
 import webchatinterface.client.ui.components.ConsoleManager;
 import webchatinterface.client.ui.components.StatusBar;
 import webchatinterface.client.ui.dialog.AboutApplicationDialog;
-import webchatinterface.client.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.client.ui.dialog.HelpDialog;
 import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
@@ -37,104 +36,36 @@ import java.net.UnknownHostException;
 
 public class WebChatClientGUI extends JFrame implements ActionListener, WindowListener, KeyListener
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = 1513399388840792982L;
-	
-	/**The menu option for displaying the authentication dialog*/
 	private JMenuItem signIn;
-
-	/**The menu option for displaying the New Account Dialog dialog*/
 	private JMenuItem signUp;
-	
-	/**The menu option for attempting to authenticate with saved preset*/
 	private JMenuItem quickSignIn;
-	
-	/**The menu option for disconnecting from the server and for closing the client thread*/
 	private JMenuItem signOut;
-
-	/**The menu for displaying menu items for setting the client availability*/
 	private JMenuItem setAvailability;
-	
-	/**The menu option for setting the client availability to away*/
 	private JMenuItem availabilityAway;
-	
-	/**The menu option for setting the client availability to available*/
 	private JMenuItem availabilityAvailable;
-	
-	/**The menu option for setting the client availability to busy*/
 	private JMenuItem availabilityBusy;
-	
-	/**The menu option for setting the client availability to appear offline*/
 	private JMenuItem availabilityAppearOffline;
-	
-	/**The menu option for displaying the connected users*/
 	private JMenuItem showConnectedUsers;
-	
-	/**The menu option for closing the client application*/
 	private JMenuItem exit;
-	
-	/**The menu option for entering a private chatroom with another client*/
 	private JMenuItem enterPrivateChatroom;
-	
-	/**The menu option for exiting from a private chatroom with another client */
 	private JMenuItem exitPrivateChatroom;
-	
-	/**The menu option for clearning the chat window*/
 	private JMenuItem clearChat;
-	
-	/**The menu option for displaying file chooser for sending {@code MultimediaMessage} objects.*/
 	private JMenuItem sendImage;
-	
-	/**The menu option for displaying file chooser for sending {@code MultimediaMessage} objects.*/
 	private JMenuItem sendFile;
-	
-	/**The menu option for cycling interface colors*/
 	private JMenuItem setWindowColors;
-	
-	/**The menu option for toggling the console simple view feature*/
 	private JMenuItem setSimpleView;
-	
-	/**The menu option for displaying 'about' dialog*/
 	private JMenuItem aboutApp;
-	
-	/**The menu option for checking the version of the client against the most recent version 
-	  *according to the server*/
 	private JMenuItem checkVersion;
-	
-	/**The menu option for displaying help dialog*/
 	private JMenuItem getHelp;
-	
-	/**The button used to manually submit messages*/
 	private JButton send;
-	
-	/**The status bar used to display the availability and chat room of the client*/
 	private StatusBar statusBar;
-	
-	/**The text area used to enter messages to be communicated to the server*/
 	private JTextArea messageInput;
-	
-	/**The text area used to display the chat conversation to the user*/
 	private ConsoleManager chatArea;
-	
-	/**The underlying threaded client object that communicates with the server.*/
 	private WebChatClient client;
-	
-	/**The ClientUser object representing a model of the user, the user status, and parameters.*/
 	private ClientUser clientUser;
-	
-	/**Variable used to control the submission of {@code Command.TYPED} commands*/
 	private boolean hasTyped = false;
-	
-	/**Style of the user interface. Invalid style preferences are set to default style settings*/
 	private int styleID;
 	
-	
-	/**Entry point of the WebChatClient application. The {@code main()} method coordinates the 
-	  *initialization of the graphical user interface. By default, the window size is set to 
-	  *700x300, visibility enabled, resizable enabled, and default close operation to {@code 
-	  *DO_NOTHING_ON_CLOSE}.
-	  *@param args command line arguments*/
 	public static void main(String[] args)
 	{
 		//Set Look and Feel
@@ -160,8 +91,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		});
 	}
 	
-	/**Constructs the user interface for the client. Initializes and displays all window components 
-	  *and their action listeners.*/
 	private WebChatClientGUI()
 	{
 		//Set Window Properties
@@ -175,7 +104,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.buildUI();
 	}
 	
-	/**Initializes and displays all window components and their action listeners*/
 	private void buildUI()
 	{
 		//Construct Logger, ClientUser, ConsoleManager, and StatusBar
@@ -353,15 +281,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.disableClientMenus();
 	}
 	
-	/**Cycle user interface styles, or specify interface style. Acceptable style options are:
-	  *<ul>
-	  *<li>{@code 0}: default style for disconnected client interface
-	  *<li>{@code 1}: default style for authenticated client interface
-	  *<li>{@code 2}: custom style: green foreground against black background
-	  *<li>{@code 3}: custom style: black foreground against red background
-	  *<li>{@code 4}: custom style: white foreground against orange background
-	  *</ul>
-	  *@param color specific interface style*/
 	private void setColors(int color)
 	{
 		this.styleID = color;
@@ -410,8 +329,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Enables JMenuItems associated with the {@code WebChatClient}, and disables
-	  *JMenuItems that are not used while the client is authenticated.*/
 	private void enableClientMenus()
 	{
 		this.signOut.setEnabled(true);
@@ -438,8 +355,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.signUp.setEnabled(false);
 	}
 	
-	/**Disables JMenuItems associated with the {@code WebChatClient}, and enables
-	  *JMenuItems that are used when the client is not authenticated.*/
 	private void disableClientMenus()
 	{
 		this.quickSignIn.setEnabled(true);
@@ -466,18 +381,11 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.checkVersion.setEnabled(false);
 	}
 	
-	/**Change the cursor style when hovering over the graphical user interface. Used to indicate
-	  *various information, including tasks that are in progress behind the application.
-	  *@param cursorStyle the style of the cursor, as defined by the static class members defined
-	  *in java.awt.Cursor*/
 	private void setCursorStyle(int cursorStyle)
 	{
 		this.setCursor(Cursor.getPredefinedCursor(cursorStyle));
 	}
 	
-	/**Attempt to authenticate the user and initialize the client-server communications.
-	  *@param tryQuick If true, attempt quick authentication. If false, use standard authentication
-	  *@see webchatinterface.client.authentication.Authenticator*/
 	private void authenticate(boolean tryQuick)
 	{
 		try
@@ -584,8 +492,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Executes orderly connection release procedure and resets the client fields and user interface
-	  *to the default state.*/
 	private void signOut()
 	{
 		//Disconnect Client from Server
@@ -600,9 +506,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.chatArea.setText("You are already logged out");
 	}
 	
-	/**Closes IO streams, resets user interface fields and state.
-	  *@param message The message to display in the console, i.e. the reason for being disconnected.
-	  *@see WebChatClient#disconnect()*/
 	public void disconnect(String message)
 	{
 		//Update User Instance Variables
@@ -634,10 +537,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.statusBar.setChatroom("Public Chat Room");
 	}
 	
-	/**Test whether the client is up to date. Displays a dialog with the most recent version if the 
-	  *client is out of date. Otherwise, a message is appended to the chat area.
-	  *@param com command object from server, whose message body represents
-	  *the most recent client version*/
 	private void updateAvailable(Command com)
 	{
 		//If Client Version Does Not Match Most Recent Version from Server
@@ -655,21 +554,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.displayMessage(new Message("You Are Running The Most Recent Version :)", "CLIENT", "0"));
 	}
 	
-	/**Process a given command based on the {@code COMMAND} instance variable.
-	  *<ul>
-	  *<li>{@code Command.CLIENT_VERSION} command: invokes {@code updateAvailable()} with given command
-	  *<li>{@code Command.MESSAGE_TYPED} command: pulses send button, notifing user that another user is typing a message
-	  *<li>{@code Command.CONNECTION_SUSPENDED} command: invokes this.disconnect(String reason)
-	  *<li>{@code Command.CONNECTION_DENIED} command: invokes this.disconnect(String reason)
-	  *<li>{@code Command.PRIVATE_CHATROOM_REQUEST} command: invokes this.privateChatroomRequest(Command com);
-	  *<li>{@code Command.PRIVATE_CHATROOM_AUTHORIZED} command: invokes this.enterPrivateChatroom(com);
-	  *<li>{@code Command.PRIVATE_CHATROOM_DENIED} command: appends a message to the console
-	  *<li>{@code Command.PRIVATE_CHATROOM_EXIT} command: invokes this.exitPrivateChatroom();
-	  *<li>{@code Command.FILE_TRANSFER_COMPLETE} command: appends a message to the console
-	  *<li>{@code Command.FILE_TRANSFER_CORRUPTED} command: appends a message to the console
-	  *</ul>
-	  *@see Command
-	  *@param com command object to be processed*/
 	public void processCommand(Command com)
 	{
 		switch(com.getCommand())
@@ -737,13 +621,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Send an object to the server. The parameter object must be of type {@code Message}, 
-	  *{@code TransferBuffer} or {@code Command}. Other objects will be ignored, and an appropriate
-	  *message will be appended to the console.
-	  *@see WebChatClient#send(Message message)
-	  *@see WebChatClient#send(TransferBuffer message)
-	  *@see WebChatClient#send(Command com)
-	  *@param object object to be sent to the server*/
 	private void send(Object object)
 	{
 		try
@@ -769,26 +646,16 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Display a message in the chat area.
-	  *@param message the message to append to the chat area*/
 	public void displayMessage(Message message)
 	{
 		this.chatArea.printConsole(message);
 	}
 	
-	/**Display a file in the chat area.
-	  *@param file the file to display
-	  *@param transferManifest the file transfer manifest command*/
 	public void displayFile(File file, Command transferManifest)
 	{
 		this.chatArea.printFile(file, transferManifest);
 	}
 	
-	/**Invoked when the client is notified by the server that a user wishes to enter a private
-	  *chatroom. Displays a simple dialog allowing the user to confirm or deny the request
-	  *for a private chatroom. If the user confirms the request, a PRIVATE_CHATROOM_AUTHORIZED
-	  *Command is sent to the client requesting the private chatroom.
-	  *@param com the PRIVATE_CHATROOM_REQUEST Command received by another client.*/
 	private void privateChatroomRequest(Command com)
 	{
 		JPanel dialogPanel = new JPanel();
@@ -810,9 +677,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Establishes user interface components and style once the client has entered a private chatroom
-	  *with another client.
-	  *@param com the Command received by another client.*/
 	private void enterPrivateChatroom(Command com)
 	{
 		this.setColors(ConsoleManager.STYLE_AUTHENTICATED_RED);
@@ -821,8 +685,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.statusBar.setChatroom("Private Chat Room: " + com.getSender());
 	}
 	
-	/**Establishes default user interface components and style once the client has exited a private chatroom
-	  *with another client.*/
 	private void exitPrivateChatroom()
 	{
 		if(this.clientUser.isSignedIn())
@@ -834,9 +696,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Sets the availability of the client according to the static fields in {@code ClientUser}. Updates
-	  *the ClientUser object, the StatusBar, and notifies the server of the availability change.
-	  *@param availability the new client availability. Defined in ClientUser as static final fields.*/
 	private void setAvailability(int availability)
 	{
 		if(this.clientUser.isSignedIn())
@@ -857,7 +716,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.chatArea.setText("Please Authenticate");
 	}
 
-	/**Initiates orderly connection release procedures, and exits the application.*/
 	private void exit()
 	{
 		if(this.clientUser.isSignedIn())
@@ -872,7 +730,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		System.exit(0);
 	}
 
-	/**Requests most recent client version information from the server.*/
 	private void checkVersion()
 	{
 		if(this.clientUser.isSignedIn())
@@ -885,10 +742,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.chatArea.setText("Please Authenticate");
 	}
 	
-	/**Displays a FileDialog dialog to choose a file. Invokes the client send() method with a reference
-	  *to the file.
-	  *Note: files with a size greater than 100 megabytes (104857600 bytes) are dissallowed to prevent memory and
-	  *congestion issues on the client and server application.*/
 	private void sendFile()
 	{
 		if(this.clientUser.isSignedIn())
@@ -919,8 +772,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.chatArea.setText("Please Authenticate");
 	}
 	
-	/**Retrieves text from the message input text area, build a Message object, send the message to the server
-	  *and reset the appropriate fields.*/
 	private void sendMessage()
 	{
 		if(this.clientUser.isSignedIn())
@@ -942,16 +793,12 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.chatArea.setText("Please Authenticate");
 	}
 	
-	/**Display the ConnectedUsersDialog.*/
 	private void showConnectedUsersDialog()
 	{
 		if(this.clientUser.isSignedIn())
-			(new ConnectedUsersDialog(this.client, this.clientUser)).start();
+			(new ConnectedUserViewer(this.client, this.clientUser)).start();
 	}
 	
-	/**Display a list of connected users with buttons to allow the user to choose a client connected to the 
-	  *server. Once a user is chosen, a PRIVATE_CHATROOM_REQUEST command is sent to the server with the
-	  *chosen user as the recipient.*/
 	private void showPrivateChatroomSelectionDialog()
 	{
 		if(this.clientUser.isSignedIn())
@@ -1129,25 +976,16 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Display the AboutApplicationDialog.*/
 	private void showAboutDialog()
 	{
 		AboutApplicationDialog.showAboutDialog();
 	}
 	
-	/**Display the HelpDialog.*/
 	private void showHelpDialog()
 	{
 		HelpDialog.showHelpDialog();
 	}
 	
-	/**Respond to an {@code ActionEvent} occured by the user communicating with a components in the
-	  *user interface.
-	  *@param event the {@code ActionEvent} that occured as a result of the
-	  *user communicating with a components in the user interface
-	  *@see java.awt.event.ActionEvent
-	  *@see java.awt.event.ActionListener*/
-	@Override
 	public void actionPerformed(ActionEvent event)
 	{
 		//If User Selected to Sign In
@@ -1261,15 +1099,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Respond to a {@code KeyEvent}. Sends a message if the user is authenticated and pressed the 
-	  *{@code ENTER} key.
-	  *If another key was pressed, a {@code TYPED} command is broadcasted to all users, notifying 
-	  *that the user has typed a message. The command is broadcasted only once per each message sent.
-	  *@param event the {@code WindowEvent} that occured as a result of the
-	  *user pressing a key
-	  *@see java.awt.event.KeyEvent
-	  *@see java.awt.event.KeyListener*/
-	@Override
 	public void keyPressed(KeyEvent event)
 	{
 		//If User Signed In and Pressed Enter Key
@@ -1293,41 +1122,22 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	@Override
 	public void keyTyped(KeyEvent event) {}
-	@Override
 	public void keyReleased(KeyEvent event) {}
 	
-	/**Execute orderly termination procedures.
-	  *@param event the {@code WindowEvent} that occured as a result of the
-	  *user communicating with the window
-	  *@see java.awt.event.WindowEvent
-	  *@see java.awt.event.WindowListener*/
-	@Override
 	public void windowClosing(WindowEvent event)
 	{
 		this.exit();
 	}
 
-	/**Execute orderly termination procedures.
-	  *@param event the {@code WindowEvent} that occured as a result of the
-	  *user communicating with the window
-	  *@see java.awt.event.WindowEvent
-	  *@see java.awt.event.WindowListener*/
-	@Override
 	public void windowClosed(WindowEvent event)
 	{
 		this.exit();
 	}
 
-	@Override
 	public void windowActivated(WindowEvent event){	}
-	@Override
 	public void windowDeactivated(WindowEvent event){ }
-	@Override
 	public void windowDeiconified(WindowEvent event){ }
-	@Override
 	public void windowIconified(WindowEvent event){ }
-	@Override
 	public void windowOpened(WindowEvent event){ }
 }

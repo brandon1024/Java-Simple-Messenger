@@ -4,8 +4,7 @@ import webchatinterface.AbstractIRC;
 import webchatinterface.helpers.TimeHelper;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.ui.components.ConsoleManager;
-import webchatinterface.server.util.ChatRoom;
-import webchatinterface.server.util.ScheduledServerMessage;
+import webchatinterface.server.network.ChatRoom;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
 import webchatinterface.util.TransferBuffer;
@@ -29,29 +28,16 @@ import java.util.Calendar;
 
 public class BroadcastHelper implements Runnable
 {
-	/**ArrayList object representing a collection of all scheduled server messages*/
 	private ArrayList<ScheduledServerMessage> scheduledServerMessage;
-	
-	/**The console manager for the graphical user interface. The console manager 
-	  *is used to append messages and status to the console.
-	  *@see ConsoleManager*/
 	private ConsoleManager consoleMng;
-	
-	/**Variable used to close the {@code BroadcastHelper} thread*/
 	private volatile boolean RUN = true;
 	
-	/**Builds a {@code BroadcastHelper} instance. Assigns parameters to instance variables, and attemps
-	  *to load all saved ScheduledServerMessages.
-	  *@param consoleMng The server console manager. Used to append messages
-	  *and status to the graphical user interface console.*/
 	public BroadcastHelper(ConsoleManager consoleMng)
 	{
 		this.consoleMng = consoleMng;
 		this.scheduledServerMessage = new ArrayList<ScheduledServerMessage>();
 	}
 	
-	/**Attempt to load saved ScheduledServerMessage objects from SCHEDULED_MESSAGES.dat, and populate
-	  *scheduledServerMessage ArrayList.*/
 	private void loadScheduledMessages()
 	{
 		try(ObjectInputStream objectIn = new ObjectInputStream(new FileInputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "SCHEDULED_MESSAGES.dat")))
@@ -79,8 +65,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Attempt to save ScheduledServerMessage objects from scheduledServerMessage ArrayList to SCHEDULED_MESSAGES.dat.
-	  *Items in ArrayList are not removed from the Collection, simply accessed and written to file.*/
 	private void saveScheduledMessages()
 	{
 		try(ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "SCHEDULED_MESSAGES.dat", false)))
@@ -103,10 +87,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Invoked when start() is invoked. Periodically iterates the automatedServerMessages ArrayList
-	  *and broadcasts any messages that fit the message frequency criteria. Will continue until
-	  *{@code stop()} is invoked.*/
-	@Override
 	public void run()
 	{
 		int minutes = 0;
@@ -155,7 +135,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Runs the BroadcastHelper thread. Attempts to load saved ScheduledServerMessages.*/
 	public void start()
 	{
 		if(this.RUN)
@@ -169,8 +148,6 @@ public class BroadcastHelper implements Runnable
 		(new Thread(this)).start();
 	}
 	
-	/**Stops the BroadcastHelper thread and attempt to save ScheduledServerMessages from
-	  *scheduledServerMessage ArrayList*/
 	public void stop()
 	{
 		this.RUN = false;
@@ -182,7 +159,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Displays an input dialog creating and managing scheduled server messages.*/
 	public void showBroadcastMessageDialog()
 	{
 		//Build Component Panels and Frames
@@ -414,10 +390,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Broadcast a Message object to all clients connected to the server within the
-	  *specified chatroom.
-	  *@param message The message object to broadcast to all clients
-	  *@param room The room to broadcast the message to*/
 	public synchronized void broadcastMessage(Message message, ChatRoom room)
 	{
 		//for each instance in ConnectionArray
@@ -437,10 +409,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Broadcast a Message object to all clients connected to the server within the
-	  *specified chatroom.
-	  *@param message The message object to broadcast to all clients
-	  *@param room The room to broadcast the message to*/
 	public synchronized void broadcastMessage(TransferBuffer message, ChatRoom room)
 	{
 		//for each instance in ConnectionArray
@@ -460,10 +428,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Broadcast a Command object to all clients connected to the server within the
-	  *specified chatroom.
-	  @param com The Command object to broadcast to all clients
-	  *@param room The room to broadcast the message to*/
 	public synchronized void broadcastCommand(Command com, ChatRoom room)
 	{
 		//for each instance in ConnectionArray
@@ -483,8 +447,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Broadcast a Message object to all clients connected to the server.
-	  @param message The message object to broadcast to all clients*/
 	public synchronized void broadcastMessage(Message message)
 	{
 		//for each instance in ConnectionArray
@@ -504,8 +466,6 @@ public class BroadcastHelper implements Runnable
 		}
 	}
 	
-	/**Broadcast a Command object to all clients connected to the server.
-	  @param com The command object to broadcast to all clients*/
 	public synchronized void broadcastCommand(Command com)
 	{
 		//for each instance in ConnectionArray

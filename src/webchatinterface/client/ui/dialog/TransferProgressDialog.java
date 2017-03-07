@@ -1,19 +1,13 @@
 package webchatinterface.client.ui.dialog;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.io.IOException;
+import webchatinterface.client.AbstractClient;
+import webchatinterface.client.filetransfer.TransferUtilities;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import webchatinterface.client.AbstractClient;
+import java.awt.*;
+import java.io.IOException;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -29,36 +23,15 @@ import webchatinterface.client.AbstractClient;
 
 public class TransferProgressDialog extends JFrame
 {
-	/**Serial Version UID is used as a version control for the class that implements 
-	  *the serializable interface.*/
-	private static final long serialVersionUID = 2625912269846450722L;
-	
-	/**Default Color object for the JProgressBar foreground. Used to describe a transfer
-	  *in progress.*/
-	public static final Color PROGRESS_GREEN = new Color(0,204,0);
-	
-	/**Default Color object for the JProgressBar foreground. Used to describe an unsuccesssful
-	  *transfer.*/
-	public static final Color PROGRESS_RED = new Color(255,0,0);
-	
-	/**Default Color object for the JProgressBar foreground. Used to describe a paused transfer.*/
-	public static final Color PROGRESS_BLUE = new Color(0, 102, 255);
-	
-	/**The JProgressBar, used to display the progress of the transfer.*/
+	private static final Color PROGRESS_GREEN = new Color(0,204,0);
+	private static final Color PROGRESS_RED = new Color(255,0,0);
+	private static final Color PROGRESS_BLUE = new Color(0, 102, 255);
+
 	private JProgressBar progress;
-	
-	/**Label used to display information regarding the transfer*/
 	private JLabel informationLabel;
-	
-	/**Label used to display the speed of the transfer.*/
 	private JLabel speedLabel;
-	
-	/**Label used to display the progress of the transfer.*/
 	private JLabel progressLabel;
 	
-	/**Sole constructor. Constructs a new default TransferProgressDialog.
-	 *By default, the JProgressBar range is 0-100, and the value is 0. The informationLabel,
-	 *speedLabel and progressLabel are empty.*/
 	public TransferProgressDialog()
 	{
 		super("File Transfer");
@@ -98,53 +71,80 @@ public class TransferProgressDialog extends JFrame
 		masterPane.add(this.progress, BorderLayout.PAGE_START);
 		masterPane.add(informationContainer, BorderLayout.CENTER);
 	}
+
+	public void updateTransferDialog(long bytesRead, long arraySize, long bytesTotal, long timeElapsedMillis, String filename)
+	{
+		this.setProgressColor(TransferProgressDialog.PROGRESS_GREEN);
+		this.setTitle("Filename: " + filename);
+		this.setInformationLabelText(filename);
+		this.setSpeedLabelText(TransferUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
+		this.setProgressValue(TransferUtilities.progressPercentageInt(bytesRead, bytesTotal));
+		this.setProgressString(TransferUtilities.computePercentCompletionText(bytesRead, bytesTotal));
+		this.setProgressLabelText(TransferUtilities.computeProgressText(bytesRead, bytesTotal));
+	}
+
+	public void updateTransferDialogComplete()
+	{
+		this.setWindowTitleBarText("Complete");
+		this.setProgressLabelText("File Transfer Complete");
+		this.setProgressValue(100);
+		this.setProgressColor(TransferProgressDialog.PROGRESS_BLUE);
+
+		for(int i = 5; i >= 0; i--)
+		{
+			this.setProgressString("Dismissed in " + i + "seconds");
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e)
+			{
+				AbstractClient.logException(e);
+			}
+		}
+
+		this.dispose();
+	}
+
+	public void updateTransferDialogError()
+	{
+		this.setProgressColor(TransferProgressDialog.PROGRESS_RED);
+		this.setProgressString("ERROR OCCURRED");
+		this.setProgressLabelText("ERROR OCCURRED");
+		this.setWindowTitleBarText("ERROR OCCURRED");
+	}
 	
-	/**Mutator method for the JProgressBar progress value.
-	  *@param value the new progress bar value*/
-	public void setProgressValue(int value)
+	private void setProgressValue(int value)
 	{
 		this.progress.setValue(value);
 	}
 	
-	/**Mutator method for the JProgressBar string value.
-	  *@param str the string to be displayed in the JProgressBar*/
-	public void setProgressString(String str)
+	private void setProgressString(String str)
 	{
 		this.progress.setString(str);
 	}
 	
-	/**Mutator method for the foreground color of the JProgressBar
-	  *@param color the new foreground color of the JProgressBar*/
-	public void setProgressColor(Color color)
+	private void setProgressColor(Color color)
 	{
 		this.progress.setForeground(color);
 	}
 	
-	/**Mutator method for the information JLabel text.*/
-	public void setInformationLabelText(String information)
+	private void setInformationLabelText(String information)
 	{
 		this.informationLabel.setText(information);
 	}
 	
-	/**Mutator method for the speed JLabel text.
-	  *@param speed new speedLabel text*/
-	public void setSpeedLabelText(String speed)
+	private void setSpeedLabelText(String speed)
 	{
 		this.speedLabel.setText(speed);
 	}
 	
-	/**Mutator method for the speed JLabel text.
-	  *@param progress new progressLabel text*/
-	public void setProgressLabelText(String progress)
+	private void setProgressLabelText(String progress)
 	{
 		this.progressLabel.setText(progress);
 	}
 	
-	/**Set a descriptive window title. The title bar text is
-	  *appended to the default window title.
-	  *<p>
-	  *{@code super.setTitle("File Transfer - " + titleBar)}*/
-	public void setWindowTitleBarText(String titleBar)
+	private void setWindowTitleBarText(String titleBar)
 	{
 		this.setTitle("File Transfer - " + titleBar);
 	}

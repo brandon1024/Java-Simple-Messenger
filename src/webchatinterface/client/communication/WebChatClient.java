@@ -44,17 +44,6 @@ public class WebChatClient implements Runnable
 	private ArrayList<FileTransferExecutor> ongoingTransfers;
 	private volatile boolean RUN = false;
 	
-	/**Builds a {@code WebChatClient} object. Establishes framework for communication over TCP with 
-	  *a dedicated server application.
-	  *<p>
-	  *A direct connection with the server is established with the specified host name address and 
-	  *port number. If a connection cannot be established for any reason, an IOException is thrown.
-	  *@throws	IOException if the client cannot establish a connection with the server
-	  *@param 	parent 		the graphical user interface with which the client can
-	  *		display inbound messages. The graphical user interface must implement
-	  *		the appropriate {@code appendToChat()} and {@code processCommand()} methods.
-	 * @throws AuthenticationException thrown if an error occurred while attempting to instantiate the client
-	  */
 	public WebChatClient(WebChatClientGUI parent, Authenticator auth) throws IOException, AuthenticationException
 	{
 		this.graphicalUserInterface = parent;
@@ -66,7 +55,6 @@ public class WebChatClient implements Runnable
 		this.ongoingTransfers = new ArrayList<FileTransferExecutor>();
 	}
 	
-	/**Starts the WebChatClient thread, immediately invoking run().*/
 	public void start()
 	{
 		if(this.isRunning())
@@ -76,16 +64,12 @@ public class WebChatClient implements Runnable
 		(new Thread(this)).start();
 	}
 	
-	/**Runs the client thread, allowing message objects to be sent and received by the server.*/
-	@Override
 	public void run()
 	{
 		this.listen();
 		this.disconnect();
 	}
 	
-	/**Listens to {@code ObjectInputStream} for inbound Message objects. Forwards received messages 
-	  *to the {@code WebChatClientGUI}.*/
 	private void listen()
 	{
 		try
@@ -154,8 +138,6 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	/**Disconnects the client from the server. Closes the client thread, the client socket, and 
-	  *object streams.*/
 	public void disconnect()
 	{
 		try
@@ -172,7 +154,6 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	/***/
 	private void requestConnection() throws CannotEstablishConnectionException
 	{
 		//Send Connection Request Command and Await Connection Authorization
@@ -249,13 +230,11 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	/***/
 	private void processMessage(Message message)
 	{
 		this.graphicalUserInterface.displayMessage(message);
 	}
 	
-	/***/
 	private void processTransferBuffer(TransferBuffer buffer)
 	{
 		//Get TransferBuffer ID
@@ -279,7 +258,6 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	/***/
 	private void processCommand(Command com) throws CannotEstablishConnectionException
 	{
 		switch(com.getCommand())
@@ -304,7 +282,7 @@ public class WebChatClient implements Runnable
 				{
 					try
 					{
-						this.send(new Command(Command.CONNECTION_SUSPENDED_AWKNOWLEDGE, this.client.getUsername(), this.client.getUserID()));
+						this.send(new Command(Command.CONNECTION_SUSPENDED_ACKNOWLEDGE, this.client.getUsername(), this.client.getUserID()));
 					}
 					catch(IOException e)
 					{
@@ -326,10 +304,6 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	/**Sends a message object to the server.
-	  *@param 	message 	the message to be communicated to the server
-	  *@throws 	IOException if an exception occured while writing to the
-	  *		object stream*/
 	public synchronized void send(Message message) throws IOException
 	{
 		//Send Message Object to Server
@@ -337,10 +311,6 @@ public class WebChatClient implements Runnable
 		this.messageOut.flush();
 	}
 	
-	/**Sends a byte array message object to the server.
-	  *@param 	message 	the message to be communicated to the server
-	  *@throws 	IOException if an exception occured while writing to the
-	  *		object stream*/
 	public synchronized void send(TransferBuffer message) throws IOException
 	{
 		//Send Message Object to Server
@@ -348,10 +318,6 @@ public class WebChatClient implements Runnable
 		this.messageOut.flush();
 	}
 	
-	/**Sends a command object to the server.
-	  *@param 	com 	the command to be communicated to the server
-	  *@throws 	IOException if an exception occured while writing to the
-	  *		object stream*/
 	public synchronized void send(Command com) throws IOException
 	{
 		//Send Message Object to Server
@@ -359,36 +325,21 @@ public class WebChatClient implements Runnable
 		this.messageOut.flush();
 	}
 	
-	/**Send a file from local storage to the server. Initializes a new FileTransferExecutor
-	  *thread.
-	  *@param 	file 	the file to be sent to the server
-	  *@see 	webchatinterface.client.filetransfer.FileTransferExecutor*/
 	public synchronized void send(File file)
 	{
 		(new FileTransferExecutor(this.graphicalUserInterface, this)).start(file);
 	}
 	
-	/**Accessor method for the Object array representing a list of users connected to the
-	  *server, along with their information.
-	  *<p>
-	  *[Username][User ID][User IP][Availability][Room]
-	  *@return 		an array containing a list of users connected to the server*/
 	public Object[][] getConnectedUsers()
 	{
 		return this.connectedUsers;
 	}
 	
-	/**Mutator method for the Object array representing a list of users connected to the
-	  *server.
-	  *@param 	newConnectedUsers 	an array containing a list of users connected to the server*/
 	private void setConnectedUsers(Object[][] newConnectedUsers)
 	{
 		this.connectedUsers = newConnectedUsers;
 	}
 	
-	/**Accessor method for the state of the client thread thread. If the client is running,
-	  *{@code isRunning()} will return true. Otherwise, the method will return false.
-	  *@return true if client is running, false if client is suspended*/
 	public boolean isRunning()
 	{
 		return this.RUN;

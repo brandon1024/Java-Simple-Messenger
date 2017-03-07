@@ -1,12 +1,11 @@
 package webchatinterface.client.util;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import webchatinterface.client.AbstractClient;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-
-import webchatinterface.client.AbstractClient;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public class ResourceLoader
 {
@@ -66,11 +65,8 @@ public class ResourceLoader
 			AbstractClient.logException(e);
 			this.FRAME_ICON = null;
 		}
-		
-		if(this.FRAME_ICON == null)
-			return false;
-		else
-			return true;
+
+		return this.FRAME_ICON != null;
 	}
 	
 	private boolean loadStatusIcons()
@@ -163,7 +159,6 @@ public class ResourceLoader
 	
 	private static class InstanceHolder
 	{
-		/**The single instance of ConsoleManager.*/
 		private static final ResourceLoader INSTANCE = new ResourceLoader();
 	}
 }

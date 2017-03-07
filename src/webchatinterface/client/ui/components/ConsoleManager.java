@@ -53,8 +53,6 @@ import java.util.Calendar;
 
 public class ConsoleManager extends JTextPane implements Runnable
 {
-	private static final long serialVersionUID = 2619250731419205387L;
-
 	public static final int STYLE_INITIALIZED = 0;
 	public static final int STYLE_AUTHENTICATED = 1;
 	public static final int STYLE_AUTHENTICATED_HACKER = 2;
@@ -72,8 +70,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 	private volatile boolean isRunning = false;
 	private ClientUser client;
 	
-	/**Builds a {@code ConsoleManager} object. Constructs the underlying JTextPane framework, print 
-	  *queue, and style attributes.*/
 	private ConsoleManager()
 	{
 		//Build JTextPane
@@ -117,7 +113,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		this.cachedMessages = new ArrayList<ConsoleMessage>();
 	}
 	
-	/**Start the ConsoleManager thread.*/
 	public void start()
 	{
 		if(this.isRunning())
@@ -127,20 +122,11 @@ public class ConsoleManager extends JTextPane implements Runnable
 		(new Thread(this)).start();
 	}
 	
-	/**Accessor method for the state of the ConsoleManager thread.
-	  *@return true of the ConsoleManager is running, false otherwise.*/
 	private boolean isRunning()
 	{
 		return this.isRunning;
 	}
 	
-	/**Executed when the {@code ConsoleManager} thread starts. Periodically polls the console queue, 
-	  *appending any stored messages, images or files to the underlying JTextPane in a sequential 
-	  *manner. Sets the caret to the end of the document, such that it remains scolled and new text 
-	  *is easily visible.
-	  *<p>
-	  *Poll time: 100ms*/
-	@Override
 	public void run()
 	{
 		while(this.isRunning)
@@ -377,9 +363,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Enqueue a new {@code Message} object.
-	  *@param message the {@code Message} object to enqueue to the printQueue.
-	  *@see ConsoleManager#run()*/
 	public void printConsole(Message message)
 	{
 		String messageBody = message.getMessage();
@@ -395,9 +378,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Enqueue a new file object to be displayed in the console.
-	  *@param file the file that the new FileButton object will represent
-	  *@param transferManifest the file transfer manifest command.*/
 	public void printFile(File file, Command transferManifest)
 	{
 		String filename = file.getName();
@@ -435,9 +415,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Removes all stored objects in the print queue, clears all the text in the JTextPane, and
-	  *appends a message to the text pane.
-	  *@param message a string representing the text to display in the empty console.*/
 	public void setText(String message)
 	{
 		this.clearConsole();
@@ -453,12 +430,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Changes the way message objects are appended to the console.
-	  *<p>
-	  *The format for simple view is as follows:
-	  *Format: {@code [USERNAME] message...}
-	  *@param simpleView if true, messages are displayed in a simple view. If false, messages
-	  *are displayed in standard view.*/
 	public void setSimpleView(boolean simpleView)
 	{
 		this.simpleView = simpleView;
@@ -474,15 +445,11 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Accessor method for the message display style. If true, messages are displayed in a simple view. 
-	  *If false, messages are displayed in standard view.
-	  *@return true if the console message display style is simple*/
 	public boolean isSimpleView()
 	{
 		return this.simpleView;
 	}
 	
-	/**Removes all stored objects in the print queue, and clears all the text in the JTextPane.*/
 	public void clearConsole()
 	{
 		synchronized(this)
@@ -494,12 +461,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		super.setText("");
 	}
 	
-	/**Set the style of the console.
-	  *@param styleID the style code
-	  *@see ConsoleManager#STYLE_INITIALIZED
-	  *@see ConsoleManager#STYLE_AUTHENTICATED
-	  *@see ConsoleManager#STYLE_AUTHENTICATED_HACKER
-	  *@see ConsoleManager#STYLE_AUTHENTICATED_ORANGE*/
 	public void setConsoleStyle(int styleID)
 	{
 		this.style = styleID;
@@ -586,10 +547,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Overridden {@code paintComponent()} method. Relies on private {@code style} field to paint
-	  *the components according to the desired style.
-	  *@param g The {@code Graphics} object used to paint the components*/
-	@Override
 	public void paintComponent(Graphics g)
 	{
 		super.setOpaque(false);
@@ -636,8 +593,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		super.paintComponent(g2d);
 	}
 	
-	/**The {@code ImageButton} class represents a clickable image components that may be appeneded
-	  *to the console JTextPane.*/
 	private class ImageButton extends JButton
 	{
 		/**Serial Version UID is used as a version control for the class that implements
@@ -762,9 +717,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**The {@code FileButton} class represents a clickable components that may be appeneded
-	  *to the console JTextPane. The {@code FileButton}, once clicked and a directory is chosen by
-	  *the user, the file is copied from the temporary directory to the desired directory.*/
 	private class FileButton extends JButton
 	{
 		/**Serial Version UID is used as a version control for the class that implements
@@ -832,10 +784,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**The {@code ConsoleMessage} class represents a single text, image or file message that the
-	  *ConsoleManager class will use to append to the console. The ConsoleMessage is able to
-	  *represent three types of messages, and depending on the type of message, the object fields
-	  *will have the information necessary to append to the console.*/
 	private class ConsoleMessage
 	{
 		/**Static class member used to describe a ConsoleMessage that represents a String message.*/
@@ -984,20 +932,13 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Private class that holds the single instance of ConsoleManager. This implementation of the
-	  *singleton pattern, known as the initialization-on-demands holder idiom, takes advantage of
-	  *language guarentees about class initialization.*/
-	private static class InstanceHolder
-	{
-		/**The single instance of ConsoleManager.*/
-		private static final ConsoleManager INSTANCE = new ConsoleManager();
-	}
-	
-	/**Accessor method for the instance of ConsoleManager. InstanceHolder is loaded only on the first
-	  *execution of getInstance().
-	  *@return the single instance of ConsoleManager.*/
 	public static ConsoleManager getInstance()
 	{
 		return InstanceHolder.INSTANCE;
+	}
+
+	private static class InstanceHolder
+	{
+		private static final ConsoleManager INSTANCE = new ConsoleManager();
 	}
 }

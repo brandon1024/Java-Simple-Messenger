@@ -2,11 +2,6 @@ package webchatinterface.helpers;
 
 public class EmailHelper
 {
-    //Rules:
-    //1-Must Contain '@'
-    //2-Local part must contain at least character
-    //3-Domain part must contain at least three character
-    //4-Domain part must contain '.'
     public static boolean isValidEmailAddress(String emailAddress)
     {
         if(!emailAddress.contains("@"))

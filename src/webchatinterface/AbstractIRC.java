@@ -50,7 +50,7 @@ import java.io.File;
  *<br>	- Image messages may be saved by clicking the image in the popup JDialog.
  *<br>	- To indicate that work is in progress, the wait cursor is displayed when hovering over the application
  *<br>		user interface. This prevents the apparent 'block' in the application runtime.
- *<br>	- Connected users dialog auto will auto refresh every second. Users can now keep the ConnectedUsersDialog
+ *<br>	- Connected users dialog auto will auto refresh every second. Users can now keep the ConnectedUserViewer
  *<br>		window open while using the application to see who is online in real time.
  *<br>	- Redesigned Usage Monitor. Removed non-essential information and added space between columns for
  *<br>		easier reading.

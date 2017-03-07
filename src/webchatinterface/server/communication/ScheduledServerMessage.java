@@ -1,4 +1,4 @@
-package webchatinterface.server.util;
+package webchatinterface.server.communication;
 
 import java.io.Serializable;
 
@@ -12,28 +12,13 @@ import java.io.Serializable;
 
 public class ScheduledServerMessage implements Serializable
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
 	private static final long serialVersionUID = -5624158322875482839L;
-
-	/**The Message object to be broadcasted*/
 	public final String message;
-	
-	/**Field representing the time interval between each broadcast of this message*/
 	public final int everyMinutes;
-	
-	/**Field representing the daily hour of broadcast*/
 	public final int dailyHour;
-	
-	/**Field representing the daily minute of broadcast*/
 	public final int dailyMinute;
-	
-	/**Defines whether the message is broadcasted daily or on specific time intervals*/
 	public final boolean repeatDaily;
 	
-	/**Constructs a new ScheduledMessage given a Message object and a broadcast time interval
-	  *@param message The Message object to be broadcasted
-	  *@param everyMinutes The fixed time interval between broadcasts*/
 	public ScheduledServerMessage(String message, int everyMinutes)
 	{
 		this.message = message;
@@ -43,11 +28,6 @@ public class ScheduledServerMessage implements Serializable
 		this.repeatDaily = false;
 	}
 	
-	/**Constructs a new ScheduledMessage given a Message object, and daily hour and minute
-	  *of broadcast
-	  *@param message The Message object to be broadcasted
-	  *@param dailyHour The hour at which the broadcast will occur
-	  *@param dailyMinute The minute at which the broadcast will occur*/
 	public ScheduledServerMessage(String message, int dailyHour, int dailyMinute)
 	{
 		this.message = message;
@@ -57,9 +37,6 @@ public class ScheduledServerMessage implements Serializable
 		this.repeatDaily = true;
 	}
 	
-	/**Overridden toString() from java.lang.Object.
-	  *@return a String representation of this object*/
-	@Override
 	public String toString()
 	{
 		if(this.message.length() > 50)

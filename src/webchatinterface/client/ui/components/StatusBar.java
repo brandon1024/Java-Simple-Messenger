@@ -1,14 +1,10 @@
 package webchatinterface.client.ui.components;
 
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Font;
-
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-
 import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.util.ClientUser;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -24,31 +20,15 @@ import webchatinterface.util.ClientUser;
 
 public class StatusBar extends Container
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = 1326722175903246842L;
-	
-	/**JLabel that contains the icon that describes the availability of the client*/
 	private JLabel availabilityStatusIcon;
-	
-	/**JLabel that contains a description of the availability of the client*/
 	private JLabel availabilityStatus;
-	
-	/**JLabel that contains a description of the chat room in which the client is connected*/
 	private JLabel chatroom;
-	
 	private ImageIcon availableIcon;
-	
 	private ImageIcon busyIcon;
-	
 	private ImageIcon awayIcon;
-	
 	private ImageIcon appearOfflineIcon;
-	
 	private ImageIcon offlineIcon;
 	
-	/**Builds a {@code StatusBar} object. Constructs a new StatusBar with default fields.
-	  *By default, the availability is OFFLINE, and the chatroom is "Public Chat Room".*/
 	public StatusBar()
 	{
 		//Build Container and Set Layout Manager
@@ -76,9 +56,6 @@ public class StatusBar extends Container
 		super.add(this.chatroom);
 	}
 	
-	/**Set the availability of the user.
-	  *@param availability The availability of the client, as described by the static fields in
-	  *{@code ClientUser}*/
 	public void setAvailability(int availability)
 	{
 		if(availability == ClientUser.AVAILABLE)
@@ -108,8 +85,6 @@ public class StatusBar extends Container
 		}
 	}
 	
-	/**Set the chat room name to display in the StatusBar.
-	  *@param chatroomName The name of the chatroom*/
 	public void setChatroom(String chatroomName)
 	{
 		this.chatroom.setText(chatroomName);

@@ -10,8 +10,6 @@ import java.util.ArrayList;
 
 public class StylePreferencesPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = 7958241337977537948L;
-	
 	private Color backgroundColor;
 	private Color foregroundColor;
 	private Font textFont;

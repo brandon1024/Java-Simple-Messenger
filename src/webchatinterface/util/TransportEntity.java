@@ -1,11 +1,9 @@
 package webchatinterface.util;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 import webchatinterface.helpers.TimeHelper;
+
+import java.io.Serializable;
+import java.util.Calendar;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -35,31 +33,14 @@ import webchatinterface.helpers.TimeHelper;
 
 public abstract class TransportEntity implements Serializable
 {
-	/**Serial Version UID is used as a version control for the class that implements 
-	 *the serializable interface.*/
 	private static final long serialVersionUID = 1L;
 
-	/**Local class variable containing the number of instantiated TransportEntity 
-	  *objects. Used by {@code TransportEntity()} constructor to assign unique 
-	  *message identification number to the object.*/
 	private static int messageIdentification = 0;
-	
-	/**A timestamp that represents the time at which the TransportEntity object
-	  *was created.*/
 	private final String TIMESTAMP;
-	
-	/**A string containing the name of the client who created the TransportEntity object*/
 	private final String SENDER;
-	
-	/**A string containing the randomly generated user identification key*/
 	private final String SENDER_ID;
-	
-	/**Unique local message identification number*/
 	private final int ID;
 	
-	/**Constructor for a new instance of the TransportEntity class.
-	  *@param sender the sender identifier or username
-	  *@param senderID the unique sender identification key*/
 	protected TransportEntity(String sender, String senderID)
 	{
 		this.SENDER = sender;
@@ -68,43 +49,26 @@ public abstract class TransportEntity implements Serializable
 		this.ID = messageIdentification++;
 	}
 	
-	/**Accessor method for the {@code TIMESTAMP} field of this TransportEntity object
-	  *@return the timestamp of this TransportEntity object, i.e. the time and date at which
-	  *the object was created*/
 	public String getTimeStamp()
 	{
 		return this.TIMESTAMP;
 	}
 	
-	/**Accessor method for the {@code SENDER} field of this TransportEntity object
-	  *@return the username of the sender of this TransportEntity object*/
 	public String getSender()
 	{
 		return this.SENDER;
 	}
 	
-	/**Accessor method for the {@code SENDER_ID} field of this TransportEntity object
-      *@return the unique identification key for the user that instantiated this object*/
 	public String getSenderID()
 	{
 		return this.SENDER_ID;
 	}
 	
-	/**Accessor method for the {@code ID} field of this TransportEntity object
-	  *@return the unique local message identification number of this TransportEntity object*/
 	public int getMessageID()
 	{
 		return this.ID;
 	}
 	
-	/**Build and return a textual representation of this transport entity object.
-	  *<p>
-	  *Format:
-	  *<ul>
-	  *<li>{@code [ID] YYYY-MM-DDThh:mm:ss+00:00 SENDER>}</li>
-	  *</ul>
-	  *@return a textual representation of this transport entity object.*/
-	@Override
 	public String toString()
 	{
 		return "[" + this.ID + "] " + this.TIMESTAMP + " " + this.SENDER + "> ";

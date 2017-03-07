@@ -8,14 +8,9 @@ import java.util.ArrayList;
 
 public class ConnectionSettingsPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = -2264055367030966960L;
-	
 	private JTextField portNumberField;
-	
 	private JTextField bindIPField;
-	
 	private JTextField maxConnectionsField;
-	
 	private JTextField loginTimeoutField;
 	
 	public ConnectionSettingsPanel(String header)

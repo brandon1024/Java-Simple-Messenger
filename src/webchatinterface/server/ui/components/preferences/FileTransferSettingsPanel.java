@@ -8,10 +8,7 @@ import java.util.ArrayList;
 
 public class FileTransferSettingsPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = -3316390765717795160L;
-
 	private JTextField transferBufferSizeField;
-	
 	private JTextField fileTransferSizeLimitField;
 	
 	public FileTransferSettingsPanel(String header)

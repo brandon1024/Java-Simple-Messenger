@@ -1,12 +1,10 @@
 package webchatinterface.client.ui.dialog;
 
-import javax.swing.JFrame;
-import javax.swing.JTextArea;
-import javax.swing.WindowConstants;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
+
+import javax.swing.*;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -20,9 +18,6 @@ public class AboutApplicationDialog
 {
 	private static JFrame frame;
 	
-	/**Displays the "About" dialog in a new window. The dialog contains the name of the author of
-	  *the application, the build version, the release date and a short description of the purpose
-	  *of the application.*/
 	public static void showAboutDialog()
 	{
 		AboutApplicationDialog.frame = new JFrame("About Web Chat Interface");

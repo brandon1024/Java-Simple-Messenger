@@ -1,20 +1,12 @@
 package webchatinterface.server.ui.components;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
-import webchatinterface.server.util.ChatRoom;
+import webchatinterface.server.network.ChatRoom;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -29,71 +21,24 @@ import webchatinterface.server.util.ChatRoom;
 
 public class UsageMonitor extends JPanel implements Runnable
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = 4773452436998229115L;
-
-	/**The UsageMonitor instance. Accessed using UsageMonitor.getInstance().*/
-	private static UsageMonitor instance = new UsageMonitor();
-	
-	/**The instance of Runtime that allows the application to interface
-	  *with the JRE.*/
 	private Runtime runtime;
-	
-	/**The underlying server, which the UsageMonitor is monitoring.*/
 	private WebChatServer server;
-	
-	/**The JLabel for displaying the memory used by the JVM.*/
 	private JLabel usedMem;
-	
-	/**The JLabel for displaying the free memory available to the JVM.*/
 	private JLabel freeMem;
-	
-	/**The JLabel for displaying the total memory available to the JVM.*/
 	private JLabel totalMem;
-	
-	/**The JLabel for displaying the maximum memory available to the JVM.*/
 	private JLabel maxMem;
-	
-	/**The JLabel for displaying the number of messages communicated by the server.*/
 	private JLabel messagesSent;
-	
-	/**The JLabel for displaying the server port number.*/
 	private JLabel port;
-	
-	/**The JLabel for displaying the maximum number of client connections to the server.*/
 	private JLabel maxConnections;
-	
-	/**The JLabel for displaying the server version.*/
 	private JLabel version;
-	
-	/**The JLabel for displaying the most recent client version.*/
 	private JLabel clientVersion;
-	
-	/**The JLabel for displaying the status of the server.*/
 	private JLabel status;
-	
-	/**The JLabel for displaying the number of files transfered between clients.*/
 	private JLabel filesTransferred;
-	
-	/**The JLabel for displaying the total server uptime.*/
 	private JLabel upTime;
-	
-	/**The JProgressBar for displaying the server memory usage, i.e. the used memory
-	  *versus the total memory.*/
 	private JProgressBar memUsage;
-	
-	/**The JProgressBar for displaying the server usage, i.e. the number of connected
-	  *clients versus the maximum number of concurrent connections.*/
 	private JProgressBar serverUsage;
-	
-	/**The server up time in seconds.*/
 	private int serverUpTime;
 	
-	
-	/**Constructs a {@code UsageMonitor} object. Builds a container with
-	  *labels and graphical components for displaying useful information regarding
-	  *the status of the server.*/
 	private UsageMonitor()
 	{
 		//Build Container Object
@@ -201,29 +146,17 @@ public class UsageMonitor extends JPanel implements Runnable
 		super.add(visualInfo);
 	}
 	
-	/**Establish a reference to the server. Allows the {@code UsageMonitor} to
-	  *gather information from the server.
-	  *@param server The underlying server to monitor*/
 	public void runServer(WebChatServer server)
 	{
 		this.server = server;
 	}
 	
-	/**Remove the reference to the server once the server is suspended. The
-	  *{@code UsageMonitor} will display default information.*/
 	public void suspendServer()
 	{
 		this.server = null;
 		this.serverUpTime = 0;
 	}
 	
-	/**Run a threaded instance of the {@code UsageMonitor}. Periodically
-	  *polls the server for information regarding memory usage, CPU usage,
-	  *runtime and status. Updates the components in the JPanel every 1000ms.
-	  *<p>
-	  *The {@code run()} method will run indefinitely, until the main server
-	  *thread terminates.*/
-	@Override
 	public void run()
 	{
 		while(true)
@@ -271,43 +204,31 @@ public class UsageMonitor extends JPanel implements Runnable
 		}
 	}
 	
-	/**Accessor method for the memory used by the JVM, in megabytes (MB).
-	  *@return the number of megabytes used by the JVM.*/
 	private long usedMemory()
 	{
 		return (runtime.totalMemory() - runtime.freeMemory())/1024/1024;
 	}
 	
-	/**Accessor method for the free memory available to the JVM, in megabytes (MB).
-	  *@return the number of megabytes available to the JVM.*/
 	private long freeMemory()
 	{
 		return runtime.freeMemory()/1024/1024;
 	}
 	
-	/**Accessor method for the total memory available to the JVM, in megabytes (MB).
-	  *@return the total number of megabytes available to the JVM*/
 	private long totalMemory()
 	{
 		return runtime.totalMemory()/1024/1024;
 	}
 	
-	/**Accessor method for the maximum memory available to the JVM, in megabytes (MB).
-	  *@return the maximum number of megabytes available to the JVM.*/
 	private long maxMemory()
 	{
 		return runtime.maxMemory()/1024/1024;
 	}
 	
-	/**Accessor method for the number of available processors to be utilized by the JVM.
-	  *@return the number processors available to the JVM*/
 	private int availableProcessors()
 	{
 		return runtime.availableProcessors();
 	}
 	
-	/**Accessor method for the number of objects broadcasted by the server. Initially 0.
-	  *@return the number of objects communicated by the server*/
 	private long objectsCommunicated()
 	{
 		if(this.server != null)
@@ -316,8 +237,6 @@ public class UsageMonitor extends JPanel implements Runnable
 			return 0;
 	}
 	
-	/**Accessor method for the number of objects broadcasted by the server. Initially 0.
-	  *@return the number of objects communicated by the server*/
 	private long filesCommunicated()
 	{
 		if(this.server != null)
@@ -326,8 +245,6 @@ public class UsageMonitor extends JPanel implements Runnable
 			return 0;
 	}
 	
-	/**Accessor method for the server port number. Displays 0 when the server is suspended.
-	  *@return the server port number*/
 	private int serverPort()
 	{
 		if(this.server != null)
@@ -336,8 +253,6 @@ public class UsageMonitor extends JPanel implements Runnable
 			return 0;
 	}
 	
-	/**Accessor method for the server up time. Reported _d _h _m _s, returns 0 if server is suspended.
-	  *@return a string representing the current server uptime*/
 	private String serverUpTime()
 	{
 		int time = this.serverUpTime;
@@ -350,9 +265,6 @@ public class UsageMonitor extends JPanel implements Runnable
 		return days + "d " + hours + "h " + minutes + "m " + seconds + "s";
 	}
 	
-	/**Accessor method for the maximum number of concurrent connections to the server. Returns
-	  *1 if the server is suspended.
-	  *@return the maximum number of concurrent server connections*/
 	private int serverMaxConnections()
 	{
 		if(this.server != null)
@@ -361,9 +273,6 @@ public class UsageMonitor extends JPanel implements Runnable
 			return 0;
 	}
 	
-	/**Accessor method for the number of clients connected to the server. Returns 0 if the
-	  *server is suspended.
-	  *@return the number of clients connected to the server.*/
 	private int serverConnectedUsers()
 	{
 		if(this.server != null)
@@ -372,23 +281,6 @@ public class UsageMonitor extends JPanel implements Runnable
 			return 0;
 	}
 	
-	/**Accessor method for the server version. Returns 0.0.0 if the server is suspended.
-	  *@return the server version*/
-	private String serverVersion()
-	{
-		return AbstractIRC.SERVER_VERSION;
-	}
-	
-	/**Accessor method for the most recent client version. Returns 0.0.0 if the server is suspended.
-	  *@return the most recent client version*/
-	private String clientVersion()
-	{
-		return AbstractIRC.CLIENT_VERSION;
-	}
-	
-	/**Accessor method for the status of the server. Returns true of the server is running, and
-	  *returns false if the server is suspended.
-	  *@return true if server is running, false if server is suspended.*/
 	private String serverStatus()
 	{
 		if(this.server != null)
@@ -396,11 +288,24 @@ public class UsageMonitor extends JPanel implements Runnable
 		else
 			return "Suspended";
 	}
-	
-	/**Accessor method for an instance of {@code UsageMonitor}.
-	  *@return an instance of {@code UsageMonitor}*/
+
+	private String serverVersion()
+	{
+		return AbstractIRC.SERVER_VERSION;
+	}
+
+	private String clientVersion()
+	{
+		return AbstractIRC.CLIENT_VERSION;
+	}
+
 	public static UsageMonitor getInstance()
 	{
-		return UsageMonitor.instance;
+		return InstanceHolder.INSTANCE;
+	}
+
+	private static class InstanceHolder
+	{
+		private static final UsageMonitor INSTANCE = new UsageMonitor();
 	}
 }

@@ -7,14 +7,6 @@ import java.util.TimeZone;
 
 public class TimeHelper
 {
-    /**Build and return a string containing the local system time expressed according
-     *to ISO 8601 with UTC timezone offset.
-     *<p>
-     *Format:
-     *<ul>
-     *<li>{@code YYYY-MM-DDThh:mm:ss+00:00}</li>
-     *</ul>
-     *@return the current system time expressed according to ISO 8601 with UTC timezone offset*/
     public static String formatTimestampUTC(Calendar cal)
     {
         TimeZone tz = TimeZone.getDefault();

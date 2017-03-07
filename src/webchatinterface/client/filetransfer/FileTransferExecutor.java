@@ -1,20 +1,20 @@
 package webchatinterface.client.filetransfer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-import util.KeyGenerator;
 import util.DynamicQueue;
+import util.KeyGenerator;
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.communication.WebChatClient;
 import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.client.ui.dialog.TransferProgressDialog;
-import webchatinterface.util.TransferBuffer;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
+import webchatinterface.util.TransferBuffer;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -119,7 +119,7 @@ public class FileTransferExecutor implements Runnable
 			long numberOfPackets = bytesTotal / bufferSize + (bytesTotal % bufferSize > 0 ? 1 : 0);
 			
 			//Update Dialog
-			this.updateTransferDialog(0, 0, bytesTotal, 0, this.file.getName());
+			this.dialog.updateTransferDialog(0, 0, bytesTotal, 0, this.file.getName());
 			
 			//Initiate File Transfer with Transfer Manifest Command
 			Object[] transferData = {numberOfPackets, bytesTotal, bufferSize, this.transferID, this.file.getName()};
@@ -143,16 +143,16 @@ public class FileTransferExecutor implements Runnable
 				this.client.send(message);
 				
 				long timeElapsedMillis = (System.currentTimeMillis() - time) / 1000;
-				this.updateTransferDialog(bytesRead, array.length, bytesTotal, timeElapsedMillis, this.file.getName());
+				this.dialog.updateTransferDialog(bytesRead, array.length, bytesTotal, timeElapsedMillis, this.file.getName());
 			}
 			
 			//Update Dialog
-			this.updateTransferDialogComplete();
+			this.dialog.updateTransferDialogComplete();
 		}
 		catch(IOException e)
 		{
 			AbstractClient.logException(e);
-			this.updateTransferDialogError();
+			this.dialog.updateTransferDialogError();
 		}
 		
 		this.transferRunning = false;
@@ -214,48 +214,6 @@ public class FileTransferExecutor implements Runnable
 	public synchronized void bufferReceived(TransferBuffer buffer)
 	{
 		this.queuedBuffers.enqueue(buffer);
-	}
-	
-	private void updateTransferDialog(long bytesRead, long arraySize, long bytesTotal, long timeElapsedMillis, String filename)
-	{
-		this.dialog.setProgressColor(TransferProgressDialog.PROGRESS_GREEN);
-		this.dialog.setTitle("Filename: " + filename);
-		this.dialog.setInformationLabelText(filename);
-		this.dialog.setSpeedLabelText(TransferUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
-		this.dialog.setProgressValue(TransferUtilities.progressPercentageInt(bytesRead, bytesTotal));
-		this.dialog.setProgressString(TransferUtilities.computePercentCompletionText(bytesRead, bytesTotal));
-		this.dialog.setProgressLabelText(TransferUtilities.computeProgressText(bytesRead, bytesTotal));	
-	}
-	
-	private void updateTransferDialogComplete()
-	{
-		this.dialog.setWindowTitleBarText("Complete");
-		this.dialog.setProgressLabelText("File Transfer Complete");
-		this.dialog.setProgressValue(100);
-		this.dialog.setProgressColor(TransferProgressDialog.PROGRESS_BLUE);
-		
-		for(int i = 5; i >= 0; i--)
-		{
-			this.dialog.setProgressString("Dismissed in " + i + "seconds");
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch(InterruptedException e)
-			{
-				AbstractClient.logException(e);
-			}
-		}
-		
-		this.dialog.dispose();
-	}
-	
-	private void updateTransferDialogError()
-	{
-		this.dialog.setProgressColor(TransferProgressDialog.PROGRESS_RED);
-		this.dialog.setProgressString("ERROR OCCURRED");
-		this.dialog.setProgressLabelText("ERROR OCCURRED");
-		this.dialog.setWindowTitleBarText("ERROR OCCURRED");
 	}
 	
 	public String getTransferID()

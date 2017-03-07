@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 
 public class HelpDialog
 {
-	/**Displays a dialog showing the contact information for the developper.*/
 	public static void showHelpDialog()
 	{
 		//display help dialog

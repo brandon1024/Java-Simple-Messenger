@@ -9,8 +9,6 @@ import java.awt.*;
 
 public class IPFilterPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = 16172777675754695L;
-	
 	private JTextArea IPFilterEditor;
 	private JCheckBox filterAllIPAddressesExceptCheckBox;
 	private boolean edited;

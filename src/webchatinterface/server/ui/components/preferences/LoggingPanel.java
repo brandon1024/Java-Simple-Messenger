@@ -14,34 +14,19 @@ import java.util.ArrayList;
 
 public class LoggingPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = -8912986255346052099L;
-
 	private JCheckBox enableLoggingCheckBox;
-	
 	private JRadioButton logOnlyWarningsExceptionsRadioButton;
-	
 	private JRadioButton logOnlyServerActivityRadioButton;
-	
 	private JRadioButton logAllRadioButton;
-	
 	private JCheckBox logAllToSingleFileCheckBox;
-	
 	private JCheckBox logFileFormatCheckBox;
-	
 	private JCheckBox limitFileSizeCheckBox;
-	
 	private JCheckBox deleteOldLogFilesCheckBox;
-	
 	private JCheckBox showTimestampsCheckBox;
-	
 	private JTextField limitFileSizeField;
-	
 	private JTextField deleteOldLogFilesField;
-	
 	private JTextField logFileFormatField;
-	
 	private JButton showLogFolderButton;
-	
 	private JButton deleteAllLogFilesButton;
 	
 	public LoggingPanel(String header)

@@ -31,26 +31,12 @@ import java.util.Calendar;
 
 public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = -2782518871912013243L;
-	
-	/**The queue of messages to be appended to JTextPane*/
 	private DynamicQueue<ConsoleMessage> printQueue;
-	
 	private ArrayList<ConsoleMessage> printCache;
-	
-	/**The StyledDocument for the underlying JTextPane*/
 	private StyledDocument doc;
-	
-	/**Attribute Set for generic messages*/
 	private MutableAttributeSet messageAttribute;
-	
-	/**Attribute Set for warning messages*/
 	private MutableAttributeSet warningAttribute;
 	
-	/**Constructs a {@code ConsoleManager} object. Constructs the underlying JTextPane 
-	  *framework and print queues.*/
 	public ConsoleManager()
 	{
 		//Build JTextPane
@@ -78,16 +64,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		this.printCache = new ArrayList<ConsoleMessage>();
 	}
 	
-	/**Runs the {@code ConsoleManager}. Periodically polls the print queue 
-	  *and appends any stored messages to the underlying JTextPane in a 
-	  *sequential manner. Also logs messages displayed in the console
-	  *to the log file via the Logger.
-	  *<p>
-	  *Poll time: 100ms
-	  *<p>
-	  *Invoked when the thread starts.
-	  */
-	@Override
 	public void run()
 	{
 		while(true)
@@ -127,12 +103,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		}
 	}
 	
-	/**Enqueue a new {@code String} object as either a message or a warning.
-	  *@param message the string to enqueue to the console queue
-	  *@param warning true if {@code message} is a warning message to be displayed in red, false if
-	  *{@code message} is a generic message to be displayed in black
-	  *@see ConsoleManager#run()
-	  */
 	public void printConsole(String message, boolean warning)
 	{
 		synchronized(this)
@@ -143,9 +113,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		}
 	}
 	
-	/**Enqueue a new line character.
-	  *@see ConsoleManager#run()
-	  */
 	public void printConsole()
 	{
 		synchronized(this)
@@ -156,9 +123,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		}
 	}
 	
-	/**Removes all stored objects in the print queue, and clears all the text in the 
-	  *JTextPane.
-	  */
 	private void clearConsole(boolean clearCache)
 	{
 		synchronized(this)
@@ -171,7 +135,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		super.setText("");
 	}
 	
-	/***/
 	public void validateSettings()
 	{
 		this.setBackground(AbstractServer.backgroundColor);
@@ -194,7 +157,6 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	private class ConsoleMessage
 	{
 		private String message;
-		
 		private boolean warning;
 
 		public ConsoleMessage(String message, boolean warning)

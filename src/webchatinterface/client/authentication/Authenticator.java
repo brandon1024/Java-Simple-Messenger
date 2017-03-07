@@ -36,17 +36,11 @@ public class Authenticator
 	private String hostAddress;
 	private Integer portNumber;
 
-	/**Constructor for the {@code Authenticator} object.*/
 	public Authenticator(WebChatClientGUI parent)
 	{
 		this.parent = parent;
 	}
 	
-	/**Attempt accelerated authentication by gathering username, host address and port number from
-	  *preset file. If preset file not found, normal authentication is executed; i.e. 
-	  *{@code showDialog()} is invoked.
-	  *@throws AuthenticationException if preset file was not found and showDialog() method
-	  *threw an exception due to invalid entered information*/
 	public void quickAuthenticate() throws AuthenticationException
 	{
 		//Attempt to Load Previous Settings
@@ -61,11 +55,6 @@ public class Authenticator
 		}
 	}
 	
-	/**Display the authentication dialog to gather the user specified username, password, host address and port
-	  *number. Once the appropriate information is entered, the {@code Authenticator} object fields
-	  *are updated, and may be accessed using accessor methods.
-	  *@throws AuthenticationException if information entered by the user is invalid
-	  *@throws AuthenticationAbortedException if the authentication was aborted by the user*/
 	public void showNewAccountDialog() throws AuthenticationException
 	{
 		this.guest = false;
@@ -190,9 +179,6 @@ public class Authenticator
 			this.savePreset();
 	}
 	
-	/**Attempt to load saved preset from application temporary directory. Assigns preset settings to
-	  *{@code Authenticator} object fields.
-	  *@throws FileNotFoundException if the preset file could not be found*/
 	private void loadPreset() throws FileNotFoundException
 	{
 		File presetFile = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + "PRESET.dat");
@@ -216,7 +202,6 @@ public class Authenticator
 		}
 	}
 	
-	/**Attempt to save current settings to preset file in application temporary directory.*/
 	private void savePreset()
 	{
 		File presetFile = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + "PRESET.dat");
@@ -259,35 +244,26 @@ public class Authenticator
 		return this.emailAddress;
 	}
 	
-	/**Accessor method for the username field of the {@code Authenticator} object.
-	  *@return the username specified by the user*/
 	public String getUsername()
 	{
 		return this.username;
 	}
 	
-	/**Accessor method for the user password field of the {@code Authenticator} object.
-	  *@return the account password*/
 	public byte[] getPassword()
 	{
 		return this.password;
 	}
 	
-	/**Accessor method for the host address field of the {@code Authenticator} object.
-	  *@return the server host address specified by the user*/
 	public String getHostAddress()
 	{
 		return this.hostAddress;
 	}
 	
-	/**Accessor method for the port number field of the {@code Authenticator} object.
-	  *@return the server port number specified by the user*/
 	public int getPortNumber()
 	{
 		return this.portNumber;
 	}
 	
-	/***/
 	public void removeSensitiveInformation()
 	{
 		Arrays.fill(this.password, Byte.MIN_VALUE);

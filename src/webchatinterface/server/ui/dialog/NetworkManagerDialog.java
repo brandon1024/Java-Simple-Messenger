@@ -8,18 +8,11 @@ import java.awt.event.ActionListener;
 
 public class NetworkManagerDialog extends JFrame implements ActionListener
 {
-	private static final long serialVersionUID = 2827639863532629083L;
-
 	private NetworkManager netManager;
-	
 	private JMenuBar menuBar;
-	
 	private JMenu manageConnectedUsers;
-	
 	private JMenu manageActiveRooms;
-	
 	private JMenu manageUserDatabase;
-	
 	private JMenu manageBlacklist;
 	
 	public NetworkManagerDialog(NetworkManager netManager)

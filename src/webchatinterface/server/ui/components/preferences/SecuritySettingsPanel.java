@@ -8,18 +8,11 @@ import java.util.ArrayList;
 
 public class SecuritySettingsPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = 6119231329123738660L;
-
 	private JTextField hashingAlgorithmField;
-	
 	private JTextField keyGeneratorAlgorithmField;
-	
 	private JComboBox<Object> saltLengthComboBox;
-	
 	private JComboBox<Object> userIDKeyLengthComboBox;
-	
 	private JComboBox<Object> supportedUserIDKeyAlgorithmsComboBox;
-	
 	private JCheckBox blacklistInconsistentUserIDCheckBox;
 	
 	public SecuritySettingsPanel(String header)
@@ -62,7 +55,7 @@ public class SecuritySettingsPanel extends PreferencePanel
 		super.add(new JScrollPane(body, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 	}
 	
-	protected JPanel buildAccountStorePanel()
+	private JPanel buildAccountStorePanel()
 	{
 		JPanel accountStorePanel = new JPanel();
 		accountStorePanel.setLayout(new BoxLayout(accountStorePanel, BoxLayout.PAGE_AXIS));
@@ -265,7 +258,6 @@ public class SecuritySettingsPanel extends PreferencePanel
 	private class ComboBoxItem
 	{
 		private Object value;
-		
 		private Object name;
 		
 		public ComboBoxItem(Object name, Object value)

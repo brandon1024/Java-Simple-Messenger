@@ -11,10 +11,7 @@ import java.util.Scanner;
 
 public class AdvancedSettingsPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = 1000489259244129189L;
-	
 	private JTextArea configurationEditor;
-	
 	private JCheckBox editedCheckBox;
 	
 	public AdvancedSettingsPanel(String header)

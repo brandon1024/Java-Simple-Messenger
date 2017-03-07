@@ -6,7 +6,7 @@ import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.account.AccountManager;
-import webchatinterface.server.util.ChatRoom;
+import webchatinterface.server.network.ChatRoom;
 import webchatinterface.util.*;
 
 import java.io.*;
@@ -24,66 +24,19 @@ import java.security.NoSuchAlgorithmException;
 
 public class WebChatServerInstance implements Runnable
 {
-	/**Local class variable used by {@code WebChatServerInstance()} constructor to assign unique 
-	  *identification number to the client-server connection instance*/
 	private static int ID = 0;
 	
-	/**A reference to the underlying server. Used to access list of connected users.
-	  *@see webchatinterface.server.WebChatServer#getConnectedUsers()*/
 	private WebChatServer server;
-	
-	/**A reference to the console manager. Allows for messages and information to be displayed
-	  *to the console window.
-	  *@see ConsoleManager*/
 	private ConsoleManager consoleMng;
-	
-	/**A reference to the BroadcastHelper, responsible for broadcasting messages to all clients connected
-	  *to the server, and responsible for scheduled server messages*/
 	private BroadcastHelper broadcastHlp;
-	
-	/**The client-server connection socket; one endpoint of a communication link running on a
-	  *network or over the internet between the server and a client.
-	  *@see Socket*/
 	private Socket socket;
-	
-	/**The {@code ObjectOutputStream} used to communicate objects to the client.*/
 	private ObjectInputStream messageIn;
-	
-	/**The {@code ObjectOutputStream} used to receive objects from the client.*/
 	private ObjectOutputStream messageOut;
-	
-	/**The ClientUser object representing a model of the user, the user status, and parameters.
-	 *@see webchatinterface.util.ClientUser*/
 	private ClientUser client;
-	
-	/**The chatroom in which the client is a member.*/
 	private ChatRoom room;
-	
-	/**The unique identification number assocaited with an instance of the WebChatServerInstance.
-	  *Each instance is given a unique identification number, starting at zero.*/
 	private final int INSTANCE_ID;
-	
-	/**The verification status of the client user. If true, full privileges granted. If false, user
-	  *is disconnected from server.*/
 	private volatile boolean verified = false;
 	
-	/**Builds a {@code WebChatServerInstance} object. Establishes a two way communication
-	  *connection with a dedicated client over the network or wide web. Once the link is
-	  *established by the {@code WebChatServer}, the socket is used to initialize input
-	  *and output streams to the client.
-	  *<p>
-	  *By default, the client is added to the public chatroom, and the availability of the
-	  *client is set to AVAILABLE.
-	  *@param server The underlying server. Used to interface with the public field
-	  *ConnectionArray.
-	  *@param broadcastHlp The BroadcastHelper instance used to help faciliate message and
-	  *command broadcasting
-	  *@param consoleMng The server console manager. Used to append messages and status to
-	  *the graphical user interface console.
-	  *@param socket The client-server socket.
-	  *@throws IOException if an IOException is thrown while establishing Object Input and Output
-	  *streams from the client-server socket.
-	  */
 	public WebChatServerInstance(WebChatServer server, BroadcastHelper broadcastHlp, ConsoleManager consoleMng, Socket socket) throws IOException
 	{
 		//Assign Fields, Open Streams
@@ -109,9 +62,6 @@ public class WebChatServerInstance implements Runnable
 		(new Thread(this)).start();
 	}
 	
-	/**Runs the {@code WebChatServerInstance} thread. Invokes {@code listen()}, and closes the
-	  *streams and socket when {@code listen()} is popped off the call stack.*/
-	@Override
 	public void run()
 	{
 		this.listen();
@@ -128,14 +78,6 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	/**The listen() method handles communication with the client. Once the client is verified,
-	  *the listen() method listens to the {@code ObjectInputStream}. {@code Message}, 
-	  *{@code MultimediaMessage}, and {@code TransferBuffer} objects are broadcasted to all 
-	  *clients connected to the server. {@code Command} objects are handled according to their 
-	  *function. See {@code Command} constant fields.
-	  *<p>
-	  *The {@code WebChatServerInstance} will continue to listen to the streams indefinitely, until an IOException
-	  *is thrown by the streams, the user ID becomes inconsistent, or a {@code SUSPEND} command is received.*/
 	private void listen()
 	{
 		//Verify Connection
@@ -195,7 +137,7 @@ public class WebChatServerInstance implements Runnable
 						switch(((Command)message).getCommand())
 						{
 							case Command.CONNECTION_SUSPENDED:
-							case Command.CONNECTION_SUSPENDED_AWKNOWLEDGE:
+							case Command.CONNECTION_SUSPENDED_ACKNOWLEDGE:
 								this.consoleMng.printConsole("User Disconnected: " + this.socket.getInetAddress().getHostAddress() + "; Closing Connection", false);
 								this.verified = false;
 								break;
@@ -332,8 +274,6 @@ public class WebChatServerInstance implements Runnable
 		this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 	}
 	
-	/**Initiates orderly connection release. {@code disconnect()} sends a {@code SUSPEND_CONNECTION} command
-	  *to the client. Once an ackowledgement command is received, the instance will gracefully terminate.*/
 	public void disconnect(int reason)
 	{
 		try
@@ -358,9 +298,6 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	/**Executes connection verification procedures. A connection is allowed if the a proper
-	  *CONNECTION_REQUEST Command is received and the username and userID fields meet
-	  *criteria*/
 	private void establishConnection()
 	{
 		//Verify User
@@ -528,9 +465,6 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	/**Validates a message received by the client. If the client UserID signature on the message
-	  *obejct does not match the UserID on record, the connection is flagged as unverified and closes.
-	  *@param message the message to validate.*/
 	private void validateMessage(TransportEntity message)
 	{
 		if(!message.getSenderID().equals(this.client.getUserID()))
@@ -540,9 +474,6 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	/**Validates a command received by the client. If the client UserID signature on the command
-	  *obejct does not match the UserID on record, the connection is flagged as unverified and closes.
-	  *@param command the command to validate.*/
 	private void validateCommand(Command command)
 	{
 		if(!command.getSenderID().equals(this.client.getUserID()))
@@ -552,59 +483,30 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	/**Writes a {@code Message} object to the {@code ObjectOutputStream}.
-	  *@see WebChatServer#objectsSent
-	  *@param message The {@code Message} object to be broadcasted to all clients.
-	  *@throws IOException if an IOException is thrown while attempting to write to the object output stream.*/
 	public synchronized void send(Message message) throws IOException
 	{
 		this.messageOut.writeObject(message);
 		this.messageOut.flush();
 	}
 	
-	/**Writes a {@code TransferBuffer} object to the {@code ObjectOutputStream}.
-	  *@see WebChatServer#objectsSent
-	  *@param message The {@code TransferBuffer} object to be broadcasted to all clients.
-	  *@throws IOException if an IOException is thrown while attempting to write to the object output stream.*/
 	public synchronized void send(TransferBuffer message) throws IOException
 	{
 		this.messageOut.writeObject(message);
 		this.messageOut.flush();
 	}
 	
-	/**Writes a {@code Command} object to the {@code ObjectOutputStream}.
-	  *@see WebChatServer#objectsSent
-	  *@param command The {@code Command} object to be broadcasted to all clients.
-	  *@throws IOException if an IOException is thrown while attempting to write to the object output stream.*/
 	public synchronized void send(Command command) throws IOException
 	{
 		this.messageOut.writeObject(command);
 		this.messageOut.flush();
 	}
 	
-	/**@deprecated The {@code send(Object obj)} method is not used with 
-	  *the dedicated {@code WebChatServer} server application. Any object 
-	  *that is not an instance of {@code Message}, {@code MultimediaMessage}, 
-      *or {@code Command} objects received by the dedicated {@code WebChatServer} 
-	  *will simply be ignored and discarded. However, this method may be useful 
-	  *if one wishes to develop a unique server application.
-	  *<p>
-	  *Writes a Object to the {@code ObjectOutputStream}. Updates the server counter for the
-	  *number of obejcts sent.
-	  *@see WebChatServer#objectsSent
-	  *@param obj The object to be broadcasted to all clients.
-	  *@throws IOException if an IOException is thrown while attempting to write to the object output stream.*/
-	@Deprecated
 	public synchronized void send(Object obj) throws IOException
 	{
 		this.messageOut.writeObject(obj);
 		this.messageOut.flush();
 	}
 
-	/**Sets the ChatRoom in which the client is connected to a new room. Removes this instance
-	  *from the old chatroom, mutates the room field of this instance, and adds this instance
-	  *to the new room.
-	  *@param room The new chatroom to connect to.*/
 	private void setRoom(ChatRoom room)
 	{
 		this.room.removeMember(this);
@@ -612,63 +514,36 @@ public class WebChatServerInstance implements Runnable
 		this.room.addMember(this);
 	}
 	
-	/**Accessor method for the room field of this object.
-	  *@return the chatroom in which this instance is connected*/
 	public ChatRoom getRoom()
 	{
 		return this.room;
 	}
 	
-	/**Accessor method for the IP address associated with the client connected to the server through this
-	  *instance of {@code WebChatServerInstance}.
-	  *@return the client IP address.*/
 	public String getIP()
 	{
 		return this.socket.getInetAddress().getHostAddress();
 	}
 	
-	/**Accessor method for the unique identification number associated with this instance of {@code WebChatServerInstance}.
-	  *@return the unique identification number associated with this client-server connection isntance.*/
 	public int getID()
 	{
 		return this.INSTANCE_ID;
 	}
 	
-	/**Accessor method for the username associated with the client connected to the server through this
-	  *instance of {@code WebChatServerInstance}.
-	  *@return the username specified by the client*/
 	public String getUsername()
 	{
 		return this.client.getUsername();
 	}
 	
-	/**Accessor method for the unique identification key associated with the client connected to the
-	  *server through this instance of {@code WebChatServerInstance}.
-	  *@return the unique identification key for the client*/
 	public String getUserID()
 	{
 		return this.client.getUserID();
 	}
 	
-	/**Accessor method for the availability of the client connected to the server through this instance 
-	  *of {@code WebChatServerInstance}.
-	  *@return the availability of the client, as described by the static fields in [@code ClientUser}.
-	  *@see webchatinterface.util.ClientUser*/
 	public int getAvailability()
 	{
 		return this.client.getAvailability();
 	}
 	
-	/**Used to access specific information regarding this instance of {@code WebChatServerInstance}.
-	  *<p>
-	  *Format:
-	  *Instance: INSTANCE_ID
-	  *Address: HOST ADDRESS
-	  *Local Port: LOCAL SERVER PORT
-	  *Remote Port: REMOTE SERVER PORT
-	  *Username: USERNAME
-	  *Verified: TRUE/FALSE
-	  *@return a textual representation of this client-server connection instance.*/
 	private String paramString()
 	{
 		return "\nInstance: " + this.INSTANCE_ID +
@@ -680,12 +555,6 @@ public class WebChatServerInstance implements Runnable
 				"\nVerified: " + this.verified;
 	}
 	
-	/**Overridden {@code toString()} method, used to access basic information regarding the socket
-	  *and client username.
-	  *<p>
-	  *Format: [username] "socket.toString()"
-	  *@return a textual representation of this client-server connection instance.*/
-	@Override
 	public String toString()
 	{
 		return "[" + this.client.getUsername() + "] " + this.socket.toString();

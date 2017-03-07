@@ -11,16 +11,10 @@ import java.util.ArrayList;
 
 public class GeneralSettingsPanel extends PreferencePanel
 {
-	private static final long serialVersionUID = 507661870194073394L;
-
 	private JCheckBox startServerWhenOpened;
-	
 	private JCheckBox startServerMinimized;
-	
 	private JCheckBox showResourceMonitor;
-	
 	private JButton restoreDefaultSettings;
-	
 	private JButton restoreSavedSettings;
 	
 	public GeneralSettingsPanel(String header, PreferencesDialog dialog)

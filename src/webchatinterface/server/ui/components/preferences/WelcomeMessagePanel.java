@@ -12,12 +12,8 @@ import java.util.ArrayList;
 
 public class WelcomeMessagePanel extends PreferencePanel
 {
-	private static final long serialVersionUID = -2242780715491172094L;
-	
 	private JTextArea newMemberMessageEditor;
-	
 	private JTextArea returningMemberMessageEditor;
-	
 	private JCheckBox alwaysSendWelcomeMessageCheckBox;
 	
 	public WelcomeMessagePanel(String header)

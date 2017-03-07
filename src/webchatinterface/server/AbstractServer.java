@@ -1,15 +1,14 @@
 package webchatinterface.server;
 
-import java.awt.Color;
-import java.awt.Font;
+import util.Logger;
+import webchatinterface.AbstractIRC;
+import webchatinterface.util.ClientUser;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
-
-import util.Logger;
-import webchatinterface.AbstractIRC;
-import webchatinterface.util.ClientUser;
 
 public abstract class AbstractServer
 {
@@ -98,7 +97,6 @@ public abstract class AbstractServer
 		}
 	}
 	
-	/**Load saved settings from configuration file config.ini in application directory.*/
 	private static void loadState() throws IOException
 	{
 		File configFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "config.ini");
@@ -273,7 +271,6 @@ public abstract class AbstractServer
 		}
 	}
 	
-	/**Save current settings to configuration file config.ini in application directory*/
 	public static void saveState() throws IOException
 	{
 		File configFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "config.ini");
@@ -342,7 +339,6 @@ public abstract class AbstractServer
 		fileWriter.close();
 	}
 	
-	/**Load all default settings.*/
 	public static void loadDefaultSettings()
 	{
 		AbstractServer.startServerWhenApplicationStarts = false;
@@ -377,25 +373,21 @@ public abstract class AbstractServer
 		AbstractServer.textFont = new Font("Courier New", Font.PLAIN, 12);
 	}
 	
-	/**Log an exception to the log file.*/
 	public synchronized static void logException(Exception e)
 	{
 		AbstractServer.logger.logException(e);
 	}
 	
-	/**Log a String to the log file*/
 	public synchronized static void logString(String str)
 	{
 		AbstractServer.logger.logString(str);
 	}
 	
-	/**Clear all server logs.*/
 	public synchronized static void clearLogs()
 	{
 		AbstractServer.logger.clearLogs();
 	}
 	
-	/**Retrieve a reference to the server user*/
 	public static ClientUser getServerUser()
 	{
 		return AbstractServer.server;

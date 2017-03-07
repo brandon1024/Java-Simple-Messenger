@@ -30,10 +30,6 @@ public class BlacklistManager
         }
     }
 
-    /**Determines whether a given IP address is blacklisted. It tests this by comparing
-     *the string parameter to the blacklist configuration file found in the temporary directory.
-     *@param IP The IP address to check against the blacklist configuration file.
-     *@return Returns true if the given IP address is blacklisted, false otherwise.*/
     public static boolean isBlacklisted(String IP)
     {
         //read from blacklist file to determine if user is blacklisted
@@ -69,8 +65,6 @@ public class BlacklistManager
         return false;
     }
 
-    /**Removes all records of blacklisted IP addresses by appending an empty String to the blacklist
-     *configuration file from the server temporary directory.*/
     public static void clearBlacklistRecord()
     {
         File blacklistFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat");

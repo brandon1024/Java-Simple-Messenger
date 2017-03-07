@@ -19,8 +19,6 @@ import java.awt.event.WindowListener;
 
 public class PreferencesDialog extends JDialog implements ActionListener, WindowListener, TreeSelectionListener
 {
-	private static final long serialVersionUID = 6276982860422704135L;
-	
 	private WebChatServerGUI userInterface;
 	private PreferencePanel currentPanel;
 	private PreferencePanel[] panels;

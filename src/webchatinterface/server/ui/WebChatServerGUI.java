@@ -3,14 +3,13 @@ package webchatinterface.server.ui;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
-import webchatinterface.server.communication.BroadcastHelper;
 import webchatinterface.server.communication.WebChatServerInstance;
+import webchatinterface.server.network.ChatRoom;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.ui.components.UsageMonitor;
 import webchatinterface.server.ui.dialog.AccountListDialog;
 import webchatinterface.server.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
-import webchatinterface.server.util.ChatRoom;
 import webchatinterface.util.Command;
 
 import javax.imageio.ImageIO;
@@ -35,72 +34,22 @@ import java.io.IOException;
 
 public class WebChatServerGUI extends JFrame implements ActionListener, WindowListener
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = 3471342435146329783L;
-
-	//GRAPHICAL USER INTERFACE COMPONENTS
-	/**The master container for all sub-containers within the
-	  *user interface*/
 	private Container masterPane;
-	
-	/**The menu option for running the {@code WebChatServer} with the 
-	  *current settings*/
 	private JMenuItem runServer;
-	
-	/**The menu option for suspending the {@code WebChatServer}*/
 	private JMenuItem suspendServer;
-	
-	/**The menu option for displaying the dialog for kicking a user from 
-	  *the server*/
 	private JMenuItem kickUser;
-	
-	/**The menu option for displaying the dialog with a list of current 
-	  *connected users*/
 	private JMenuItem showConnectedUsers;
-	
-	/**The menu option for displaying the dialog for broadcasting a message 
-	  *to all connected users*/
 	private JMenuItem broadcastMessage;
-	
-	/**The menu option for executing orderly termination procedures*/
 	private JMenuItem exit;
-	
-	/***/
 	private JMenuItem showAccountManager;
-	
-	/***/
 	private JMenuItem showPreferencesDialog;
-	
-	/**The menu option for displaying the 'about' dialog*/
 	private JMenuItem aboutApp;
-	
-	/**The menu option for displaying the 'help' dialog*/
 	private JMenuItem getHelp;
-	
-	/**The server console manager. 
-	  *@see ConsoleManager */
 	private ConsoleManager consoleMng;
-	
-	/**The server usage monitor. 
-	  *@see UsageMonitor */
 	private UsageMonitor usageMnt;
-	
-	/**Variable that describes the server state, i.e. whether the 
-	  *server is running or suspended. Used to control server actions 
-	  *and prevent unexpected server issues.*/
 	private boolean running = false;
-	
-	/**The underlying server with which this interface communicates.
-	  *@see WebChatServer*/
 	private WebChatServer server;
 	
-	
-	/**Entry point of the WebChatServer application. The {@code main()} 
-	  *method coordinates the initialization of the graphical user interface.
-	  *By default, the window size is set to 800x600, visibility enabled,
-	  *resizable disabled, and default close operation to {@code DO_NOTHING_ON_CLOSE}.
-	  *@param args command line arguments*/
 	public static void main(String[] args)
 	{
 		//Set OS Window Look and Feel
@@ -140,8 +89,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	      });
 	}
 	
-	/**Constructs the user interface for the server. Initializes and
-	  *displays all window components and their action listeners.*/
 	private WebChatServerGUI()
 	{
 		super.setTitle("Web Chat Server Interface - Suspended");
@@ -157,8 +104,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.runServer();
 	}
 	
-	/**Initializes and displays all window components and their
-	  *action listeners*/
 	private void buildUI()
 	{
 		this.consoleMng = new ConsoleManager();
@@ -260,15 +205,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		this.consoleMng.validateSettings();
 	}
 	
-	/**Executes orderly server suspend procedures. Invoking the {@code suspend()} 
-	  *method will close the server thread and all server instance descendants, and 
-	  *the {@code WebChatServer} object will be recycled and a new object will 
-	  *be instantiated when {@code runServer()} is run. 
-	  *<p>
-	  *Suspending the server will disconnect all connected users, and will update 
-	  *the usage monitor. If the server is not running, the call will be ignored.
-	  *@see WebChatServer#suspend()
-	  *@see WebChatServerInstance*/
 	private void suspendServer()
 	{
 		//if the server is running
@@ -283,12 +219,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Executes the server with the current state settings. Invoking the {@code runServer()} 
-	  *method will instantiate a new {@code WebChatServer} object with the current settings, 
-	  *and run the threaded object.
-	  *<p>
-	  *The usage monitor is updated to display server analytics. If the server is already running 
-	  *the call will be ignored.*/
 	private void runServer()
 	{
 		if(!this.running)
@@ -303,7 +233,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/***/
 	public void restartServer()
 	{
 		this.suspendServer();
@@ -318,8 +247,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		this.runServer();
 	}
 	
-	/**Display the kick user dialog, and allow the server user to kick and/or blacklist a 
-	  *client connection.*/
 	private void showKickUserDialog()
 	{
 		//If the server is running
@@ -372,11 +299,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.consoleMng.printConsole("No Connected Users; Server is Suspended", true);
 	}
 	
-	/**Display the connected users dialog. Displays a list of all users connected to the server in
-	  *all private and public chatrooms, along with their information.
-	  *<p>
-	  *Format:
-	  *{@code [AVAIL ICON][AVAILABILITY][INSTANCE ID][USERNAME][IP ADDRESS][ROOM][USER ID]}*/
 	private void showConnectedUsersDialog()
 	{
 		//if server running
@@ -386,9 +308,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.consoleMng.printConsole("No Connected Users; Server is Suspended", true);
 	}
 
-	/**Display the Message broadcast dialog. Allows the user to broadcast a message, or specifify
-	  *an automated server message with specific broadcast frequency.
-	  *@see BroadcastHelper#showBroadcastMessageDialog()*/
 	private void showBroadcastMessageDialog()
 	{
 		//if server running
@@ -398,7 +317,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			consoleMng.printConsole("Cannot Broadcast Message; Server is Suspended", true);
 	}
 	
-	/**Toggle the Usage Monitor lower pane.*/
 	private void showUsageMonitor(boolean show)
 	{
 		//If Usage Monitor is Visible
@@ -414,7 +332,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		}
 	}
 	
-	/**Gracefully exit the server application.*/
 	private void exit()
 	{
 		if(this.running)
@@ -439,7 +356,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		System.exit(0);
 	}
 	
-	/**Display the 'About Application' dialog.*/
 	private void showAboutDialog()
 	{
 		//display About dialog
@@ -455,7 +371,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			"About Web Chat Interface", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	/**Display the 'Help' dialog.*/
 	private void showHelpDialog()
 	{
 		//display Help dialog
@@ -468,13 +383,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			"Get Help", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
-	/**Respond to an {@code ActionEvent} occured by the user communicating with
-	  *a components in the user interface.
-	  *@param event the {@code ActionEvent} that occured as a result of the
-	  *user communicating with a components in the user interface
-	  *@see java.awt.event.ActionEvent
-	  *@see java.awt.event.ActionListener*/
-	@Override
 	public void actionPerformed(ActionEvent event)
 	{
 		//Run Server
@@ -508,38 +416,19 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.showHelpDialog();
 	}
 	
-	/**Execute orderly termination procedures. If the server is running, the server
-	  *is suspended. The current settings are saved to the configuration file.
-	  *@param event the {@code WindowEvent} that occured as a result of the
-	  *user communicating with the window
-	  *@see java.awt.event.WindowEvent
-	  *@see java.awt.event.WindowListener*/
-	@Override
 	public void windowClosing(WindowEvent event)
 	{
 		this.exit();
 	}
 
-	/**Execute orderly termination procedures. If the server is running, the server
-	  *is suspended. The current settings are saved to the configuration file.
-	  *@param event the {@code WindowEvent} that occured as a result of the
-	  *user communicating with the window
-	  *@see java.awt.event.WindowEvent
-	  *@see java.awt.event.WindowListener*/
-	@Override
 	public void windowClosed(WindowEvent event)
 	{
 		this.exit();
 	}
 
-	@Override
 	public void windowActivated(WindowEvent event){}
-	@Override
 	public void windowDeactivated(WindowEvent event){}
-	@Override
 	public void windowDeiconified(WindowEvent event){}
-	@Override
 	public void windowIconified(WindowEvent event){}
-	@Override
 	public void windowOpened(WindowEvent event){}
 }
