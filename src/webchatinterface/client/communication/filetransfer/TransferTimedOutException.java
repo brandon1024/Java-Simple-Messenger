@@ -1,4 +1,4 @@
-package webchatinterface.client.filetransfer;
+package webchatinterface.client.communication.filetransfer;
 
 /**@author Brandon Richardson
   *@version 1.4.3

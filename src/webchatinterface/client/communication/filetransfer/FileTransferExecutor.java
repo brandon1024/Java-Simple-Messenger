@@ -1,4 +1,4 @@
-package webchatinterface.client.filetransfer;
+package webchatinterface.client.communication.filetransfer;
 
 import util.DynamicQueue;
 import util.KeyGenerator;
@@ -24,8 +24,7 @@ import java.io.IOException;
   *the client and the server applications.
   *<p>
   *Files are read sequentially and split into small byte buffers. Each buffer is sent
-  *to the server wrapped in a {@code TransferBuffer} object. Each buffer is relayed to all the clients
-  *in the chatroom by the server in accordance with its specification.
+  *to the server wrapped in a {@code TransferBuffer} object.
   *<p>
   *Each transfer is marked with a unique transfer identification key, used to distinguish 
   *concurrent transfers and prevent buffer scrambling. This key, along with various information regarding
@@ -51,8 +50,14 @@ public class FileTransferExecutor implements Runnable
 	private int mode;
 	private Command transferManifest;
 	
-	public FileTransferExecutor(WebChatClientGUI userInterface, WebChatClient client)
+	public FileTransferExecutor(WebChatClientGUI userInterface, WebChatClient client) throws ExecutorInitializationException
 	{
+		if(userInterface == null)
+			throw new ExecutorInitializationException("parameter must not be null");
+
+		if(client == null)
+			throw new ExecutorInitializationException("parameter must not be null");
+
 		this.userInterface = userInterface;
 		this.dialog = null;
 		this.client = client;
@@ -64,24 +69,20 @@ public class FileTransferExecutor implements Runnable
 		this.transferManifest = null;
 	}
 	
-	public void start(File file) throws RuntimeException
+	public void start(File file) throws FileTransferException
 	{
 		this.start(file, null);
 	}
 	
-	public void start(Command transferManifest) throws RuntimeException
+	public void start(Command transferManifest) throws FileTransferException
 	{
 		this.start(null, transferManifest);
 	}
 
-	private void start(File file, Command transferManifest)
+	private void start(File file, Command transferManifest) throws FileTransferException
 	{
 		if(this.transferRunning)
-		{
-			RuntimeException e = new RuntimeException("Concurrent file transfers are not supported on a single instance of FileTransferExecutor");
-			AbstractClient.logException(e);
-			throw e;
-		}
+			throw new ConcurrentFileTransferException("Concurrent file transfers are not supported on a single instance of FileTransferExecutor");
 
 		this.transferRunning = true;
 		this.file = file;
@@ -93,18 +94,14 @@ public class FileTransferExecutor implements Runnable
 		(new Thread(this)).start();
 	}
 	
-	public void run() throws RuntimeException
+	public void run() throws FileTransferException
 	{
 		if(this.mode == TransferUtilities.MODE_SEND)
 			this.send();
 		else if(this.mode == TransferUtilities.MODE_RECEIVE)
 			this.receive();
 		else
-		{
-			RuntimeException e = new RuntimeException("FileTransferExecutor thread was not initialized properly; use start(file, mode) to start thread");
-			AbstractClient.logException(e);
-			throw e;
-		}
+			throw new ExecutorInitializationException("FileTransferExecutor thread was not initialized properly; use start(file, mode) to start thread");
 	}
 	
 	private void send()
@@ -136,8 +133,8 @@ public class FileTransferExecutor implements Runnable
 				bytesRead += array.length;
 				bytesRemaining -= array.length;
 				
-				//Create Byte Array and Message
-				TransferBuffer message = new TransferBuffer(array, file.getName(), this.transferID, this.clientUser.getUsername(), this.clientUser.getUserID());
+				//Create TransferBuffer
+				TransferBuffer message = new TransferBuffer(array, this.file.getName(), this.transferID, this.clientUser.getUsername(), this.clientUser.getUserID());
 				
 				//Send Message and Close Streams
 				this.client.send(message);
@@ -165,7 +162,6 @@ public class FileTransferExecutor implements Runnable
 		long bytesRemaining = bytesTotal;
 		String fileName = (String) transferData[4];
 		File file = new File(AbstractIRC.CLIENT_APPLCATION_DIRECTORY + fileName);
-		file.deleteOnExit();
 		
 		try(FileOutputStream fos = new FileOutputStream(file))
 		{
@@ -195,9 +191,7 @@ public class FileTransferExecutor implements Runnable
 				}
 				
 				if(timeoutCounter == 120)
-				{
 					throw new TransferTimedOutException("File Transfer Timed Out (120 seconds); bytes remaining " + bytesRemaining + "B of total " + bytesTotal + "B");
-				}
 			}
 
 			this.userInterface.displayFile(file, this.transferManifest);

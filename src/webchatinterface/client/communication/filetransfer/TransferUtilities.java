@@ -1,4 +1,4 @@
-package webchatinterface.client.filetransfer;
+package webchatinterface.client.communication.filetransfer;
 
 import webchatinterface.helpers.DataHelper;
 
@@ -7,7 +7,7 @@ public class TransferUtilities
 	public static final int MODE_SEND = 0;
 	public static final int MODE_RECEIVE = 1;
 
-	public static int progressPercentageInt(long currentPacket, long totalPackets) throws IllegalArgumentException
+	public static int progressPercentageInt(long currentPacket, long totalPackets)
 	{
 		return (int)((100) * currentPacket / totalPackets);
 	}

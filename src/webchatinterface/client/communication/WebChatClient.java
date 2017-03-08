@@ -5,7 +5,7 @@ import webchatinterface.client.AbstractClient;
 import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.client.authentication.AuthenticationException;
 import webchatinterface.client.authentication.Authenticator;
-import webchatinterface.client.filetransfer.FileTransferExecutor;
+import webchatinterface.client.communication.filetransfer.FileTransferExecutor;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -166,9 +166,9 @@ public class WebChatClient implements Runnable
 			}
 			else
 			{
-				Object[] data = {this.auth.isGuest(), auth.isNewMember(), AbstractIRC.CLIENT_VERSION, auth.getEmailAddress(), auth.getUsername(), auth.getPassword()};
+				Object[] data = {this.auth.isGuest(), this.auth.isNewMember(), AbstractIRC.CLIENT_VERSION, this.auth.getEmailAddress(), this.auth.getUsername(), this.auth.getPassword()};
 				this.send(new Command(Command.CONNECTION_REQUEST, data, "CLIENT", "0"));
-				this.auth.removeSensitiveInformation();
+				this.auth.removeSensitiveInformation(this.auth.getPassword());
 			}
 			
 			this.auth = null;

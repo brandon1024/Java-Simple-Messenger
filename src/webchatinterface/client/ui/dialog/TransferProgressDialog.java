@@ -1,7 +1,7 @@
 package webchatinterface.client.ui.dialog;
 
 import webchatinterface.client.AbstractClient;
-import webchatinterface.client.filetransfer.TransferUtilities;
+import webchatinterface.client.communication.filetransfer.TransferUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

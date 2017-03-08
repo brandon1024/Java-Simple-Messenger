@@ -180,7 +180,7 @@ public class NewAccountDialog extends JDialog
         return this.hostAddressField.getText();
     }
 
-    public String getHostPort()
+    public String getPortNumber()
     {
         return this.portField.getText();
     }

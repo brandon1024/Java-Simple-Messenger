@@ -17,22 +17,11 @@ import java.util.Random;
 
 public final class KeyGenerator
 {
-	/**Algorithm used to generate an alphanumeric mixed case key*/
 	public static final String ALPHANUMERIC_MIXED_CASE = "ALPHANUMERIC_MIXED_CASE";
-	
-	/**Algorithm used to generate an alphanumeric lower case key*/
 	public static final String ALPHANUMERIC_LOWER_CASE = "ALPHANUMERIC_LOWER_CASE";
-	
-	/**Algorithm used to generate an alphanumeric upper case key*/
 	public static final String ALPHANUMERIC_UPPER_CASE = "ALPHANUMERIC_UPPER_CASE";
-	
-	/**Algorithm used to generate an numeric case key*/
 	public static final String NUMERIC = "NUMERIC";
-	
-	/**Algorithm used to generate an alphabetic mixed case key*/
 	public static final String ALPHABETIC = "ALPHABETIC";
-	
-	/**Algorithm used to generate an alphabetic mixed case key*/
 	private static final String TEST = "TEST";
 	
 	/**Generates a new key given the desired key length and algorithm.
