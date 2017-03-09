@@ -2,7 +2,6 @@ package webchatinterface.client.session;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
-import webchatinterface.client.util.Preset;
 
 import java.io.*;
 
@@ -43,5 +42,23 @@ public class PresetLoader
 		}
 
 		return success;
+	}
+
+	public static Session renderSession(Preset preset)
+	{
+		Session session = new Session();
+		session.emailAddress = preset.getEmailAddress();
+		session.username = preset.getUsername();
+		session.password = preset.getPassword();
+		session.hostAddress = preset.getHostAddress();
+		session.portNumber = preset.getPort();
+		session.guest = preset.isGuest();
+
+		return session;
+	}
+
+	public static Preset renderPreset(Session session)
+	{
+		return new Preset(session.emailAddress, session.username, session.password, session.hostAddress, session.portNumber, session.guest);
 	}
 }

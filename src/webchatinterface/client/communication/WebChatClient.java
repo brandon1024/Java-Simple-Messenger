@@ -2,10 +2,11 @@ package webchatinterface.client.communication;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
-import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.client.authentication.AuthenticationException;
 import webchatinterface.client.authentication.Authenticator;
-import webchatinterface.client.communication.filetransfer.FileTransferExecutor;
+import webchatinterface.client.communication.filetransfer.FileTransferManager;
+import webchatinterface.client.session.Session;
+import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -17,8 +18,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -35,24 +34,25 @@ import java.util.Iterator;
 public class WebChatClient implements Runnable
 {
 	private WebChatClientGUI graphicalUserInterface;
+	private FileTransferManager transferManager;
 	private Socket socket;
 	private ObjectInputStream messageIn;
 	private ObjectOutputStream messageOut;
-	private Authenticator auth;
+	private Session session;
 	private ClientUser client;
 	private Object[][] connectedUsers;
-	private ArrayList<FileTransferExecutor> ongoingTransfers;
-	private volatile boolean RUN = false;
-	
-	public WebChatClient(WebChatClientGUI parent, Authenticator auth) throws IOException, AuthenticationException
+	private volatile boolean RUN;
+
+	public WebChatClient(WebChatClientGUI parent, Session session) throws IOException, AuthenticationException
 	{
 		this.graphicalUserInterface = parent;
-		this.auth = auth;
-		this.socket = new Socket(this.auth.getHostAddress(), this.auth.getPortNumber());
+		this.transferManager = new FileTransferManager(this.graphicalUserInterface);
+		this.session = session;
+		this.socket = new Socket(this.session.hostAddress, this.session.portNumber);
 		this.messageOut = new ObjectOutputStream(this.socket.getOutputStream());
 		this.messageIn = new ObjectInputStream(this.socket.getInputStream());
 		this.client = AbstractClient.getClientUser();
-		this.ongoingTransfers = new ArrayList<FileTransferExecutor>();
+		this.RUN = false;
 	}
 	
 	public void start()
@@ -99,7 +99,7 @@ public class WebChatClient implements Runnable
 				
 				//If a transfer buffer is received
 				if(message != null && message instanceof TransferBuffer)
-					this.processTransferBuffer((TransferBuffer)message);
+					this.transferManager.processTransferBuffer((TransferBuffer)message);
 				//If Message Received, append to chat window
 				else if(message != null && message instanceof Message)
 					this.processMessage((Message)message);
@@ -159,19 +159,17 @@ public class WebChatClient implements Runnable
 		//Send Connection Request Command and Await Connection Authorization
 		try
 		{
-			if(this.auth.isGuest())
+			if(this.session.guest)
 			{
-				Object[] data = {this.auth.isGuest(), AbstractIRC.CLIENT_VERSION};
+				Object[] data = {true, AbstractIRC.CLIENT_VERSION};
 				this.send(new Command(Command.CONNECTION_REQUEST, data, "CLIENT", "0"));
 			}
 			else
 			{
-				Object[] data = {this.auth.isGuest(), this.auth.isNewMember(), AbstractIRC.CLIENT_VERSION, this.auth.getEmailAddress(), this.auth.getUsername(), this.auth.getPassword()};
+				Object[] data = {false, this.session.newAccount, AbstractIRC.CLIENT_VERSION, this.session.emailAddress, this.session.username, this.session.password};
 				this.send(new Command(Command.CONNECTION_REQUEST, data, "CLIENT", "0"));
-				this.auth.removeSensitiveInformation(this.auth.getPassword());
+				Authenticator.removeSensitiveInformation(this.session.password);
 			}
-			
-			this.auth = null;
 		}
 		catch (IOException e)
 		{
@@ -235,29 +233,6 @@ public class WebChatClient implements Runnable
 		this.graphicalUserInterface.displayMessage(message);
 	}
 	
-	private void processTransferBuffer(TransferBuffer buffer)
-	{
-		//Get TransferBuffer ID
-		String messageTransferID = buffer.getTransferID();
-		Iterator<FileTransferExecutor> iterator = this.ongoingTransfers.iterator();
-		
-		//Iterate All Ongoing File Transfers
-		while(iterator.hasNext())
-		{
-			FileTransferExecutor next = iterator.next();
-			
-			//If Transfer is Running, Pass on TransferBuffer
-			if(next.isRunning())
-			{
-				if(next.getTransferID().equals(messageTransferID))
-					next.bufferReceived(buffer);
-			}
-			//Else Remove From List of Ongoing Transfers
-			else
-				iterator.remove();
-		}
-	}
-	
 	private void processCommand(Command com) throws CannotEstablishConnectionException
 	{
 		switch(com.getCommand())
@@ -294,9 +269,7 @@ public class WebChatClient implements Runnable
 				break;
 			//If Client Receives File Transfer Manifest
 			case Command.FILE_TRANSFER:
-				FileTransferExecutor FileTransferExecutor = new FileTransferExecutor(this.graphicalUserInterface, this);
-				FileTransferExecutor.start(com);
-				this.ongoingTransfers.add(FileTransferExecutor);
+				this.transferManager.executeInboundTransfer(com);
 				break;
 			//Process Interface Commands
 			default:
@@ -325,9 +298,9 @@ public class WebChatClient implements Runnable
 		this.messageOut.flush();
 	}
 	
-	public synchronized void send(File file)
+	public void send(File file)
 	{
-		(new FileTransferExecutor(this.graphicalUserInterface, this)).start(file);
+		this.transferManager.executeOutboundTransfer(this, file);
 	}
 	
 	public Object[][] getConnectedUsers()

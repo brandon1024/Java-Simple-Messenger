@@ -395,17 +395,17 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 				this.chatArea.printConsole(new Message("You Are Already Signed In", "CLIENT", "0"));
 				return;
 			}
-			
+
 			//Construct Authenticator Object and Show Input Dialog
 			Authenticator auth = new Authenticator(this);
-			
+
 			if(tryQuick)
 				auth.quickAuthenticate();
 			else
 				auth.showAuthenticationDialog();
 			
 			//Start WebChatClient Thread
-			this.client = new WebChatClient(this, auth);
+			this.client = new WebChatClient(this, auth.getSession());
 			this.client.start();
 		}
 		catch(UnknownHostException e)
@@ -456,7 +456,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			auth.showNewAccountDialog();
 
 			//Start WebChatClient Thread
-			this.client = new WebChatClient(this, auth);
+			this.client = new WebChatClient(this, auth.getSession());
 			this.client.start();
 		}
 		catch(UnknownHostException e)

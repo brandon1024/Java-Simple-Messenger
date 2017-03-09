@@ -2,10 +2,11 @@ package webchatinterface.client.authentication;
 
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.session.PresetLoader;
+import webchatinterface.client.session.Session;
 import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.client.ui.dialog.AuthenticationDialog;
 import webchatinterface.client.ui.dialog.NewAccountDialog;
-import webchatinterface.client.util.Preset;
+import webchatinterface.client.session.Preset;
 import webchatinterface.helpers.EmailHelper;
 import webchatinterface.helpers.UsernameHelper;
 
@@ -26,25 +27,12 @@ import java.util.Arrays;
 public class Authenticator
 {
 	private WebChatClientGUI parent;
-
-	private String emailAddress;
-	private String username;
-	private byte[] password;
-	private String hostAddress;
-	private Integer portNumber;
-	private boolean guest;
-	private boolean newAccount;
+	private Session session;
 
 	public Authenticator(WebChatClientGUI parent)
 	{
 		this.parent = parent;
-		this.emailAddress = null;
-		this.username = null;
-		this.password = null;
-		this.hostAddress = null;
-		this.portNumber = null;
-		this.guest = false;
-		this.newAccount = false;
+		this.session = new Session();
 	}
 	
 	public void quickAuthenticate() throws AuthenticationException
@@ -55,8 +43,8 @@ public class Authenticator
 	
 	public void showNewAccountDialog() throws AuthenticationException
 	{
-		this.guest = false;
-		this.newAccount = true;
+		this.session.guest = false;
+		this.session.newAccount = true;
 
 		//---REQUEST SETTINGS FROM USER---//
 		NewAccountDialog nad = new NewAccountDialog(parent);
@@ -66,8 +54,8 @@ public class Authenticator
 		{
 			try
 			{
-				this.hostAddress = nad.getHostAddress();
-				this.portNumber = Integer.valueOf(nad.getPortNumber());
+				this.session.hostAddress = nad.getHostAddress();
+				this.session.portNumber = Integer.valueOf(nad.getPortNumber());
 			}
 			catch(NumberFormatException e)
 			{
@@ -75,12 +63,12 @@ public class Authenticator
 				throw new InvalidFieldException("Invalid Port Number: " + nad.getPortNumber());
 			}
 
-			this.emailAddress = nad.getEmailAddress();
-			if(!EmailHelper.isValidEmailAddress(this.emailAddress))
+			this.session.emailAddress = nad.getEmailAddress();
+			if(!EmailHelper.isValidEmailAddress(this.session.emailAddress))
 				throw new InvalidFieldException("Invalid Email Address: " + nad.getEmailAddress());
 
-			this.username = nad.getUsername();
-			if(!UsernameHelper.isValidUsername(this.username))
+			this.session.username = nad.getUsername();
+			if(!UsernameHelper.isValidUsername(this.session.username))
 				throw new InvalidFieldException("Invalid Username: " + nad.getUsername());
 
 			char[] pass1 = nad.getPassword();
@@ -98,10 +86,10 @@ public class Authenticator
 					throw new InvalidFieldException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
 			}
 
-			this.password = new byte[pass1.length];
+			this.session.password = new byte[pass1.length];
 
-			for(int i = 0; i < this.password.length; i++)
-				this.password[i] = (byte) pass1[i];
+			for(int i = 0; i < this.session.password.length; i++)
+				this.session.password[i] = (byte) pass1[i];
 
 			this.removeSensitiveInformation(pass1);
 			this.removeSensitiveInformation(pass2);
@@ -119,15 +107,15 @@ public class Authenticator
 		this.loadPreset();
 
 		//---REQUEST SETTINGS FROM USER---//
-		AuthenticationDialog auth = new AuthenticationDialog(this.parent, this.username, this.password, this.hostAddress, this.portNumber);
+		AuthenticationDialog auth = new AuthenticationDialog(this.parent, this.session.username, this.session.password, this.session.hostAddress, this.session.portNumber);
 
 		//---RETRIEVE INPUT FROM DIALOG FIELDS---//
 		if(auth.showDialog() == 1)
 		{
 			try
 			{
-				this.hostAddress = auth.getHostAddress();
-				this.portNumber = Integer.valueOf(auth.getPortNumber());
+				this.session.hostAddress = auth.getHostAddress();
+				this.session.portNumber = Integer.valueOf(auth.getPortNumber());
 			}
 			catch(NumberFormatException e)
 			{
@@ -137,16 +125,16 @@ public class Authenticator
 
 			if(auth.getIsGuest())
 			{
-				this.guest = true;
-				this.newAccount = false;
-				this.username = null;
-				this.password = null;
+				this.session.guest = true;
+				this.session.newAccount = false;
+				this.session.username = null;
+				this.session.password = null;
 			}
 			else
 			{
-				this.guest = false;
-				this.newAccount = false;
-				this.username = auth.getUsername();
+				this.session.guest = false;
+				this.session.newAccount = false;
+				this.session.username = auth.getUsername();
 
 				char[] pass = auth.getPassword();
 
@@ -159,10 +147,10 @@ public class Authenticator
 						throw new InvalidFieldException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
 				}
 
-				this.password = new byte[pass.length];
+				this.session.password = new byte[pass.length];
 
-				for(int i = 0; i < this.password.length; i++)
-					this.password[i] = (byte) pass[i];
+				for(int i = 0; i < this.session.password.length; i++)
+					this.session.password[i] = (byte) pass[i];
 
 				this.removeSensitiveInformation(pass);
 			}
@@ -182,53 +170,20 @@ public class Authenticator
 		if(savedPreset == null)
 			return false;
 
-		this.username = savedPreset.getUsername();
-		this.password = savedPreset.getPassword();
-		this.hostAddress = savedPreset.getHostAddress();
-		this.portNumber = savedPreset.getPort();
+		this.session = PresetLoader.renderSession(savedPreset);
 
 		return true;
 	}
 	
 	private boolean savePreset()
 	{
-		Preset savedPreset = new Preset(this.username, this.password, this.hostAddress, this.portNumber);
-		return PresetLoader.savePreset(savedPreset);
+		Preset preset = PresetLoader.renderPreset(this.session);
+		return PresetLoader.savePreset(preset);
 	}
 	
-	public boolean isGuest()
+	public Session getSession()
 	{
-		return this.guest;
-	}
-	
-	public boolean isNewMember()
-	{
-		return this.newAccount;
-	}
-	
-	public String getEmailAddress()
-	{
-		return this.emailAddress;
-	}
-	
-	public String getUsername()
-	{
-		return this.username;
-	}
-	
-	public byte[] getPassword()
-	{
-		return this.password;
-	}
-	
-	public String getHostAddress()
-	{
-		return this.hostAddress;
-	}
-	
-	public int getPortNumber()
-	{
-		return this.portNumber;
+		return this.session;
 	}
 
 	private void removeSensitiveInformation(char[] password)
@@ -236,7 +191,7 @@ public class Authenticator
 		Arrays.fill(password, Character.MIN_VALUE);
 	}
 
-	public void removeSensitiveInformation(byte[] password)
+	public static void removeSensitiveInformation(byte[] password)
 	{
 		Arrays.fill(password, Byte.MIN_VALUE);
 	}

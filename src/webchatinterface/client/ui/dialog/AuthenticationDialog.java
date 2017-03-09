@@ -32,7 +32,7 @@ public class AuthenticationDialog extends JDialog
     private JCheckBox loginAsGuest;
     private int exitCode;
 
-    public AuthenticationDialog(WebChatClientGUI parent, String username, byte[] password, String hostAddress, int port)
+    public AuthenticationDialog(WebChatClientGUI parent, String username, byte[] password, String hostAddress, Integer port)
     {
         super(parent, "Client Authentication", Dialog.ModalityType.DOCUMENT_MODAL);
         super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

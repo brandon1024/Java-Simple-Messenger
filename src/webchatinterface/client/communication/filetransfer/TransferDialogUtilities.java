@@ -2,16 +2,8 @@ package webchatinterface.client.communication.filetransfer;
 
 import webchatinterface.helpers.DataHelper;
 
-public class TransferUtilities
+public class TransferDialogUtilities
 {
-	public static final int MODE_SEND = 0;
-	public static final int MODE_RECEIVE = 1;
-
-	public static int progressPercentageInt(long currentPacket, long totalPackets)
-	{
-		return (int)((100) * currentPacket / totalPackets);
-	}
-	
 	public static String computeTransferSpeedText(long bufferSize, long timeElapsedMillis)
 	{
 		long speed = Double.doubleToLongBits(bufferSize / (double)timeElapsedMillis);
@@ -20,7 +12,7 @@ public class TransferUtilities
 	
 	public static String computePercentCompletionText(long bytesRead, long bytesTotal)
 	{
-		int percentage = TransferUtilities.progressPercentageInt(bytesRead, bytesTotal);
+		int percentage = TransferDialogUtilities.progressPercentage(bytesRead, bytesTotal);
 		return percentage + "% (" + DataHelper.formatBytes(bytesRead, 2) + ")";
 	}
 	
@@ -29,5 +21,10 @@ public class TransferUtilities
 		String dataRead = DataHelper.formatBytes(bytesRead, 2);
 		String dataTotal = DataHelper.formatBytes(bytesTotal,2);
 		return "Progress: " + dataRead + "/" + dataTotal;
+	}
+
+	public static int progressPercentage(long numerator, long denominator)
+	{
+		return (int)((100) * numerator / denominator);
 	}
 }

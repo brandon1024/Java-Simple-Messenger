@@ -1,7 +1,7 @@
 package webchatinterface.client.ui.dialog;
 
 import webchatinterface.client.AbstractClient;
-import webchatinterface.client.communication.filetransfer.TransferUtilities;
+import webchatinterface.client.communication.filetransfer.TransferDialogUtilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -77,10 +77,10 @@ public class TransferProgressDialog extends JFrame
 		this.setProgressColor(TransferProgressDialog.PROGRESS_GREEN);
 		this.setTitle("Filename: " + filename);
 		this.setInformationLabelText(filename);
-		this.setSpeedLabelText(TransferUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
-		this.setProgressValue(TransferUtilities.progressPercentageInt(bytesRead, bytesTotal));
-		this.setProgressString(TransferUtilities.computePercentCompletionText(bytesRead, bytesTotal));
-		this.setProgressLabelText(TransferUtilities.computeProgressText(bytesRead, bytesTotal));
+		this.setSpeedLabelText(TransferDialogUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
+		this.setProgressValue(TransferDialogUtilities.progressPercentage(bytesRead, bytesTotal));
+		this.setProgressString(TransferDialogUtilities.computePercentCompletionText(bytesRead, bytesTotal));
+		this.setProgressLabelText(TransferDialogUtilities.computeProgressText(bytesRead, bytesTotal));
 	}
 
 	public void updateTransferDialogComplete()
