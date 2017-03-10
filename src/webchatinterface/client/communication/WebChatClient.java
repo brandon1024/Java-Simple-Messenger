@@ -2,7 +2,6 @@ package webchatinterface.client.communication;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
-import webchatinterface.client.authentication.AuthenticationException;
 import webchatinterface.client.authentication.Authenticator;
 import webchatinterface.client.communication.filetransfer.FileTransferManager;
 import webchatinterface.client.session.Session;
@@ -43,7 +42,7 @@ public class WebChatClient implements Runnable
 	private Object[][] connectedUsers;
 	private volatile boolean RUN;
 
-	public WebChatClient(WebChatClientGUI parent, Session session) throws IOException, AuthenticationException
+	public WebChatClient(WebChatClientGUI parent, Session session) throws IOException
 	{
 		this.graphicalUserInterface = parent;
 		this.transferManager = new FileTransferManager(this.graphicalUserInterface);
@@ -57,7 +56,7 @@ public class WebChatClient implements Runnable
 	
 	public void start()
 	{
-		if(this.isRunning())
+		if(this.RUN)
 			return;
 
 		this.RUN = true;
@@ -66,47 +65,27 @@ public class WebChatClient implements Runnable
 	
 	public void run()
 	{
+		this.requestConnection();
 		this.listen();
 		this.disconnect();
 	}
 	
 	private void listen()
 	{
-		try
-		{
-			this.requestConnection();
-		}
-		catch(ConnectionDeniedException e)
-		{
-			AbstractClient.logException(e);
-			this.graphicalUserInterface.disconnect(e.getMessage());
-			this.RUN = false;
-		}
-		catch(CannotEstablishConnectionException e)
-		{
-			AbstractClient.logException(e);
-			this.graphicalUserInterface.disconnect("Connection Reset: Unable to Communicate with the Server");
-			this.RUN = false;
-		}
-		
 		while(this.RUN)
 		{
 			Object message;
 			try
 			{
-				//Read Stream
-				message = this.messageIn.readObject();
-				
-				//If a transfer buffer is received
-				if(message != null && message instanceof TransferBuffer)
-					this.transferManager.processTransferBuffer((TransferBuffer)message);
-				//If Message Received, append to chat window
-				else if(message != null && message instanceof Message)
+				if((message = this.messageIn.readObject()) == null)
+					continue;
+
+				if(message instanceof Message)
 					this.processMessage((Message)message);
-				
-				//If Command Received, Process Command
-				if(message != null && message instanceof Command)
+				else if(message instanceof Command)
 					this.processCommand((Command)message);
+				else if(message instanceof TransferBuffer)
+					this.transferManager.processTransferBuffer((TransferBuffer)message);
 			}
 			catch(SocketException e)
 			{
@@ -154,7 +133,7 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
-	private void requestConnection() throws CannotEstablishConnectionException
+	private void requestConnection()
 	{
 		//Send Connection Request Command and Await Connection Authorization
 		try
@@ -174,19 +153,22 @@ public class WebChatClient implements Runnable
 		catch (IOException e)
 		{
 			AbstractClient.logException(e);
-			throw new CannotEstablishConnectionException("Unable to send CONNECTION_REQUEST command");
+			this.graphicalUserInterface.disconnect("Unable to send CONNECTION_REQUEST command");
+			this.RUN = false;
+			return;
 		}
 		
 		//Await Connection Authorization
-		boolean clientVerified = false;
-		while(!clientVerified)
+		boolean unverified = true;
+		while(unverified && this.RUN)
 		{
+			Object objectIn;
 			try
 			{
-				//Read Object From Stream
-				Object objectIn = this.messageIn.readObject();
-			
-				if(objectIn != null && objectIn instanceof Command)
+				if((objectIn = this.messageIn.readObject()) == null)
+					continue;
+
+				if(objectIn instanceof Command)
 				{
 					//Get Command ID
 					int commandID = ((Command)objectIn).getCommand();
@@ -197,7 +179,7 @@ public class WebChatClient implements Runnable
 						Object[] data = (Object[])((Command)objectIn).getMessage();
 						this.client.signIn((String)data[0], (String)data[1]);
 						this.graphicalUserInterface.connectionAuthorized();
-						clientVerified = true;
+						unverified = false;
 					}
 					//If Server Denied Connection
 					else if(commandID == Command.CONNECTION_DENIED)
@@ -223,7 +205,12 @@ public class WebChatClient implements Runnable
 			catch (ClassNotFoundException | IOException e)
 			{
 				AbstractClient.logException(e);
-				throw new CannotEstablishConnectionException("Connection Failed; invalid I/O streams or incompatible server protocol");
+				this.graphicalUserInterface.disconnect("Connection Failed; invalid I/O streams or incompatible server protocol");
+			}
+			catch(ConnectionDeniedException e)
+			{
+				AbstractClient.logException(e);
+				this.graphicalUserInterface.disconnect(e.getMessage());
 			}
 		}
 	}
@@ -239,7 +226,7 @@ public class WebChatClient implements Runnable
 		{
 			//Periodic Connected Users List Update from Server	
 			case Command.CONNECTED_USERS:
-				this.setConnectedUsers((Object[][])com.getMessage());
+				this.connectedUsers = (Object[][])com.getMessage();
 				break;
 			//If Connection Closes, Determine Reason
 			case Command.CONNECTION_SUSPENDED:
@@ -306,11 +293,6 @@ public class WebChatClient implements Runnable
 	public Object[][] getConnectedUsers()
 	{
 		return this.connectedUsers;
-	}
-	
-	private void setConnectedUsers(Object[][] newConnectedUsers)
-	{
-		this.connectedUsers = newConnectedUsers;
 	}
 	
 	public boolean isRunning()
