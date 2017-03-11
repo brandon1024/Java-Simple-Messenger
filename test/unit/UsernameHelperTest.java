@@ -30,13 +30,9 @@ public class UsernameHelperTest
                 " "};
 
         for(String username : validUsername)
-        {
             assertTrue("Username should be valid: " + username, UsernameHelper.isValidUsername(username));
-        }
 
         for(String username : invalidUsername)
-        {
             assertFalse("Username should be invalid: " + username, UsernameHelper.isValidUsername(username));
-        }
     }
 }

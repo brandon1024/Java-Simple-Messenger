@@ -8,6 +8,7 @@ import webchatinterface.client.ui.dialog.AuthenticationDialog;
 import webchatinterface.client.ui.dialog.NewAccountDialog;
 import webchatinterface.client.session.Preset;
 import webchatinterface.helpers.EmailHelper;
+import webchatinterface.helpers.PasswordHelper;
 import webchatinterface.helpers.UsernameHelper;
 
 import java.util.Arrays;
@@ -74,17 +75,10 @@ public class Authenticator
 			char[] pass1 = nad.getPassword();
 			char[] pass2 = nad.getConfirmPassword();
 
+			if(!PasswordHelper.isValidPassword(pass1))
+				throw new InvalidFieldException("Invalid Password: must contain at least 6 ASCII characters");
 			if(!Arrays.equals(pass1, pass2))
 				throw new InvalidFieldException("Password Does Not Match Confirmation");
-
-			if(pass1.length < 6)
-				throw new InvalidFieldException("Invalid Password; Password must be a minimum of 6 characters.");
-
-			for(char character : pass1)
-			{
-				if(character > Byte.MAX_VALUE)
-					throw new InvalidFieldException("Invalid Password; ASCII characters only: a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-			}
 
 			this.session.password = new byte[pass1.length];
 

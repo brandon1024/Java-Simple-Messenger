@@ -2,6 +2,20 @@ package webchatinterface.helpers;
 
 public class PasswordHelper
 {
+	public static boolean isValidPassword(char[] password)
+	{
+		if(password == null)
+			return false;
+		if(password.length == 0)
+			return false;
+		if(password.length < 6)
+			return false;
+		if(!new String(password).matches("\\A\\p{ASCII}*\\z"))
+			return false;
+
+		return true;
+	}
+
 	public static int passwordStrength(char[] password)
 	{
 		int score = 0;
