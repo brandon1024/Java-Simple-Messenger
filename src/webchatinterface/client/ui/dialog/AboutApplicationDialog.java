@@ -1,7 +1,6 @@
 package webchatinterface.client.ui.dialog;
 
 import webchatinterface.AbstractIRC;
-import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
 
 import javax.swing.*;
@@ -21,7 +20,7 @@ public class AboutApplicationDialog
 	public static void showAboutDialog()
 	{
 		AboutApplicationDialog.frame = new JFrame("About Web Chat Interface");
-		FrameUtilities.setFrameIcon(AboutApplicationDialog.frame, ResourceLoader.getInstance().getFrameIcon());
+		AboutApplicationDialog.frame.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		AboutApplicationDialog.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		AboutApplicationDialog.frame.setSize(500,275);
 		AboutApplicationDialog.frame.setResizable(false);
