@@ -2,16 +2,15 @@ package webchatinterface.client.ui;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.client.AbstractClient;
+import webchatinterface.client.authentication.AuthenticationAbortedException;
+import webchatinterface.client.authentication.AuthenticationException;
+import webchatinterface.client.authentication.Authenticator;
 import webchatinterface.client.communication.WebChatClient;
 import webchatinterface.client.ui.components.ConsoleManager;
 import webchatinterface.client.ui.components.StatusBar;
 import webchatinterface.client.ui.dialog.AboutApplicationDialog;
 import webchatinterface.client.ui.dialog.HelpDialog;
-import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
-import webchatinterface.client.authentication.AuthenticationAbortedException;
-import webchatinterface.client.authentication.AuthenticationException;
-import webchatinterface.client.authentication.Authenticator;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
@@ -99,6 +98,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		super.setVisible(false);
 		super.setResizable(true);
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		//Build Window UI Components
 		this.buildUI();
@@ -112,9 +112,6 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.chatArea.start();
 		this.chatArea.setOpaque(false);
 		this.statusBar = new StatusBar();
-		
-		//---SET WINDOW ICON---//
-		FrameUtilities.setFrameIcon(this, ResourceLoader.getInstance().getFrameIcon());
 		
 		//---BUILD MENU BAR---//
 		Container masterPane;
@@ -796,7 +793,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	private void showConnectedUsersDialog()
 	{
 		if(this.clientUser.isSignedIn())
-			(new ConnectedUserViewer(this.client, this.clientUser)).start();
+			(new ConnectedUsersWindow(this.client, this.clientUser)).start();
 	}
 	
 	private void showPrivateChatroomSelectionDialog()
@@ -807,16 +804,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			JDialog dialogPanel = new JDialog();
 			JPanel componentPanel = new JPanel();
 			componentPanel.setLayout(new BoxLayout(componentPanel, BoxLayout.PAGE_AXIS));
-			
 			dialogPanel.setTitle("Connected Users");
-			try
-			{
-				dialogPanel.setIconImage(ImageIO.read(WebChatClientGUI.class.getResource("/webchatinterface/client/resources/CLIENTICON.png")));
-			}
-			catch(IOException | IllegalArgumentException e)
-			{
-				AbstractClient.logException(e);
-			}
+			dialogPanel.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 			
 			//Declare Availability ImageIcons
 			Object availableIcon;

@@ -1,5 +1,6 @@
 package webchatinterface.server.ui.dialog;
 
+import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.server.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.server.network.ChatRoom;
@@ -18,7 +19,7 @@ import java.util.Arrays;
   *@version 1.4.3
   *@since 06/05/2016
   *<p>
-  *The ConnectedUserViewer class is designed to display a list of users connected that
+  *The ConnectedUsersWindow class is designed to display a list of users connected that
   *auto-refreshes to display the most current information. The dialog runs on a seperate thread, and 
   *polls {@code ChatRoom.getGlobalMembers()} periodically for client connection data. The thread runs
   *until the user closes the dialog or the server closes.
@@ -64,12 +65,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		super.setVisible(true);
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		super.addWindowListener(this);
-		
-		try
-		{
-			super.setIconImage(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/SERVERICON.png")));
-		}
-		catch(IOException | IllegalArgumentException e){}
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		this.server = server;
 		this.masterPane = super.getContentPane();

@@ -2,6 +2,7 @@ package webchatinterface.client.ui.dialog;
 
 import webchatinterface.client.ui.WebChatClientGUI;
 import webchatinterface.client.util.ResourceLoader;
+import webchatinterface.helpers.PasswordHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,11 +43,9 @@ public class NewAccountDialog extends JDialog
         this.passwordField = new JPasswordField(25);
         this.confirmPasswordField = new JPasswordField(15);
         this.passwordStrengthLabel = new JLabel();
-
         this.passwordStrengthLabel.setText("Strength: Poor");
         this.passwordStrengthLabel.setForeground(Color.RED);
         this.passwordStrengthLabel.setToolTipText("Password must be a minimum of 6 characters. Valid characters include a-z, A-Z, 0-9, or any !\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~");
-
 
         JPanel inputPane = new JPanel();
         inputPane.setLayout(new BoxLayout(inputPane, BoxLayout.PAGE_AXIS));
@@ -70,22 +69,25 @@ public class NewAccountDialog extends JDialog
             public void keyPressed(KeyEvent arg0){}
             public void keyReleased(KeyEvent arg0)
             {
-                if(NewAccountDialog.this.passwordField.getPassword().length <= 6)
+                char[] pass = NewAccountDialog.this.passwordField.getPassword();
+                int score = PasswordHelper.passwordStrength(pass);
+
+                if(score <= 20)
                 {
                     NewAccountDialog.this.passwordStrengthLabel.setText("Strength: Poor");
                     NewAccountDialog.this.passwordStrengthLabel.setForeground(Color.RED);
                 }
-                else if(NewAccountDialog.this.passwordField.getPassword().length <= 8)
+                else if(score <= 30)
                 {
                     NewAccountDialog.this.passwordStrengthLabel.setText("Strength: Moderate");
                     NewAccountDialog.this.passwordStrengthLabel.setForeground(Color.BLUE);
                 }
-                else if(NewAccountDialog.this.passwordField.getPassword().length <= 10)
+                else if(score <= 40)
                 {
                     NewAccountDialog.this.passwordStrengthLabel.setText("Strength: Good");
                     NewAccountDialog.this.passwordStrengthLabel.setForeground(Color.GREEN);
                 }
-                else if(NewAccountDialog.this.passwordField.getPassword().length > 10)
+                else if(score > 40)
                 {
                     NewAccountDialog.this.passwordStrengthLabel.setText("Strength: Great");
                     NewAccountDialog.this.passwordStrengthLabel.setForeground(Color.GREEN);

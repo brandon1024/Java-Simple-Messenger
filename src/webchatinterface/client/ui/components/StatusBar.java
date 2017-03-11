@@ -58,30 +58,28 @@ public class StatusBar extends Container
 	
 	public void setAvailability(int availability)
 	{
-		if(availability == ClientUser.AVAILABLE)
+		switch(availability)
 		{
-			this.availabilityStatusIcon.setIcon(this.availableIcon);
-			this.availabilityStatus.setText(" AVAILABLE - ");
-		}
-		else if(availability == ClientUser.BUSY)
-		{
-			this.availabilityStatusIcon.setIcon(this.busyIcon);
-			this.availabilityStatus.setText(" BUSY - ");
-		}
-		else if(availability == ClientUser.AWAY)
-		{
-			this.availabilityStatusIcon.setIcon(this.awayIcon);
-			this.availabilityStatus.setText(" AWAY - ");
-		}
-		else if(availability == ClientUser.APPEAR_OFFLINE)
-		{
-			this.availabilityStatusIcon.setIcon(this.appearOfflineIcon);
-			this.availabilityStatus.setText(" APPEAR OFFLINE - ");
-		}
-		else
-		{
-			this.availabilityStatusIcon.setIcon(this.offlineIcon);
-			this.availabilityStatus.setText(" Offline - ");
+			case ClientUser.AVAILABLE:
+				this.availabilityStatusIcon.setIcon(this.availableIcon);
+				this.availabilityStatus.setText(" AVAILABLE - ");
+				break;
+			case ClientUser.BUSY:
+				this.availabilityStatusIcon.setIcon(this.busyIcon);
+				this.availabilityStatus.setText(" BUSY - ");
+				break;
+			case ClientUser.AWAY:
+				this.availabilityStatusIcon.setIcon(this.awayIcon);
+				this.availabilityStatus.setText(" AWAY - ");
+				break;
+			case ClientUser.APPEAR_OFFLINE:
+				this.availabilityStatusIcon.setIcon(this.appearOfflineIcon);
+				this.availabilityStatus.setText(" APPEAR OFFLINE - ");
+				break;
+			case ClientUser.OFFLINE:
+				this.availabilityStatusIcon.setIcon(this.offlineIcon);
+				this.availabilityStatus.setText(" OFFLINE - ");
+				break;
 		}
 	}
 	

@@ -32,7 +32,7 @@ public class AuthenticationDialog extends JDialog
     private JCheckBox loginAsGuest;
     private int exitCode;
 
-    public AuthenticationDialog(WebChatClientGUI parent, String username, byte[] password, String hostAddress, Integer port)
+    public AuthenticationDialog(WebChatClientGUI parent, String username, byte[] password, String hostAddress, Integer port, boolean guest)
     {
         super(parent, "Client Authentication", Dialog.ModalityType.DOCUMENT_MODAL);
         super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -40,10 +40,10 @@ public class AuthenticationDialog extends JDialog
         super.setResizable(false);
         super.setLocationRelativeTo(parent);
         super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
-        this.init(username, password, hostAddress, port);
+        this.init(username, password, hostAddress, port, guest);
     }
 
-    private void init(String username, byte[] password, String hostAddress, Integer port)
+    private void init(String username, byte[] password, String hostAddress, Integer port, boolean guest)
     {
         this.usernameField = new JTextField(15);
         this.passwordField = new JPasswordField(15);
@@ -54,10 +54,13 @@ public class AuthenticationDialog extends JDialog
         this.exitCode = 0;
 
         this.usernameField.setText((username == null) ? "" : username);
+        this.usernameField.setEditable(!guest);
         this.passwordField.setText((password == null) ? "" : new String(password));
+        this.passwordField.setEditable(!guest);
         this.hostAddressField.setText((hostAddress == null) ? "" : hostAddress);
         this.portField.setText(port == null ? "" : port.toString());
         this.savePresetCheck.setSelected(password == null);
+        this.loginAsGuest.setSelected(guest);
 
         this.usernameField.addKeyListener(new KeyListener()
         {
@@ -73,16 +76,9 @@ public class AuthenticationDialog extends JDialog
         {
             public void actionPerformed(ActionEvent event)
             {
-                if(AuthenticationDialog.this.loginAsGuest.isSelected())
-                {
-                    AuthenticationDialog.this.usernameField.setEditable(false);
-                    AuthenticationDialog.this.passwordField.setEditable(false);
-                }
-                else
-                {
-                    AuthenticationDialog.this. usernameField.setEditable(true);
-                    AuthenticationDialog.this. passwordField.setEditable(true);
-                }
+                boolean enabled = !AuthenticationDialog.this.loginAsGuest.isSelected();
+                AuthenticationDialog.this.usernameField.setEditable(enabled);
+                AuthenticationDialog.this.passwordField.setEditable(enabled);
             }
         });
 
@@ -102,7 +98,7 @@ public class AuthenticationDialog extends JDialog
         {
             public void actionPerformed(ActionEvent e)
             {
-                AuthenticationDialog.this.exitCode = 3;
+                AuthenticationDialog.this.exitCode = 2;
                 AuthenticationDialog.this.dispose();
             }
         });

@@ -79,6 +79,12 @@ public class OutboundFileTransferExecutor implements Runnable
 
 				long timeElapsedMillis = (System.currentTimeMillis() - time) / 1000;
 				dialog.updateTransferDialog(bytesRead, array.length, bytesTotal, timeElapsedMillis, this.file.getName());
+
+				try
+				{
+					Thread.sleep(100);
+				}
+				catch(InterruptedException e){}
 			}
 
 			//Update Dialog

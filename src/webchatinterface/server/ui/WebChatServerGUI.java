@@ -1,6 +1,7 @@
 package webchatinterface.server.ui;
 
 import webchatinterface.AbstractIRC;
+import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
@@ -12,7 +13,6 @@ import webchatinterface.server.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
 import webchatinterface.util.Command;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
@@ -95,10 +95,12 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		super.setSize(800,600);  
 		super.setResizable(false);
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		this.buildUI();
 		this.validateSettings();
 		super.setVisible(true);
 		super.setState((AbstractServer.openMinimized) ? Frame.ICONIFIED : Frame.NORMAL);
+
 
 		if(AbstractServer.startServerWhenApplicationStarts)
 			this.runServer();
@@ -110,16 +112,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		this.usageMnt = UsageMonitor.getInstance();
 		(new Thread(consoleMng)).start();
 		(new Thread(usageMnt)).start();
-		
-		//---SET WINDOW ICON---//
-		try
-		{
-			this.setIconImage(ImageIO.read(WebChatServerGUI.class.getResource("/webchatinterface/server/resources/SERVERICON.png")));
-		}
-		catch(IOException | IllegalArgumentException e)
-		{
-			AbstractServer.logException(e);
-		}
 		
 		//---BUILD MENU BAR---//
 		JMenuBar menuBar;

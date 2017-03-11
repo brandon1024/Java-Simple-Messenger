@@ -2,12 +2,11 @@ package webchatinterface.client.ui.dialog;
 
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.communication.filetransfer.TransferDialogUtilities;
+import webchatinterface.client.util.ResourceLoader;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.io.IOException;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -35,28 +34,15 @@ public class TransferProgressDialog extends JFrame
 	public TransferProgressDialog()
 	{
 		super("File Transfer");
-		
-		try
-		{
-			super.setIconImage(ImageIO.read(TransferProgressDialog.class.getResource("/webchatinterface/client/resources/CLIENTICON.png")));
-		}
-		catch(IOException | IllegalArgumentException e)
-		{
-			AbstractClient.logException(e);
-		}
-		
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		super.setSize(450,78);
 		super.setVisible(true);
 		super.setResizable(false);
 		super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-		Container masterPane = super.getContentPane();
-		masterPane.setLayout(new BorderLayout());
 		
 		this.progress = new JProgressBar(0,100);
 		this.progress.setValue(0);
 		this.progress.setStringPainted(true);
-		
 		this.informationLabel = new JLabel();
 		this.speedLabel = new JLabel();
 		this.progressLabel = new JLabel();
@@ -67,32 +53,33 @@ public class TransferProgressDialog extends JFrame
 		informationContainer.add(this.informationLabel, BorderLayout.PAGE_START);
 		informationContainer.add(this.speedLabel, BorderLayout.LINE_START);
 		informationContainer.add(this.progressLabel, BorderLayout.LINE_END);
-		
-		masterPane.add(this.progress, BorderLayout.PAGE_START);
-		masterPane.add(informationContainer, BorderLayout.CENTER);
+
+		super.getContentPane().setLayout(new BorderLayout());
+		super.getContentPane().add(this.progress, BorderLayout.PAGE_START);
+		super.getContentPane().add(informationContainer, BorderLayout.CENTER);
 	}
 
 	public void updateTransferDialog(long bytesRead, long arraySize, long bytesTotal, long timeElapsedMillis, String filename)
 	{
-		this.setProgressColor(TransferProgressDialog.PROGRESS_GREEN);
 		this.setTitle("Filename: " + filename);
-		this.setInformationLabelText(filename);
-		this.setSpeedLabelText(TransferDialogUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis));
-		this.setProgressValue(TransferDialogUtilities.progressPercentage(bytesRead, bytesTotal));
-		this.setProgressString(TransferDialogUtilities.computePercentCompletionText(bytesRead, bytesTotal));
-		this.setProgressLabelText(TransferDialogUtilities.computeProgressText(bytesRead, bytesTotal));
+		this.informationLabel.setText(filename);
+		this.speedLabel.setText(TransferDialogUtilities.computeTransferSpeedText(arraySize, timeElapsedMillis, 1073741824));
+		this.progress.setForeground(TransferProgressDialog.PROGRESS_GREEN);
+		this.progress.setValue(TransferDialogUtilities.progressPercentage(bytesRead, bytesTotal));
+		this.progress.setString(TransferDialogUtilities.computePercentCompletionText(bytesRead, bytesTotal));
+		this.progressLabel.setText(TransferDialogUtilities.computeProgressText(bytesRead, bytesTotal));
 	}
 
 	public void updateTransferDialogComplete()
 	{
 		this.setWindowTitleBarText("Complete");
-		this.setProgressLabelText("File Transfer Complete");
-		this.setProgressValue(100);
-		this.setProgressColor(TransferProgressDialog.PROGRESS_BLUE);
+		this.progressLabel.setText("File Transfer Complete");
+		this.progress.setValue(100);
+		this.progress.setForeground(TransferProgressDialog.PROGRESS_BLUE);
 
 		for(int i = 5; i >= 0; i--)
 		{
-			this.setProgressString("Dismissed in " + i + "seconds");
+			this.progress.setString("Dismissed in " + i + " seconds");
 			try
 			{
 				Thread.sleep(1000);
@@ -108,40 +95,10 @@ public class TransferProgressDialog extends JFrame
 
 	public void updateTransferDialogError()
 	{
-		this.setProgressColor(TransferProgressDialog.PROGRESS_RED);
-		this.setProgressString("ERROR OCCURRED");
-		this.setProgressLabelText("ERROR OCCURRED");
+		this.progress.setForeground(TransferProgressDialog.PROGRESS_RED);
+		this.progress.setString("ERROR OCCURRED");
+		this.progressLabel.setText("ERROR OCCURRED");
 		this.setWindowTitleBarText("ERROR OCCURRED");
-	}
-	
-	private void setProgressValue(int value)
-	{
-		this.progress.setValue(value);
-	}
-	
-	private void setProgressString(String str)
-	{
-		this.progress.setString(str);
-	}
-	
-	private void setProgressColor(Color color)
-	{
-		this.progress.setForeground(color);
-	}
-	
-	private void setInformationLabelText(String information)
-	{
-		this.informationLabel.setText(information);
-	}
-	
-	private void setSpeedLabelText(String speed)
-	{
-		this.speedLabel.setText(speed);
-	}
-	
-	private void setProgressLabelText(String progress)
-	{
-		this.progressLabel.setText(progress);
 	}
 	
 	private void setWindowTitleBarText(String titleBar)

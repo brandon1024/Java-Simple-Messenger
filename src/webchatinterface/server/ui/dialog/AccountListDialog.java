@@ -1,13 +1,11 @@
 package webchatinterface.server.ui.dialog;
 
-import webchatinterface.server.AbstractServer;
+import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.server.account.AccountManager;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.IOException;
 
 public class AccountListDialog
 {
@@ -18,15 +16,7 @@ public class AccountListDialog
 		accountDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		accountDialog.setResizable(true);
 		accountDialog.setSize(600,150);
-		
-		try
-		{
-			accountDialog.setIconImage(ImageIO.read(AccountManager.class.getResource("/webchatinterface/server/resources/SERVERICON.png")));
-		}
-		catch(IOException | IllegalArgumentException e)
-		{
-			AbstractServer.logException(e);
-		}
+		accountDialog.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		Container masterPane = accountDialog.getContentPane();
 		

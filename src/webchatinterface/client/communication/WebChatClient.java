@@ -69,70 +69,7 @@ public class WebChatClient implements Runnable
 		this.listen();
 		this.disconnect();
 	}
-	
-	private void listen()
-	{
-		while(this.RUN)
-		{
-			Object message;
-			try
-			{
-				if((message = this.messageIn.readObject()) == null)
-					continue;
 
-				if(message instanceof Message)
-					this.processMessage((Message)message);
-				else if(message instanceof Command)
-					this.processCommand((Command)message);
-				else if(message instanceof TransferBuffer)
-					this.transferManager.processTransferBuffer((TransferBuffer)message);
-			}
-			catch(SocketException e)
-			{
-				if(!this.socket.isClosed())
-				{
-					AbstractClient.logException(e);
-					this.graphicalUserInterface.disconnect("Connection Reset: Cant Reach Host");
-					this.RUN = false;
-				}
-			}
-			catch(IOException e)
-			{
-				AbstractClient.logException(e);
-				this.graphicalUserInterface.disconnect("Connection Reset: Unable to Communicate with the Server");
-				this.RUN = false;
-			}
-			catch(ClassNotFoundException e)
-			{
-				AbstractClient.logException(e);
-				this.graphicalUserInterface.disconnect("Connection Reset: Incompatible Client");
-				this.RUN = false;
-			}
-			catch(Exception e)
-			{
-				AbstractClient.logException(e);
-				this.graphicalUserInterface.disconnect("Connection Reset: Error Occured");
-				this.RUN = false;
-			}
-		}
-	}
-	
-	public void disconnect()
-	{
-		try
-		{
-			this.RUN = false;
-			
-			this.messageIn.close();
-			this.messageOut.close();
-			this.socket.close();
-		}
-		catch (IOException e)
-		{
-			AbstractClient.logException(e);
-		}
-	}
-	
 	private void requestConnection()
 	{
 		//Send Connection Request Command and Await Connection Authorization
@@ -157,7 +94,7 @@ public class WebChatClient implements Runnable
 			this.RUN = false;
 			return;
 		}
-		
+
 		//Await Connection Authorization
 		boolean unverified = true;
 		while(unverified && this.RUN)
@@ -172,7 +109,7 @@ public class WebChatClient implements Runnable
 				{
 					//Get Command ID
 					int commandID = ((Command)objectIn).getCommand();
-					
+
 					//If Server Authorized Connection
 					if(commandID == Command.CONNECTION_AUTHORIZED)
 					{
@@ -215,6 +152,69 @@ public class WebChatClient implements Runnable
 		}
 	}
 	
+	private void listen()
+	{
+		while(this.RUN)
+		{
+			Object message;
+			try
+			{
+				if((message = this.messageIn.readObject()) == null)
+					continue;
+
+				if(message instanceof Message)
+					this.processMessage((Message)message);
+				else if(message instanceof Command)
+					this.processCommand((Command)message);
+				else if(message instanceof TransferBuffer)
+					this.transferManager.processTransferBuffer((TransferBuffer)message);
+			}
+			catch(SocketException e)
+			{
+				if(!this.socket.isClosed())
+				{
+					AbstractClient.logException(e);
+					this.graphicalUserInterface.disconnect("Connection Reset: Cant Reach Host");
+					this.RUN = false;
+				}
+			}
+			catch(IOException e)
+			{
+				AbstractClient.logException(e);
+				this.graphicalUserInterface.disconnect("Connection Reset: Unable to Communicate with the Server");
+				this.RUN = false;
+			}
+			catch(ClassNotFoundException e)
+			{
+				AbstractClient.logException(e);
+				this.graphicalUserInterface.disconnect("Connection Reset: Incompatible Client");
+				this.RUN = false;
+			}
+			catch(Exception e)
+			{
+				AbstractClient.logException(e);
+				this.graphicalUserInterface.disconnect("Connection Reset: Error Occurred");
+				this.RUN = false;
+			}
+		}
+	}
+	
+	public void disconnect()
+	{
+		try
+		{
+			this.RUN = false;
+			
+			this.messageIn.close();
+			this.messageOut.close();
+			this.socket.close();
+		}
+		catch (IOException e)
+		{
+			AbstractClient.logException(e);
+		}
+	}
+	
 	private void processMessage(Message message)
 	{
 		this.graphicalUserInterface.displayMessage(message);
@@ -252,6 +252,7 @@ public class WebChatClient implements Runnable
 						this.RUN = false;
 					}
 				}
+
 				this.graphicalUserInterface.processCommand(com);
 				break;
 			//If Client Receives File Transfer Manifest

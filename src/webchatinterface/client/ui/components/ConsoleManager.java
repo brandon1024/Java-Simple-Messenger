@@ -2,12 +2,12 @@ package webchatinterface.client.ui.components;
 
 import util.DynamicQueue;
 import webchatinterface.client.AbstractClient;
+import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.helpers.TimeHelper;
 import webchatinterface.util.ClientUser;
 import webchatinterface.util.Command;
 import webchatinterface.util.Message;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
@@ -702,13 +702,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 					
 					masterPane.add(imageLabel);
 					dialogFrame.pack();
-					
-					try
-					{
-						dialogFrame.setIconImage(ImageIO.read(ConsoleManager.class.getResource("/webchatinterface/client/resources/CLIENTICON.png")));
-					}
-					catch(Exception e){}
-					
+					dialogFrame.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 					dialogFrame.setResizable(true);
 					dialogFrame.setVisible(true);
 					dialogFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

@@ -107,7 +107,7 @@ public class Authenticator
 		this.loadPreset();
 
 		//---REQUEST SETTINGS FROM USER---//
-		AuthenticationDialog auth = new AuthenticationDialog(this.parent, this.session.username, this.session.password, this.session.hostAddress, this.session.portNumber);
+		AuthenticationDialog auth = new AuthenticationDialog(this.parent, this.session.username, this.session.password, this.session.hostAddress, this.session.portNumber, this.session.guest);
 
 		//---RETRIEVE INPUT FROM DIALOG FIELDS---//
 		if(auth.showDialog() == 1)

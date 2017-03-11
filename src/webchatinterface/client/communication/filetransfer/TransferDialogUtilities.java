@@ -4,10 +4,11 @@ import webchatinterface.helpers.DataHelper;
 
 public class TransferDialogUtilities
 {
-	public static String computeTransferSpeedText(long bufferSize, long timeElapsedMillis)
+	public static String computeTransferSpeedText(long bufferSize, long timeElapsedMillis, long max)
 	{
 		long speed = Double.doubleToLongBits(bufferSize / (double)timeElapsedMillis);
-		return "Speed: " + DataHelper.formatBytes(speed, 2) + "/s";
+		speed = speed > max ? max : speed;
+		return "Speed: " + DataHelper.formatBytes(speed, 2) + "/s" + (speed == max ? "+" : "");
 	}
 	
 	public static String computePercentCompletionText(long bytesRead, long bytesTotal)

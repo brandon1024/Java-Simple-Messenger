@@ -15,14 +15,13 @@ public class HelpDialog
 {
 	public static void showHelpDialog()
 	{
-		//display help dialog
 		JPanel dialogPanel = new JPanel();
-		String help = "Need help?"
+		String helpText = "Need help?"
 		+ "\nContact the developer:"
 		+ "\n\tBrandon Richardson"
 		+ "\n\tEmail: brandon1024.br@gmail.com";
 
-		JOptionPane.showMessageDialog(dialogPanel, help,
+		JOptionPane.showMessageDialog(dialogPanel, helpText,
 			"Get Help", JOptionPane.INFORMATION_MESSAGE);
 	}
 }

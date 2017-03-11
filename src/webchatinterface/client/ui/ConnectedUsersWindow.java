@@ -2,7 +2,6 @@ package webchatinterface.client.ui;
 
 import webchatinterface.client.AbstractClient;
 import webchatinterface.client.communication.WebChatClient;
-import webchatinterface.client.util.FrameUtilities;
 import webchatinterface.client.util.ResourceLoader;
 import webchatinterface.util.ClientUser;
 
@@ -11,13 +10,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.Arrays;
 
 /**@author Brandon Richardson
  *@version 1.4.3
  *@since 06/05/2016
  *<p>
- *The ConnectedUserViewer class is designed to display a list of users connected to the server that
+ *The ConnectedUsersWindow class is designed to display a list of users connected to the server that
  *auto-refreshes to display the most current information. The dialog runs on a seperate thread, and 
  *polls {@code client.getConnectedUsers()} periodically for client connection data. The thread runs
  *until the user closes the dialog or the client back-end closes.
@@ -26,7 +24,7 @@ import java.util.Arrays;
  *username, availability, and chatroom.
  */
 
-public class ConnectedUserViewer extends JFrame implements Runnable, WindowListener
+public class ConnectedUsersWindow extends JFrame implements Runnable, WindowListener
 {
 	private static ImageIcon AVAILABLE_ICON;
 	private static ImageIcon BUSY_ICON;
@@ -43,13 +41,13 @@ public class ConnectedUserViewer extends JFrame implements Runnable, WindowListe
 		AWAY_ICON = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAwayIcon());
 	}
 	
-	public ConnectedUserViewer(WebChatClient client, ClientUser clientUser)
+	public ConnectedUsersWindow(WebChatClient client, ClientUser clientUser)
 	{
 		super("Connected Users");
 		super.setSize(new Dimension(500,150));
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		super.addWindowListener(this);
-		FrameUtilities.setFrameIcon(this, ResourceLoader.getInstance().getFrameIcon());
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		this.client = client;
 		this.clientUser = clientUser;
@@ -79,10 +77,6 @@ public class ConnectedUserViewer extends JFrame implements Runnable, WindowListe
 		
 		JTable clientConnections = new JTable(tableModel)
 		{
-            private static final long serialVersionUID = -986803268686380681L;
-            
-            //  Returning the Class of each column will allow different
-            //  renderer to be used based on Class
             @Override
 			public Class<?> getColumnClass(int column)
             {
@@ -99,37 +93,30 @@ public class ConnectedUserViewer extends JFrame implements Runnable, WindowListe
         clientConnections.setPreferredScrollableViewportSize(new Dimension(500,150));
         
         JScrollPane scrollPane = new JScrollPane(clientConnections);
-		
 		super.getContentPane().add(scrollPane);
 		super.validate();
 		
 		while(this.isRunning && this.client.isRunning())
 		{
+			try
+			{
+				Thread.sleep(1000);
+			}
+			catch(InterruptedException e)
+			{
+				AbstractClient.logException(e);
+			}
+
 			data = this.client.getConnectedUsers();
 			
-			if(previousData == null)
-				previousData = data;
-			else if(Arrays.equals(data, previousData))
-			{
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch(InterruptedException e)
-				{
-					AbstractClient.logException(e);
-				}
+			if(data == previousData)
 				continue;
-			}
-			else
-				previousData = data;
+
+			previousData = data;
 			
 			//remove all data from table
-			if(tableModel.getRowCount() > 0)
-			{
-			    for(int i = tableModel.getRowCount() - 1; i > -1; i--)
-			    	tableModel.removeRow(i);
-			}
+			for(int i = tableModel.getRowCount() - 1; i > -1; i--)
+				tableModel.removeRow(i);
 			
 			for(Object[] dataElement : data)
 			{
@@ -177,15 +164,6 @@ public class ConnectedUserViewer extends JFrame implements Runnable, WindowListe
 		    clientConnections.getColumnModel().getColumn(2).setMaxWidth(100);
 		   
 		    tableModel.fireTableDataChanged();
-			
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch(InterruptedException e)
-			{
-				AbstractClient.logException(e);
-			}
 		}
 	}
 	

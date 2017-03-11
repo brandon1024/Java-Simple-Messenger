@@ -45,10 +45,7 @@ public class ResourceLoader
 	
 	public boolean loadResources()
 	{
-		boolean frameIconLoadedSuccess = this.loadFrameIcon();
-		boolean statusIconsLoadedSuccess = this.loadStatusIcons();
-		
-		return frameIconLoadedSuccess && statusIconsLoadedSuccess;
+		return this.loadFrameIcon() & this.loadStatusIcons();
 	}
 	
 	private boolean loadFrameIcon()

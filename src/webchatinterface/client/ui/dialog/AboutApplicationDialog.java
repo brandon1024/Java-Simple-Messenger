@@ -22,8 +22,8 @@ public class AboutApplicationDialog
 	{
 		AboutApplicationDialog.frame = new JFrame("About Web Chat Interface");
 		FrameUtilities.setFrameIcon(AboutApplicationDialog.frame, ResourceLoader.getInstance().getFrameIcon());
-		AboutApplicationDialog.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		AboutApplicationDialog.frame.setSize(500,300);  
+		AboutApplicationDialog.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		AboutApplicationDialog.frame.setSize(500,275);
 		AboutApplicationDialog.frame.setResizable(false);
 		AboutApplicationDialog.frame.setVisible(false);
 		AboutApplicationDialog.buildDialog();
