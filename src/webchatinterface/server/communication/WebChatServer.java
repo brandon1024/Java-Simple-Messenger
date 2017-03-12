@@ -2,13 +2,15 @@ package webchatinterface.server.communication;
 
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.account.BlacklistManager;
-import webchatinterface.server.network.ChatRoom;
+import webchatinterface.server.network.Channel;
+import webchatinterface.server.network.ChannelManager;
 import webchatinterface.server.ui.WebChatServerGUI;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.util.Command;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 
 /**@author Brandon Richardson
  *@version 1.4.3
@@ -24,6 +26,7 @@ import java.net.*;
 public class WebChatServer implements Runnable
 {
 	private ConsoleManager consoleMng;
+	private ChannelManager channelManager;
 	private BroadcastHelper broadcastHelper;
 	private BroadcastScheduler broadcastScheduler;
 	private ServerSocket servSocket;
@@ -31,13 +34,13 @@ public class WebChatServer implements Runnable
 	private long filesTransfered;
 	private volatile boolean RUN = true;
 
-	public WebChatServer(ConsoleManager consoleMng)
+	public WebChatServer()
 	{
-		this.consoleMng = consoleMng;
+		this.consoleMng = ConsoleManager.getInstance();
+		this.channelManager = ChannelManager.getInstance();
+		this.broadcastHelper = BroadcastHelper.getInstance();
+		this.broadcastScheduler = BroadcastScheduler.getInstance();
 		this.objectsSent = 0;
-		
-		this.broadcastHelper = new BroadcastHelper(this.consoleMng);
-		this.broadcastScheduler = new BroadcastScheduler(this.consoleMng, this.broadcastHelper);
 	}
 	
 	public void start()
@@ -74,9 +77,12 @@ public class WebChatServer implements Runnable
 		this.RUN = false;
 		
 		//disconnect all connected users
-		for(WebChatServerInstance member : ChatRoom.getGlobalMembers())
-			member.disconnect(Command.REASON_SERVER_CLOSED);
-		
+		for(Channel channel : this.channelManager.getGlobalChannels())
+		{
+			for(WebChatServerInstance client : channel.getChannelMembers())
+				client.disconnect(Command.REASON_SERVER_CLOSED);
+		}
+
 		//close ServerSocket
 		try
 		{
@@ -118,9 +124,9 @@ public class WebChatServer implements Runnable
 					//Accept Incoming Connections to Socket
 					socket = this.servSocket.accept();
 					
-					if(ChatRoom.getGlobalMembersSize() >= AbstractServer.maxConnectedUsers)
+					if(this.channelManager.getGlobalChannelSize() >= AbstractServer.maxConnectedUsers)
 					{
-						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
+						WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_SERVER_FULL);
 						this.consoleMng.printConsole("User Prevented from Connecting; server full (" + AbstractServer.maxConnectedUsers + " connections)", true);
@@ -128,7 +134,7 @@ public class WebChatServer implements Runnable
 					}
 					else if(BlacklistManager.isBlacklisted(socket.getLocalAddress().getHostName()))
 					{
-						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
+						WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_BLACKLISTED);
 						this.consoleMng.printConsole("User Prevented from Connecting; blacklisted user", true);
@@ -143,7 +149,7 @@ public class WebChatServer implements Runnable
 				this.consoleMng.printConsole("Connection Request From: " + socket.getInetAddress().getHostAddress(), false);
 				
 				//Start Server Instance Thread
-				WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
+				WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
 				chatCom.start();
 			}
 		}
@@ -188,21 +194,21 @@ public class WebChatServer implements Runnable
 	
 	public Object[][] getConnectedUsers()
 	{
-		int size = ChatRoom.getGlobalMembersSize();
-		
-		WebChatServerInstance[] connectedClients = ChatRoom.getGlobalMembers();
-		
-		Object[][] list = new Object[size][5];
-		
-		size = 0;
-		for(WebChatServerInstance client : connectedClients)
+		ArrayList<WebChatServerInstance> clients = new ArrayList<WebChatServerInstance>();
+		for(Channel channel : this.channelManager.getGlobalChannels())
 		{
-			list[size][0] = client.getUsername();
-			list[size][1] = client.getUserID();
-			list[size][2] = client.getIP();
-			list[size][3] = client.getAvailability();
-			list[size][4] = client.getRoom().toString();
-			size++;
+			for(WebChatServerInstance client : channel.getChannelMembers())
+				clients.add(client);
+		}
+		
+		Object[][] list = new Object[clients.size()][5];
+		for(int index = 0; index < clients.size(); index++)
+		{
+			list[index][0] = clients.get(index).getUsername();
+			list[index][1] = clients.get(index).getUserID();
+			list[index][2] = clients.get(index).getIP();
+			list[index][3] = clients.get(index).getAvailability();
+			list[index][4] = clients.get(index).getChannel().toString();
 		}
 		
 		return list;

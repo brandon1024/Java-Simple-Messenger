@@ -11,7 +11,7 @@ public class NetworkManagerDialog extends JFrame implements ActionListener
 	private NetworkManager netManager;
 	private JMenuBar menuBar;
 	private JMenu manageConnectedUsers;
-	private JMenu manageActiveRooms;
+	private JMenu manageActiveChannels;
 	private JMenu manageUserDatabase;
 	private JMenu manageBlacklist;
 	
@@ -22,7 +22,7 @@ public class NetworkManagerDialog extends JFrame implements ActionListener
 		
 		this.menuBar = new JMenuBar();
 		this.manageConnectedUsers = new JMenu("Manage Connected Users");
-		this.manageActiveRooms = new JMenu("Manage Active Rooms");
+		this.manageActiveChannels = new JMenu("Manage Active Channels");
 		this.manageUserDatabase = new JMenu("Manage User Database");
 		this.manageBlacklist = new JMenu("Manage Blacklist");
 		

@@ -34,7 +34,7 @@ import java.io.File;
  *<br>		allows messages sent from different timezones to display the timestamp in the civil time
  *<br>		of the client reading the message.
  *<br>	- Implemented availability feature, allowing clients to specify an availability status.
- *<br>  - Added client status bar, used to display the client availability and what chatroom the client
+ *<br>  - Added client status bar, used to display the client availability and what channel the client
  *<br>		is connected to.
  *<br>  - Updated server 'Show Connected Clients' dialog. Added status icon and status description columns.
  *<br>	- Added new BroadcastHelper class, designed to simply message broadcasting. Also facilitates scheduled
@@ -42,8 +42,8 @@ import java.io.File;
  *<br>	- Updated client 'Show Connected Users' function. The list of clients is now displayed in a standalone
  *<br>		dialog. This also allows users to see other users availability. Users with availability OFFLINE or
  *<br>		APPEAR_OFFLINE do not appear in this list.
- *<br>	- Implemented a feature that allows for private and public chatrooms. Now, users can request a 
- *<br>		private chatroom with another client.
+ *<br>	- Implemented a feature that allows for private and public channels. Now, users can request a
+ *<br>		private channel with another client.
  *<br>	- Consolidated TransferBuffer and MultimediaMessage into the single class TransferBuffer. Images
  *<br>		and files are differentiated by the file extension, where files with the extension .JPEG, .JPG, .GIF
  *<br>		and .PNG are displayed as images in the console.

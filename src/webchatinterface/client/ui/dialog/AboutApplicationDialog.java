@@ -52,7 +52,7 @@ public class AboutApplicationDialog
 	    aboutText += "Release Date: " + AbstractIRC.RELEASE_DATE + "\n\n";
 	    
 	    aboutText += "Web Chat Interface is an application used for communicating with a group of " 
-	    		+ "people in single or private chatrooms. Users are able to share images and files "
+	    		+ "people in single or private channels. Users are able to share images and files "
 	    		+ "among themselves and communicate in a private secured manner." + "\n\n"
 	    		+ "Messages that are sent from a client are never stored or cached by the server, "
 	    		+ "keeping communication private and untraceable.";

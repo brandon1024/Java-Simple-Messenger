@@ -1,9 +1,10 @@
 package webchatinterface.server.ui.dialog;
 
-import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
-import webchatinterface.server.network.ChatRoom;
+import webchatinterface.server.network.Channel;
+import webchatinterface.server.network.ChannelManager;
+import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.util.ClientUser;
 
 import javax.imageio.ImageIO;
@@ -13,7 +14,6 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -21,10 +21,10 @@ import java.util.Arrays;
   *<p>
   *The ConnectedUsersWindow class is designed to display a list of users connected that
   *auto-refreshes to display the most current information. The dialog runs on a seperate thread, and 
-  *polls {@code ChatRoom.getGlobalMembers()} periodically for client connection data. The thread runs
+  *polls {@code Channel.getGlobalMembers()} periodically for client connection data. The thread runs
   *until the user closes the dialog or the server closes.
   *<p>
-  *The list contains the client username, availablility, chatroom, user ID, instance ID and IP address.
+  *The list contains the client username, availablility, channel, user ID, instance ID and IP address.
  */
 
 public class ConnectedUsersDialog extends JFrame implements Runnable, WindowListener
@@ -35,6 +35,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	private static Object APPEAR_OFFLINE_ICON;
 	private static Object OFFLINE_ICON;
 	private WebChatServer server;
+	private ChannelManager channelManager;
 	private Container masterPane;
 	private boolean isRunning;
 	
@@ -68,6 +69,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		this.server = server;
+		this.channelManager = ChannelManager.getInstance();
 		this.masterPane = super.getContentPane();
 		this.isRunning = false;
 	}
@@ -91,7 +93,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		tableModel.addColumn("Instance ID");
 		tableModel.addColumn("Username");
 		tableModel.addColumn("IP Address");
-		tableModel.addColumn("Chatroom");
+		tableModel.addColumn("Channel");
 		tableModel.addColumn("User ID");
 		
 		JTable clientConnections = new JTable(tableModel)
@@ -125,66 +127,54 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		
 		while(this.isRunning && this.server.isRunning())
 		{
-			data = ChatRoom.getGlobalMembers();
-			
-			if(previousData == null)
-				previousData = data;
-			else if(Arrays.equals(data, previousData))
-			{
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch(InterruptedException e){}
-				continue;
-			}
-			else
-				previousData = data;
-			
 			//remove all data from table
 			if(tableModel.getRowCount() > 0)
 			{
-			    for(int i = tableModel.getRowCount() - 1; i > -1; i--)
-			    	tableModel.removeRow(i);
+				for(int i = tableModel.getRowCount() - 1; i > -1; i--)
+					tableModel.removeRow(i);
 			}
-			
-			for(WebChatServerInstance member : data)
+
+			Channel[] channels = this.channelManager.getGlobalChannels();
+			for(Channel channel : channels)
 			{
-				Object[] row = new Object[7];
-				
-				//Switch Client Availability
-				switch(member.getAvailability())
+				for(WebChatServerInstance client : channel.getChannelMembers())
 				{
-					case ClientUser.AVAILABLE:
-						row[0] = AVAILABLE_ICON;
-						row[1] = "AVAILABLE";
-						break;
-					case ClientUser.BUSY:
-						row[0] = BUSY_ICON;
-						row[1] = "BUSY";
-						break;
-					case ClientUser.AWAY:
-						row[0] = AWAY_ICON;
-						row[1] = "AWAY";
-						break;
-					case ClientUser.APPEAR_OFFLINE:
-						row[0] = APPEAR_OFFLINE_ICON;
-						row[1] = "APPEAR OFFLINE";
-						break;
-					case ClientUser.OFFLINE:
-						row[0] = OFFLINE_ICON;
-						row[1] = "OFFLINE";
-						break;
+					Object[] row = new Object[7];
+
+					//Switch Client Availability
+					switch(client.getAvailability())
+					{
+						case ClientUser.AVAILABLE:
+							row[0] = AVAILABLE_ICON;
+							row[1] = "AVAILABLE";
+							break;
+						case ClientUser.BUSY:
+							row[0] = BUSY_ICON;
+							row[1] = "BUSY";
+							break;
+						case ClientUser.AWAY:
+							row[0] = AWAY_ICON;
+							row[1] = "AWAY";
+							break;
+						case ClientUser.APPEAR_OFFLINE:
+							row[0] = APPEAR_OFFLINE_ICON;
+							row[1] = "APPEAR OFFLINE";
+							break;
+						case ClientUser.OFFLINE:
+							row[0] = OFFLINE_ICON;
+							row[1] = "OFFLINE";
+							break;
+					}
+
+					//Assign Client Information to Object[][]
+					row[2] = Integer.toString(client.getID());
+					row[3] = client.getUsername();
+					row[4] = client.getIP();
+					row[5] = client.getChannel().toString();
+					row[6] = client.getUserID();
+
+					tableModel.addRow(row);
 				}
-				
-				//Assign Client Information to Object[][]
-				row[2] = Integer.toString(member.getID());
-				row[3] = member.getUsername();
-				row[4] = member.getIP();
-				row[5] = member.getRoom().toString();
-				row[6] = member.getUserID();
-				
-				tableModel.addRow(row);
 			}
 			
 			clientConnections.setColumnSelectionAllowed(false);

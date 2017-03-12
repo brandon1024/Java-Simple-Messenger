@@ -236,7 +236,7 @@ public class WebChatClient implements Runnable
 					this.RUN = false;
 				else if(com.getReason() == Command.REASON_KICKED)
 					this.RUN = false;
-				else if(com.getReason() == Command.REASON_ROOM_CLOSED)
+				else if(com.getReason() == Command.REASON_CHANNEL_CLOSED)
 					this.RUN = false;
 				else if(com.getReason() == Command.REASON_SERVER_FULL)
 					this.RUN = false;

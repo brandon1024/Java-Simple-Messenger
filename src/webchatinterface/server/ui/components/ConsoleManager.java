@@ -37,7 +37,7 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 	private MutableAttributeSet messageAttribute;
 	private MutableAttributeSet warningAttribute;
 	
-	public ConsoleManager()
+	private ConsoleManager()
 	{
 		//Build JTextPane
 		super();
@@ -174,5 +174,15 @@ public class ConsoleManager extends JTextPane implements Runnable, AbstractIRC
 		{
 			return warning;
 		}
+	}
+
+	public static ConsoleManager getInstance()
+	{
+		return InstanceHolder.INSTANCE;
+	}
+
+	private static class InstanceHolder
+	{
+		private static final ConsoleManager INSTANCE = new ConsoleManager();
 	}
 }

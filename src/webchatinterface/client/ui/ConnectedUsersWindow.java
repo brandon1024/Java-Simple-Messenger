@@ -21,7 +21,7 @@ import java.awt.event.WindowListener;
  *until the user closes the dialog or the client back-end closes.
  *<p>
  *Clients who are offline or appear offline do not show up in the list. The list contains the client
- *username, availability, and chatroom.
+ *username, availability, and channel.
  */
 
 public class ConnectedUsersWindow extends JFrame implements Runnable, WindowListener
@@ -73,7 +73,7 @@ public class ConnectedUsersWindow extends JFrame implements Runnable, WindowList
 		tableModel.addColumn("");
 		tableModel.addColumn("Username");
 		tableModel.addColumn("Status");
-		tableModel.addColumn("Chatroom");
+		tableModel.addColumn("Channel");
 		
 		JTable clientConnections = new JTable(tableModel)
 		{

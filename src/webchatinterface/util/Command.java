@@ -38,10 +38,10 @@ public class Command extends TransportEntity implements Serializable
 	public static final int CLIENT_AVAILABILITY_BUSY = 11;
 	public static final int CLIENT_AVAILABILITY_AWAY = 12;
 	public static final int CLIENT_AVAILABILITY_APPEAR_OFFLINE = 13;
-	public static final int PRIVATE_CHATROOM_REQUEST = 14;
-	public static final int PRIVATE_CHATROOM_DENIED = 15;
-	public static final int PRIVATE_CHATROOM_AUTHORIZED = 16;
-	public static final int PRIVATE_CHATROOM_EXIT = 17;
+	public static final int PRIVATE_CHANNEL_REQUEST = 14;
+	public static final int PRIVATE_CHANNEL_DENIED = 15;
+	public static final int PRIVATE_CHANNEL_AUTHORIZED = 16;
+	public static final int PRIVATE_CHANNEL_EXIT = 17;
 	public static final int PING = 18;
 	public static final int FILE_TRANSFER = 19;
 	public static final int REASON_SERVER_FULL = 20;
@@ -49,7 +49,7 @@ public class Command extends TransportEntity implements Serializable
 	public static final int REASON_INCONSISTENT_USER_ID = 22;
 	public static final int REASON_BLACKLISTED = 23;
 	public static final int REASON_SERVER_CLOSED = 24;
-	public static final int REASON_ROOM_CLOSED = 25;
+	public static final int REASON_CHANNEL_CLOSED = 25;
 	public static final int REASON_GENERIC = 26;
 	public static final int REASON_INCORRECT_CREDENTIALS = 27;
 	public static final int REASON_USERNAME_EMAIL_ALREADY_EXISTS = 28;

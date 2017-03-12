@@ -3,9 +3,10 @@ package webchatinterface.server.communication;
 import util.KeyGenerator;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
+import webchatinterface.server.network.Channel;
+import webchatinterface.server.network.ChannelManager;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.account.AccountManager;
-import webchatinterface.server.network.ChatRoom;
 import webchatinterface.util.*;
 
 import java.io.*;
@@ -27,29 +28,31 @@ public class WebChatServerInstance implements Runnable
 	
 	private WebChatServer server;
 	private ConsoleManager consoleMng;
+	private ChannelManager channelManager;
 	private BroadcastHelper broadcastHlp;
 	private Socket socket;
 	private ObjectInputStream messageIn;
 	private ObjectOutputStream messageOut;
 	private ClientUser client;
-	private ChatRoom room;
+	private Channel channel;
 	private final int INSTANCE_ID;
 	private volatile boolean verified = false;
 	
-	public WebChatServerInstance(WebChatServer server, BroadcastHelper broadcastHlp, ConsoleManager consoleMng, Socket socket) throws IOException
+	public WebChatServerInstance(WebChatServer server, Socket socket) throws IOException
 	{
 		//Assign Fields, Open Streams
 		this.server = server;
-		this.consoleMng = consoleMng;
-		this.broadcastHlp = broadcastHlp;
+		this.consoleMng = ConsoleManager.getInstance();
+		this.channelManager = ChannelManager.getInstance();
+		this.broadcastHlp = BroadcastHelper.getInstance();
 		this.socket = socket;
 		this.messageOut = new ObjectOutputStream(this.socket.getOutputStream());
 		this.messageIn = new ObjectInputStream(this.socket.getInputStream());
 		this.INSTANCE_ID = ID++;
 		
-		//Set Room to Public Chatroom
-		this.room = ChatRoom.publicRoom;
-		this.room.addMember(this);
+		//Set Channel to Public
+		this.channel = this.channelManager.publicChannel;
+		this.channel.addChannelMember(this);
 		
 		//Initialize ClientUser Object With Default Availability
 		this.client = new ClientUser();
@@ -87,8 +90,8 @@ public class WebChatServerInstance implements Runnable
 		{
 			this.consoleMng.printConsole("Client Authenticated: Connection Authorized", false);
 			this.consoleMng.printConsole(this.paramString(), false);
-			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " connected", "SERVER", "0"), this.room);
-			this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " connected", "SERVER", "0"), this.channel);
+			this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 		}
 		else
 			this.consoleMng.printConsole("Client Authentication Failed: Connection Denied", false);
@@ -107,7 +110,7 @@ public class WebChatServerInstance implements Runnable
 					this.validateMessage((TransferBuffer)message);
 					
 					if(this.verified)
-						this.broadcastHlp.broadcastMessage((TransferBuffer)message, this.room);
+						this.broadcastHlp.broadcastMessage((TransferBuffer)message, this.channel);
 					else
 						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
 				}
@@ -121,7 +124,7 @@ public class WebChatServerInstance implements Runnable
 					{
 						//Log and Print to Console
 						consoleMng.printConsole("Message Broadcasted From: " + this.client.getUsername() + " : " + this.socket.getInetAddress().getHostAddress(), false);
-						this.broadcastHlp.broadcastMessage((Message)message, this.room);
+						this.broadcastHlp.broadcastMessage((Message)message, this.channel);
 					}
 					else
 						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
@@ -144,62 +147,69 @@ public class WebChatServerInstance implements Runnable
 								this.send(new Command(Command.CLIENT_VERSION, AbstractIRC.CLIENT_VERSION, "SERVER", "0"));
 								break;
 							case Command.MESSAGE_TYPED:
-								this.broadcastHlp.broadcastMessage((Command)message, this.room);
+								this.broadcastHlp.broadcastMessage((Command)message, this.channel);
 								break;
 							case Command.CLIENT_AVAILABILITY_AVAILABLE:
 								this.client.setAvailability(ClientUser.AVAILABLE);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AVAILABLE", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 								break;
 							case Command.CLIENT_AVAILABILITY_BUSY:
 								this.client.setAvailability(ClientUser.BUSY);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : BUSY", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 								break;
 							case Command.CLIENT_AVAILABILITY_AWAY:
 								this.client.setAvailability(ClientUser.AWAY);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AWAY", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 								break;
 							case Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE:
 								this.client.setAvailability(ClientUser.APPEAR_OFFLINE);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : APPEAR_OFFLINE", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 								break;
-							case Command.PRIVATE_CHATROOM_REQUEST:
-							case Command.PRIVATE_CHATROOM_DENIED:
+							case Command.PRIVATE_CHANNEL_REQUEST:
+							case Command.PRIVATE_CHANNEL_DENIED:
 								Object[] recipient = (Object[])(((Command)message).getMessage());
-								
-								for(WebChatServerInstance client : ChatRoom.getGlobalMembers())
+								Channel[] channels = this.channelManager.getGlobalChannels();
+								for(Channel channel : channels)
 								{
-									if(client.getUserID().equals(recipient[1]))
-										client.send((Command)message);
-								}
-								break;
-							case Command.PRIVATE_CHATROOM_AUTHORIZED:
-								recipient = (Object[])(((Command)message).getMessage());
-								
-								for(WebChatServerInstance client : ChatRoom.getGlobalMembers())
-								{
-									if(client.getUserID().equals(recipient[1]))
+									for(WebChatServerInstance client : channel.getChannelMembers())
 									{
-										client.send((Command)message);
-										ChatRoom newPrivateRoom = new ChatRoom();
-										this.setRoom(newPrivateRoom);
-										client.setRoom(newPrivateRoom);
+										if(client.getUserID().equals(recipient[1]))
+										{
+											client.send((Command) message);
+											break;
+										}
 									}
 								}
 								break;
-							case Command.PRIVATE_CHATROOM_EXIT:
-								if(!this.room.equals(ChatRoom.publicRoom))
+							case Command.PRIVATE_CHANNEL_AUTHORIZED:
+								recipient = (Object[])(((Command)message).getMessage());
+								channels = this.channelManager.getGlobalChannels();
+								for(Channel channel : channels)
 								{
-									this.broadcastHlp.broadcastMessage((Command)message, this.room);
-									this.room.closeRoom();
-									
-									WebChatServerInstance[] roomMembers = this.room.getConnectedClients();
-									
-									for(WebChatServerInstance member : roomMembers)
-										member.setRoom(ChatRoom.publicRoom);
+									for(WebChatServerInstance client : channel.getChannelMembers())
+									{
+										if(client.getUserID().equals(recipient[1]))
+										{
+											client.send((Command)message);
+											Channel newPrivateChannel = this.channelManager.newChannel("Private Channel", false, false);
+											this.setChannel(newPrivateChannel);
+											client.setChannel(newPrivateChannel);
+											break;
+										}
+									}
+								}
+								break;
+							case Command.PRIVATE_CHANNEL_EXIT:
+								if(!this.channel.equals(this.channelManager.publicChannel))
+								{
+									this.broadcastHlp.broadcastMessage((Command)message, this.channel);
+									WebChatServerInstance[] channelMembers = this.channel.getChannelMembers();
+									for(WebChatServerInstance member : channelMembers)
+										member.setChannel(this.channelManager.publicChannel);
 								}
 								break;
 							case Command.FILE_TRANSFER:
@@ -265,12 +275,12 @@ public class WebChatServerInstance implements Runnable
 		}
 		
 		//remove connection from connection array
-		this.room.removeMember(this);
+		this.channel.removeChannelMember(this);
 		this.consoleMng.printConsole("Successfully Removed User From List of Connected Users", false);
 			
 		//broadcast message to all users
-		this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " disconnected", "SERVER", "0"), this.room);
-		this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+		this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " disconnected", "SERVER", "0"), this.channel);
+		this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
 	}
 	
 	public void disconnect(int reason)
@@ -479,16 +489,16 @@ public class WebChatServerInstance implements Runnable
 		this.messageOut.flush();
 	}
 
-	private void setRoom(ChatRoom room)
+	private void setChannel(Channel channel)
 	{
-		this.room.removeMember(this);
-		this.room = room;
-		this.room.addMember(this);
+		this.channel.removeChannelMember(this);
+		this.channel = channel;
+		this.channel.addChannelMember(this);
 	}
 	
-	public ChatRoom getRoom()
+	public Channel getChannel()
 	{
-		return this.room;
+		return this.channel;
 	}
 	
 	public String getIP()

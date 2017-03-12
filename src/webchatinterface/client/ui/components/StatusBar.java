@@ -15,14 +15,14 @@ import java.awt.*;
   *<p>
   *The StatusBar has three JLabels: availabilityStatusIcon which displays an icon showing
   *the availability of the client; availabilityStatus which describes the availability of
-  *the client; chatroom which describes what chatroom the client is connected to.
+  *the client; channel which describes what channel the client is connected to.
   */
 
 public class StatusBar extends Container
 {
 	private JLabel availabilityStatusIcon;
 	private JLabel availabilityStatus;
-	private JLabel chatroom;
+	private JLabel channel;
 	private ImageIcon availableIcon;
 	private ImageIcon busyIcon;
 	private ImageIcon awayIcon;
@@ -47,13 +47,13 @@ public class StatusBar extends Container
 		this.availabilityStatusIcon = new JLabel(this.offlineIcon);
 		this.availabilityStatus = new JLabel(" OFFLINE - ");
 		this.availabilityStatus.setFont(new Font("Courier New", Font.PLAIN, 11));
-		this.chatroom = new JLabel("Public Chat Room");
-		this.chatroom.setFont(new Font("Courier New", Font.PLAIN, 11));
+		this.channel = new JLabel("Public Channel");
+		this.channel.setFont(new Font("Courier New", Font.PLAIN, 11));
 		
 		//Add JLabels to Container
 		super.add(this.availabilityStatusIcon);
 		super.add(this.availabilityStatus);
-		super.add(this.chatroom);
+		super.add(this.channel);
 	}
 	
 	public void setAvailability(int availability)
@@ -83,8 +83,8 @@ public class StatusBar extends Container
 		}
 	}
 	
-	public void setChatroom(String chatroomName)
+	public void setChannel(String channelName)
 	{
-		this.chatroom.setText(chatroomName);
+		this.channel.setText(channelName);
 	}
 }

@@ -3,7 +3,7 @@ package webchatinterface.server.ui.components;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.communication.WebChatServer;
-import webchatinterface.server.network.ChatRoom;
+import webchatinterface.server.network.ChannelManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +23,7 @@ public class UsageMonitor extends JPanel implements Runnable
 {
 	private Runtime runtime;
 	private WebChatServer server;
+	private ChannelManager channelManager;
 	private JLabel usedMem;
 	private JLabel freeMem;
 	private JLabel totalMem;
@@ -149,11 +150,13 @@ public class UsageMonitor extends JPanel implements Runnable
 	public void runServer(WebChatServer server)
 	{
 		this.server = server;
+		this.channelManager = ChannelManager.getInstance();
 	}
 	
 	public void suspendServer()
 	{
 		this.server = null;
+		this.channelManager = null;
 		this.serverUpTime = 0;
 	}
 	
@@ -276,7 +279,7 @@ public class UsageMonitor extends JPanel implements Runnable
 	private int serverConnectedUsers()
 	{
 		if(this.server != null)
-			return ChatRoom.getGlobalMembersSize();
+			return this.channelManager.getGlobalChannelSize();
 		else
 			return 0;
 	}

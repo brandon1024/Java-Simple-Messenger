@@ -1,11 +1,12 @@
 package webchatinterface.server.ui;
 
 import webchatinterface.AbstractIRC;
+import webchatinterface.server.network.ChannelManager;
 import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
-import webchatinterface.server.network.ChatRoom;
+import webchatinterface.server.network.Channel;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.ui.components.UsageMonitor;
 import webchatinterface.server.ui.dialog.AccountListDialog;
@@ -109,7 +110,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	
 	private void buildUI()
 	{
-		this.consoleMng = new ConsoleManager();
+		this.consoleMng = ConsoleManager.getInstance();
 		this.usageMnt = UsageMonitor.getInstance();
 		(new Thread(consoleMng)).start();
 		(new Thread(usageMnt)).start();
@@ -218,7 +219,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		{
 			//run server on specified port
 			this.running = true;
-			this.server = new WebChatServer(this.consoleMng);
+			this.server = new WebChatServer();
 			this.usageMnt.runServer(server);
 			this.server.start();
 			
@@ -251,10 +252,10 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			JCheckBox blacklist = new JCheckBox("Blacklist User");
 			
 			//Populate JComboBox with WebChatServerInstances
-			ChatRoom[] rooms = ChatRoom.getGlobalRooms();
-			for (ChatRoom room : rooms)
+			Channel[] channels = ChannelManager.getInstance().getGlobalChannels();
+			for (Channel channel : channels)
 			{
-				WebChatServerInstance[] clients = room.getConnectedClients();
+				WebChatServerInstance[] clients = channel.getChannelMembers();
 				for(WebChatServerInstance member : clients)
 					connectedUsers.addItem(member);
 			}

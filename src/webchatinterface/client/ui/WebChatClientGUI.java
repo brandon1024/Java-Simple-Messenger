@@ -46,8 +46,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem availabilityAppearOffline;
 	private JMenuItem showConnectedUsers;
 	private JMenuItem exit;
-	private JMenuItem enterPrivateChatroom;
-	private JMenuItem exitPrivateChatroom;
+	private JMenuItem enterPrivateChannel;
+	private JMenuItem exitPrivateChannel;
 	private JMenuItem clearChat;
 	private JMenuItem sendImage;
 	private JMenuItem sendFile;
@@ -141,8 +141,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.availabilityAppearOffline = new JMenuItem("Appear Offline");
 		this.showConnectedUsers = new JMenuItem("Show Connected Users");
 		this.exit = new JMenuItem("Close");
-		this.enterPrivateChatroom = new JMenuItem("Enter Private Chatroom...");
-		this.exitPrivateChatroom = new JMenuItem("Exit Private Chatroom");
+		this.enterPrivateChannel = new JMenuItem("Enter Private Channel...");
+		this.exitPrivateChannel = new JMenuItem("Exit Private Channel");
 		this.clearChat = new JMenuItem("Clear Chat Window");
 		this.sendImage = new JMenuItem("Send Image...");
 		this.sendFile = new JMenuItem("Send File...");
@@ -161,8 +161,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.availabilityAway.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.ALT_MASK));
 		this.showConnectedUsers.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
 		this.exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
-		this.enterPrivateChatroom.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK));
-		this.exitPrivateChatroom.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
+		this.enterPrivateChannel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK));
+		this.exitPrivateChannel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
 		this.clearChat.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.ALT_MASK));
 		this.sendImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
 		this.sendFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.ALT_MASK));
@@ -185,8 +185,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		file.add(this.showConnectedUsers);
 		file.addSeparator();
 		file.add(this.exit);
-		edit.add(this.enterPrivateChatroom);
-		edit.add(this.exitPrivateChatroom);
+		edit.add(this.enterPrivateChannel);
+		edit.add(this.exitPrivateChannel);
 		edit.addSeparator();
 		edit.add(this.sendImage);
 		edit.add(this.sendFile);
@@ -209,8 +209,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.availabilityAppearOffline.addActionListener(this);
 		this.showConnectedUsers.addActionListener(this);
 		this.exit.addActionListener(this);
-		this.enterPrivateChatroom.addActionListener(this);
-		this.exitPrivateChatroom.addActionListener(this);
+		this.enterPrivateChannel.addActionListener(this);
+		this.exitPrivateChannel.addActionListener(this);
 		this.clearChat.addActionListener(this);
 		this.sendImage.addActionListener(this);
 		this.sendFile.addActionListener(this);
@@ -336,8 +336,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.availabilityAppearOffline.setEnabled(true);
 		this.showConnectedUsers.setEnabled(true);
 		this.exit.setEnabled(true);
-		this.enterPrivateChatroom.setEnabled(true);
-		this.exitPrivateChatroom.setEnabled(true);
+		this.enterPrivateChannel.setEnabled(true);
+		this.exitPrivateChannel.setEnabled(true);
 		this.clearChat.setEnabled(true);
 		this.sendImage.setEnabled(true);
 		this.sendFile.setEnabled(true);
@@ -368,8 +368,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.availabilityAway.setEnabled(false);
 		this.availabilityAppearOffline.setEnabled(false);
 		this.showConnectedUsers.setEnabled(false);
-		this.enterPrivateChatroom.setEnabled(false);
-		this.exitPrivateChatroom.setEnabled(false);
+		this.enterPrivateChannel.setEnabled(false);
+		this.exitPrivateChannel.setEnabled(false);
 		this.clearChat.setEnabled(false);
 		this.sendImage.setEnabled(false);
 		this.sendFile.setEnabled(false);
@@ -517,7 +517,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.setColors(0);
 		this.disableClientMenus();
 		this.statusBar.setAvailability(ClientUser.OFFLINE);
-		this.statusBar.setChatroom("Public Chat Room");
+		this.statusBar.setChannel("Public Channel");
 		
 		//Update Window Properties
 		super.setTitle("Web Chat Interface");
@@ -531,7 +531,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		super.setTitle("Web Chat Interface - " + this.clientUser.getUsername());
 		this.enableClientMenus();
 		this.statusBar.setAvailability(ClientUser.AVAILABLE);
-		this.statusBar.setChatroom("Public Chat Room");
+		this.statusBar.setChannel("Public Channel");
 	}
 	
 	private void updateAvailable(Command com)
@@ -587,8 +587,8 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 					this.disconnect("Disconnected; Inconsistent User Information");
 				else if(com.getReason() == Command.REASON_KICKED)
 					this.disconnect("Disconnected; You Were Kicked");
-				else if(com.getReason() == Command.REASON_ROOM_CLOSED)
-					this.disconnect("Disconnected; Chatroom Closed");
+				else if(com.getReason() == Command.REASON_CHANNEL_CLOSED)
+					this.disconnect("Disconnected; Channel Closed");
 				else if(com.getReason() == Command.REASON_SERVER_CLOSED)
 					this.disconnect("Disconnected; Server Closed");
 				else if(com.getReason() == Command.REASON_SERVER_FULL)
@@ -600,20 +600,20 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			case Command.CONNECTION_DENIED:
 				this.disconnect("Disconnected; " + com.getMessage());
 				break;
-			//If a User Requested a Private Chatroom
-			case Command.PRIVATE_CHATROOM_REQUEST:
-				this.privateChatroomRequest(com);
+			//If a User Requested a Private Channel
+			case Command.PRIVATE_CHANNEL_REQUEST:
+				this.privateChannelRequest(com);
 				break;
-			//If a User Authorized a Private Chatroom
-			case Command.PRIVATE_CHATROOM_AUTHORIZED:
-				this.enterPrivateChatroom(com);
+			//If a User Authorized a Private Channel
+			case Command.PRIVATE_CHANNEL_AUTHORIZED:
+				this.enterPrivateChannel(com);
 				break;
-				//If a User Authorized a Private Chatroom
-			case Command.PRIVATE_CHATROOM_DENIED:
-				this.chatArea.printConsole(new Message("Private Chatoom Request Denied.", "CLIENT", "0"));
+				//If a User Authorized a Private Channel
+			case Command.PRIVATE_CHANNEL_DENIED:
+				this.chatArea.printConsole(new Message("PrivateChannel Request Denied.", "CLIENT", "0"));
 				break;
-			case Command.PRIVATE_CHATROOM_EXIT:
-				this.exitPrivateChatroom();
+			case Command.PRIVATE_CHANNEL_EXIT:
+				this.exitPrivateChannel();
 				break;
 		}
 	}
@@ -653,43 +653,43 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 		this.chatArea.printFile(file, transferManifest);
 	}
 	
-	private void privateChatroomRequest(Command com)
+	private void privateChannelRequest(Command com)
 	{
 		JPanel dialogPanel = new JPanel();
-		dialogPanel.add(new JLabel(com.getSender() + " requested a private chatroom. Confirm?"));
+		dialogPanel.add(new JLabel(com.getSender() + " requested a private channel. Confirm?"));
 		
 		int returnValue = JOptionPane.showConfirmDialog(null, dialogPanel, 
-				"Private Chatroom Request", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
+				"Private Channel Request", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE);
 		
 		if(returnValue == 0)
 		{
 			String[] recipient = {com.getSender(), com.getSenderID()};
-			this.send(new Command(Command.PRIVATE_CHATROOM_AUTHORIZED, recipient, this.clientUser.getUsername(), this.clientUser.getUserID()));
-			this.enterPrivateChatroom(com);
+			this.send(new Command(Command.PRIVATE_CHANNEL_AUTHORIZED, recipient, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			this.enterPrivateChannel(com);
 		}
 		else
 		{
 			String[] recipient = {com.getSender(), com.getSenderID()};
-			this.send(new Command(Command.PRIVATE_CHATROOM_DENIED, recipient, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			this.send(new Command(Command.PRIVATE_CHANNEL_DENIED, recipient, this.clientUser.getUsername(), this.clientUser.getUserID()));
 		}
 	}
 	
-	private void enterPrivateChatroom(Command com)
+	private void enterPrivateChannel(Command com)
 	{
 		this.setColors(ConsoleManager.STYLE_AUTHENTICATED_RED);
 		this.chatArea.clearConsole();
-		this.chatArea.printConsole(new Message("Entered Private Chatroom", "CLIENT", "0"));
-		this.statusBar.setChatroom("Private Chat Room: " + com.getSender());
+		this.chatArea.printConsole(new Message("Entered Private Channel", "CLIENT", "0"));
+		this.statusBar.setChannel("Private Channel: " + com.getSender());
 	}
 	
-	private void exitPrivateChatroom()
+	private void exitPrivateChannel()
 	{
 		if(this.clientUser.isSignedIn())
 		{
 			this.setColors(ConsoleManager.STYLE_AUTHENTICATED);
 			this.chatArea.clearConsole();
-			this.chatArea.printConsole(new Message("Private Chat Room Closed. Entered Public Chat Room", "CLIENT", "0"));
-			this.statusBar.setChatroom("Public Chat Room");
+			this.chatArea.printConsole(new Message("Private Channel Closed. Entered Public Channel", "CLIENT", "0"));
+			this.statusBar.setChannel("Public Channel");
 		}
 	}
 	
@@ -796,7 +796,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			(new ConnectedUsersWindow(this.client, this.clientUser)).start();
 	}
 	
-	private void showPrivateChatroomSelectionDialog()
+	private void showPrivateChannelSelectionDialog()
 	{
 		if(this.clientUser.isSignedIn())
 		{
@@ -905,7 +905,7 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			clientConnections.setPreferredScrollableViewportSize(new Dimension(250,400));
 			componentPanel.add(scrollPane);
 			
-			JButton okButton = new JButton("Enter Private Chatroom");
+			JButton okButton = new JButton("Enter Private Channel");
 			okButton.addActionListener(new ActionListener()
 			{
 				@Override
@@ -919,18 +919,18 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 						{
 							Object[] recipient = connectedUsers[clientConnections.getSelectedRow()];
 							if(recipient[1].equals(WebChatClientGUI.this.clientUser.getUserID()))
-								WebChatClientGUI.this.chatArea.printConsole(new Message("Unable to Enter Private Chatroom with Yourself", "CLIENT", "0"));
+								WebChatClientGUI.this.chatArea.printConsole(new Message("Unable to Enter Private Channel with Yourself", "CLIENT", "0"));
 							else
 							{
-								WebChatClientGUI.this.client.send(new Command(Command.PRIVATE_CHATROOM_REQUEST, recipient, WebChatClientGUI.this.clientUser.getUsername(), WebChatClientGUI.this.clientUser.getUserID()));
-								WebChatClientGUI.this.chatArea.printConsole(new Message("Private Chatroom Request Sent to " + recipient[0], "CLIENT", "0"));
+								WebChatClientGUI.this.client.send(new Command(Command.PRIVATE_CHANNEL_REQUEST, recipient, WebChatClientGUI.this.clientUser.getUsername(), WebChatClientGUI.this.clientUser.getUserID()));
+								WebChatClientGUI.this.chatArea.printConsole(new Message("Private Channel Request Sent to " + recipient[0], "CLIENT", "0"));
 							}
 							
 						}
 						catch (IOException e)
 						{
 							AbstractClient.logException(e);
-							WebChatClientGUI.this.chatArea.printConsole(new Message("Unable to Enter Private Chatroom", "CLIENT", "0"));
+							WebChatClientGUI.this.chatArea.printConsole(new Message("Unable to Enter Private Channel", "CLIENT", "0"));
 						}
 						finally
 						{
@@ -1035,13 +1035,13 @@ public class WebChatClientGUI extends JFrame implements ActionListener, WindowLi
 			this.exit();
 			this.setCursorStyle(Cursor.DEFAULT_CURSOR);
 		}
-		else if(event.getSource() == this.enterPrivateChatroom)
+		else if(event.getSource() == this.enterPrivateChannel)
 		{
-			this.showPrivateChatroomSelectionDialog();
+			this.showPrivateChannelSelectionDialog();
 		}
-		else if(event.getSource() == this.exitPrivateChatroom)
+		else if(event.getSource() == this.exitPrivateChannel)
 		{
-			this.send(new Command(Command.PRIVATE_CHATROOM_EXIT, this.clientUser.getUsername(), this.clientUser.getUserID()));
+			this.send(new Command(Command.PRIVATE_CHANNEL_EXIT, this.clientUser.getUsername(), this.clientUser.getUserID()));
 		}
 		//If User Selected to Clear Chat Window
 		else if(event.getSource() == this.clearChat && this.clientUser.isSignedIn())
