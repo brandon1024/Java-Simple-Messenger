@@ -3,7 +3,6 @@ package webchatinterface.server.communication;
 import util.KeyGenerator;
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
-import webchatinterface.server.WebChatServer;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.account.AccountManager;
 import webchatinterface.server.network.ChatRoom;
@@ -88,8 +87,8 @@ public class WebChatServerInstance implements Runnable
 		{
 			this.consoleMng.printConsole("Client Authenticated: Connection Authorized", false);
 			this.consoleMng.printConsole(this.paramString(), false);
-			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " Connected", "SERVER", "0"), this.room);
-			this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " connected", "SERVER", "0"), this.room);
+			this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 		}
 		else
 			this.consoleMng.printConsole("Client Authentication Failed: Connection Denied", false);
@@ -130,7 +129,7 @@ public class WebChatServerInstance implements Runnable
 				else if(message != null && message instanceof Command)
 				{
 					//validate
-					this.validateCommand((Command)message);
+					this.validateMessage((Command)message);
 					
 					if(this.verified)
 					{
@@ -145,27 +144,27 @@ public class WebChatServerInstance implements Runnable
 								this.send(new Command(Command.CLIENT_VERSION, AbstractIRC.CLIENT_VERSION, "SERVER", "0"));
 								break;
 							case Command.MESSAGE_TYPED:
-								this.broadcastHlp.broadcastCommand((Command)message, this.room);
+								this.broadcastHlp.broadcastMessage((Command)message, this.room);
 								break;
 							case Command.CLIENT_AVAILABILITY_AVAILABLE:
 								this.client.setAvailability(ClientUser.AVAILABLE);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AVAILABLE", false);
-								this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 								break;
 							case Command.CLIENT_AVAILABILITY_BUSY:
 								this.client.setAvailability(ClientUser.BUSY);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : BUSY", false);
-								this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 								break;
 							case Command.CLIENT_AVAILABILITY_AWAY:
 								this.client.setAvailability(ClientUser.AWAY);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AWAY", false);
-								this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 								break;
 							case Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE:
 								this.client.setAvailability(ClientUser.APPEAR_OFFLINE);
 								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : APPEAR_OFFLINE", false);
-								this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 								break;
 							case Command.PRIVATE_CHATROOM_REQUEST:
 							case Command.PRIVATE_CHATROOM_DENIED:
@@ -194,7 +193,7 @@ public class WebChatServerInstance implements Runnable
 							case Command.PRIVATE_CHATROOM_EXIT:
 								if(!this.room.equals(ChatRoom.publicRoom))
 								{
-									this.broadcastHlp.broadcastCommand((Command)message, this.room);
+									this.broadcastHlp.broadcastMessage((Command)message, this.room);
 									this.room.closeRoom();
 									
 									WebChatServerInstance[] roomMembers = this.room.getConnectedClients();
@@ -215,7 +214,7 @@ public class WebChatServerInstance implements Runnable
 										+ "\nFile Size: " + fileSize + "bytes"
 										+ "\nBuffer Size: " + bufferSize + "bytes"
 										+ "\nTransfer ID: " + fileTransferID, false);
-								this.broadcastHlp.broadcastCommand((Command)message);
+								this.broadcastHlp.broadcastMessage((Command)message);
 								this.server.addFilesTransferred();
 								break;
 						}
@@ -271,7 +270,7 @@ public class WebChatServerInstance implements Runnable
 			
 		//broadcast message to all users
 		this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " disconnected", "SERVER", "0"), this.room);
-		this.broadcastHlp.broadcastCommand(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
+		this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.room);
 	}
 	
 	public void disconnect(int reason)
@@ -474,36 +473,9 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	private void validateCommand(Command command)
-	{
-		if(!command.getSenderID().equals(this.client.getUserID()))
-		{
-			this.consoleMng.printConsole("Client " + this.INSTANCE_ID  + " connection aborted: Inconsistent User ID", true);
-			this.verified = false;
-		}
-	}
-	
-	public synchronized void send(Message message) throws IOException
+	public synchronized void send(TransportEntity message) throws IOException
 	{
 		this.messageOut.writeObject(message);
-		this.messageOut.flush();
-	}
-	
-	public synchronized void send(TransferBuffer message) throws IOException
-	{
-		this.messageOut.writeObject(message);
-		this.messageOut.flush();
-	}
-	
-	public synchronized void send(Command command) throws IOException
-	{
-		this.messageOut.writeObject(command);
-		this.messageOut.flush();
-	}
-	
-	public synchronized void send(Object obj) throws IOException
-	{
-		this.messageOut.writeObject(obj);
 		this.messageOut.flush();
 	}
 

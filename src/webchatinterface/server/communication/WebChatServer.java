@@ -1,10 +1,10 @@
-package webchatinterface.server;
+package webchatinterface.server.communication;
 
-import webchatinterface.server.communication.WebChatServerInstance;
-import webchatinterface.server.ui.components.ConsoleManager;
+import webchatinterface.server.AbstractServer;
 import webchatinterface.server.account.BlacklistManager;
-import webchatinterface.server.communication.BroadcastHelper;
 import webchatinterface.server.network.ChatRoom;
+import webchatinterface.server.ui.WebChatServerGUI;
+import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.util.Command;
 
 import java.io.IOException;
@@ -24,7 +24,8 @@ import java.net.*;
 public class WebChatServer implements Runnable
 {
 	private ConsoleManager consoleMng;
-	private BroadcastHelper broadcastHlp;
+	private BroadcastHelper broadcastHelper;
+	private BroadcastScheduler broadcastScheduler;
 	private ServerSocket servSocket;
 	private long objectsSent;
 	private long filesTransfered;
@@ -35,7 +36,8 @@ public class WebChatServer implements Runnable
 		this.consoleMng = consoleMng;
 		this.objectsSent = 0;
 		
-		this.broadcastHlp = new BroadcastHelper(this.consoleMng);
+		this.broadcastHelper = new BroadcastHelper(this.consoleMng);
+		this.broadcastScheduler = new BroadcastScheduler(this.consoleMng, this.broadcastHelper);
 	}
 	
 	public void start()
@@ -58,8 +60,8 @@ public class WebChatServer implements Runnable
 		else
 			this.consoleMng.printConsole("Using Port " + AbstractServer.serverPortNumber, false);
 		
-		//Start BroadcastHelper Thread
-		this.broadcastHlp.start();
+		//Start BroadcastScheduler Thread
+		this.broadcastScheduler.start();
 		
 		//Listen for Incoming Connections
 		listen();
@@ -68,7 +70,7 @@ public class WebChatServer implements Runnable
 	public void suspend()
 	{
 		//gracefully stop listening to ServerSocket
-		this.broadcastHlp.stop();
+		this.broadcastScheduler.stop();
 		this.RUN = false;
 		
 		//disconnect all connected users
@@ -118,7 +120,7 @@ public class WebChatServer implements Runnable
 					
 					if(ChatRoom.getGlobalMembersSize() >= AbstractServer.maxConnectedUsers)
 					{
-						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHlp, this.consoleMng, socket);
+						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_SERVER_FULL);
 						this.consoleMng.printConsole("User Prevented from Connecting; server full (" + AbstractServer.maxConnectedUsers + " connections)", true);
@@ -126,7 +128,7 @@ public class WebChatServer implements Runnable
 					}
 					else if(BlacklistManager.isBlacklisted(socket.getLocalAddress().getHostName()))
 					{
-						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHlp, this.consoleMng, socket);
+						WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_BLACKLISTED);
 						this.consoleMng.printConsole("User Prevented from Connecting; blacklisted user", true);
@@ -141,7 +143,7 @@ public class WebChatServer implements Runnable
 				this.consoleMng.printConsole("Connection Request From: " + socket.getInetAddress().getHostAddress(), false);
 				
 				//Start Server Instance Thread
-				WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHlp, this.consoleMng, socket);
+				WebChatServerInstance chatCom = new WebChatServerInstance(this, this.broadcastHelper, this.consoleMng, socket);
 				chatCom.start();
 			}
 		}
@@ -179,9 +181,9 @@ public class WebChatServer implements Runnable
 		BlacklistManager.blacklistIPAddress(clientServerConnection.getIP());
 	}
 	
-	public void showBroadcastMessageDialog()
+	public void showBroadcastMessageDialog(WebChatServerGUI parent)
 	{
-		this.broadcastHlp.showBroadcastMessageDialog();
+		this.broadcastScheduler.showEditScheduledMessagesDialog(parent);
 	}
 	
 	public Object[][] getConnectedUsers()

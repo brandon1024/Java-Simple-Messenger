@@ -1,6 +1,6 @@
 package webchatinterface.server.ui.dialog;
 
-import webchatinterface.client.util.ResourceLoader;
+import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.server.account.AccountManager;
 
 import javax.swing.*;

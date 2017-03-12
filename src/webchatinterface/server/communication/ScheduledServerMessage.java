@@ -39,31 +39,13 @@ public class ScheduledServerMessage implements Serializable
 	
 	public String toString()
 	{
-		if(this.message.length() > 50)
+		if(this.repeatDaily)
 		{
-			if(repeatDaily)
-			{
-				String hour = this.dailyHour < 10 ? "0" + this.dailyHour : String.valueOf(this.dailyHour);
-				String minute = this.dailyMinute < 10 ? "0" + this.dailyMinute : String.valueOf(this.dailyMinute);
-				return "Repeat [Daily " + hour + ":" + minute + "] " + this.message.substring(0, 50) + "...";
-			}
-			else
-			{
-				return "Repeat [Every " + this.everyMinutes + " minutes" + "] " + this.message.substring(0, 50) + "...";
-			}
+			String hour = this.dailyHour < 10 ? "0" + this.dailyHour : String.valueOf(this.dailyHour);
+			String minute = this.dailyMinute < 10 ? "0" + this.dailyMinute : String.valueOf(this.dailyMinute);
+			return "Repeat [Daily " + hour + ":" + minute + "] " + (this.message.length() > 50 ? this.message.substring(0, 50) + "..." : this.message);
 		}
 		else
-		{
-			if(repeatDaily)
-			{
-				String hour = this.dailyHour < 10 ? "0" + this.dailyHour : String.valueOf(this.dailyHour);
-				String minute = this.dailyMinute < 10 ? "0" + this.dailyMinute : String.valueOf(this.dailyMinute);
-				return "Repeat [Daily " + hour + ":" + minute + "] " + this.message;
-			}
-			else
-			{
-				return "Repeat [Every " + this.everyMinutes + " minutes" + "] " + this.message;
-			}
-		}
+			return "Repeat [Every " + this.everyMinutes + " minutes" + "] " + (this.message.length() > 50 ? this.message.substring(0, 50) + "..." : this.message);
 	}
 }

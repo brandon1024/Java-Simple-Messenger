@@ -1,9 +1,9 @@
 package webchatinterface.server.ui;
 
 import webchatinterface.AbstractIRC;
-import webchatinterface.client.util.ResourceLoader;
+import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.server.AbstractServer;
-import webchatinterface.server.WebChatServer;
+import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.server.network.ChatRoom;
 import webchatinterface.server.ui.components.ConsoleManager;
@@ -84,7 +84,8 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	         @Override
 	         public void run()
 	         {
-	        	 WebChatServerGUI userInterface = new WebChatServerGUI();
+	         	ResourceLoader.getInstance().loadResources();
+	         	WebChatServerGUI userInterface = new WebChatServerGUI();
 	         }
 	      });
 	}
@@ -304,7 +305,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	{
 		//if server running
 		if(this.running)
-			this.server.showBroadcastMessageDialog();
+			this.server.showBroadcastMessageDialog(this);
 		else
 			consoleMng.printConsole("Cannot Broadcast Message; Server is Suspended", true);
 	}

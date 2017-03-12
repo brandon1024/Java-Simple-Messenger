@@ -1,7 +1,9 @@
 package webchatinterface.server.ui.dialog;
+
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.ui.WebChatServerGUI;
 import webchatinterface.server.ui.components.preferences.*;
+import webchatinterface.server.util.ResourceLoader;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -35,6 +37,7 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		super.setVisible(false);
 		super.setResizable(false);
+		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 		
 		this.userInterface = userInterface;
 		this.getContentPane().setLayout(new BorderLayout(5,5));

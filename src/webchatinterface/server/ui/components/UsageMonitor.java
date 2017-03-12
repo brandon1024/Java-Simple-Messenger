@@ -2,7 +2,7 @@ package webchatinterface.server.ui.components;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
-import webchatinterface.server.WebChatServer;
+import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.network.ChatRoom;
 
 import javax.swing.*;

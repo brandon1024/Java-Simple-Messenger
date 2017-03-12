@@ -1,7 +1,7 @@
 package webchatinterface.server.ui.dialog;
 
-import webchatinterface.client.util.ResourceLoader;
-import webchatinterface.server.WebChatServer;
+import webchatinterface.server.util.ResourceLoader;
+import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.server.network.ChatRoom;
 import webchatinterface.util.ClientUser;

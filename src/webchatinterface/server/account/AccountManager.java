@@ -33,7 +33,7 @@ public final class AccountManager
 		}
 	}
 	
-	public static boolean createNewAccount(byte[] emailAddress, byte[] username, byte[] password) throws NoSuchAlgorithmException, FileNotFoundException, IOException, ClassNotFoundException
+	public static boolean createNewAccount(byte[] emailAddress, byte[] username, byte[] password) throws NoSuchAlgorithmException, IOException, ClassNotFoundException
 	{
 		//Generate Salt of Length 32
 		SecureRandom saltGenerator = SecureRandom.getInstance("SHA1PRNG");
@@ -47,7 +47,6 @@ public final class AccountManager
 		
 		//Remove Sensitive Information
 		Arrays.fill(password, Byte.MIN_VALUE);
-		password = null;
 		
 		//Hash Salted Password
 		MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -58,7 +57,7 @@ public final class AccountManager
 		return AccountManager.writeUserFile(accountInformation);
 	}
 
-	public static boolean verifyCredentials(byte[] username, byte[] password) throws NoSuchAlgorithmException, FileNotFoundException, IOException, ClassNotFoundException
+	public static boolean verifyCredentials(byte[] username, byte[] password) throws NoSuchAlgorithmException, IOException, ClassNotFoundException
 	{
 		//Search accountStore for User File
 		UserFile readFile = null;
@@ -67,11 +66,7 @@ public final class AccountManager
 			readFile = AccountManager.readUserFile(username, null);
 		}
 		
-		//If User File Not Found
-		if(readFile == null)
-			return false;
-		
-		return AccountManager.verifyCredentials(readFile, password);
+		return readFile != null & AccountManager.verifyCredentials(readFile, password);
 	}
 	
 	private static boolean verifyCredentials(UserFile account, byte[] password) throws NoSuchAlgorithmException
@@ -87,7 +82,6 @@ public final class AccountManager
 		
 		//Remove Sensitive Information
 		Arrays.fill(password, Byte.MIN_VALUE);
-		password = null;
 		
 		//Hash Salted Password
 		MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -139,16 +133,14 @@ public final class AccountManager
 		return true;
 	}
 	
-	private synchronized static UserFile readUserFile(byte[] username, byte[] emailAddress) throws FileNotFoundException, IOException, ClassNotFoundException
+	private synchronized static UserFile readUserFile(byte[] username, byte[] emailAddress) throws IOException, ClassNotFoundException
 	{
 		//Search for account in the accountStore, return userFile object if found
 		try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(AccountManager.accountStore)))
 		{
 			//Unable to Search If No Information Provided
 			if(username == null && emailAddress == null)
-			{
-				throw new NullPointerException("both username and emailaddress arguments are null");
-			}
+				throw new NullPointerException("both username and email address arguments are null");
 			
 			//Search by Username Only
 			if(username == null)
@@ -245,7 +237,7 @@ public final class AccountManager
 		return true;
 	}
 	
-	public synchronized static boolean modifyAccountEmailAddress(byte[] oldEmailAddress, byte[] newEmailAddress, byte[] password) throws FileNotFoundException, IOException, NoSuchAlgorithmException, ClassNotFoundException
+	public synchronized static boolean modifyAccountEmailAddress(byte[] oldEmailAddress, byte[] newEmailAddress, byte[] password) throws IOException, NoSuchAlgorithmException, ClassNotFoundException
 	{
 		//Verify that a user file with the desired username does not exist
 		if(readUserFile(null, newEmailAddress) != null)
@@ -268,9 +260,7 @@ public final class AccountManager
 						return false;
 				}
 				else
-				{
 					temp_OOS.writeObject(readFile);
-				}
 			}
 		}
 		catch(EOFException e){}
@@ -321,9 +311,7 @@ public final class AccountManager
 						return false;
 				}
 				else
-				{
 					temp_OOS.writeObject(readFile);
-				}
 			}
 		}
 		catch(EOFException e){}
@@ -374,7 +362,7 @@ public final class AccountManager
 		return true;
 	}
 	
-	public synchronized static UserFile removeAccount(byte[] username, byte[] password) throws FileNotFoundException, IOException, NoSuchAlgorithmException, ClassNotFoundException
+	public synchronized static UserFile removeAccount(byte[] username, byte[] password) throws IOException, NoSuchAlgorithmException, ClassNotFoundException
 	{
 		//Write entire accountStore to temporary disk location
 		//If desired account is encountered, verify credentials and assign to temp object reference
@@ -393,9 +381,7 @@ public final class AccountManager
 						return null;
 				}
 				else
-				{
 					temp_OOS.writeObject(readFile);
-				}
 			}
 		}
 		catch(EOFException e){}
@@ -425,7 +411,7 @@ public final class AccountManager
 		return userAccount;
 	}
 	
-	public synchronized static String[][] retrieveBasicAccountList() throws FileNotFoundException, IOException, ClassNotFoundException
+	public synchronized static String[][] retrieveBasicAccountList() throws IOException, ClassNotFoundException
 	{
 		//Instantiate ArrayList for Username and Email Address
 		@SuppressWarnings("unchecked")

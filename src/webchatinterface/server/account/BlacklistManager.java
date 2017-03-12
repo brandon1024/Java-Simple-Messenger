@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class BlacklistManager
 {
-    public static void blacklistIPAddress(String address)
+    public synchronized static void blacklistIPAddress(String address)
     {
         if(address.length() == 0)
             return;
@@ -30,7 +30,7 @@ public class BlacklistManager
         }
     }
 
-    public static boolean isBlacklisted(String IP)
+    public synchronized static boolean isBlacklisted(String IP)
     {
         //read from blacklist file to determine if user is blacklisted
         try(FileInputStream blackListFileIn = new FileInputStream(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat");
@@ -65,13 +65,13 @@ public class BlacklistManager
         return false;
     }
 
-    public static void clearBlacklistRecord()
+    public synchronized static void clearBlacklistRecord()
     {
         File blacklistFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "BLACKLIST.dat");
         blacklistFile.delete();
     }
 
-    public static String[] getBlacklistedAddresses()
+    public synchronized static String[] getBlacklistedAddresses()
     {
         ArrayList<String> addresses = new ArrayList<String>();
 
