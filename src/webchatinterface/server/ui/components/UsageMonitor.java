@@ -1,10 +1,5 @@
 package webchatinterface.server.ui.components;
 
-import webchatinterface.AbstractIRC;
-import webchatinterface.server.AbstractServer;
-import webchatinterface.server.communication.WebChatServer;
-import webchatinterface.server.network.ChannelManager;
-
 import javax.swing.*;
 import java.awt.*;
 
@@ -19,11 +14,8 @@ import java.awt.*;
   *The implementing class can simply add the UsageMonitor object to the frame.
   */
 
-public class UsageMonitor extends JPanel implements Runnable
+public class UsageMonitor extends JPanel
 {
-	private Runtime runtime;
-	private WebChatServer server;
-	private ChannelManager channelManager;
 	private JLabel usedMem;
 	private JLabel freeMem;
 	private JLabel totalMem;
@@ -36,9 +28,9 @@ public class UsageMonitor extends JPanel implements Runnable
 	private JLabel status;
 	private JLabel filesTransferred;
 	private JLabel upTime;
+	private JLabel availableProcessors;
 	private JProgressBar memUsage;
 	private JProgressBar serverUsage;
-	private int serverUpTime;
 	
 	private UsageMonitor()
 	{
@@ -46,9 +38,6 @@ public class UsageMonitor extends JPanel implements Runnable
 		super();
 		super.setBorder(BorderFactory.createTitledBorder("Resource Monitor"));
 		super.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-		
-		this.runtime = Runtime.getRuntime();
-		this.serverUpTime = 0;
 		
 		//Build Inner Container Objects
 		JPanel memory = new JPanel();
@@ -76,7 +65,7 @@ public class UsageMonitor extends JPanel implements Runnable
 		col6.setLayout(new GridLayout(2,1, 5, 0));
 		
 		//Build JLabels
-		JLabel availableProcessors = new JLabel("Available Processors: " + this.availableProcessors());
+		this.availableProcessors = new JLabel("Available Processors: 0");
 		this.usedMem = new JLabel("Used Memory: 0");
 		this.freeMem = new JLabel("Free Memory: 0");
 		this.totalMem = new JLabel("Total Memory: 0");
@@ -116,7 +105,7 @@ public class UsageMonitor extends JPanel implements Runnable
 		col5.add(this.clientVersion);
 		
 		col6.add(this.status);
-		col6.add(availableProcessors);
+		col6.add(this.availableProcessors);
 		
 		visualInfo.add(new JLabel("Memory Usage: "));
 		visualInfo.add(memUsage);
@@ -146,160 +135,100 @@ public class UsageMonitor extends JPanel implements Runnable
 		super.add(upTimeInfo);
 		super.add(visualInfo);
 	}
-	
-	public void runServer(WebChatServer server)
+
+	public void changeUsedMemory(String usedMemory)
 	{
-		this.server = server;
-		this.channelManager = ChannelManager.getInstance();
-	}
-	
-	public void suspendServer()
-	{
-		this.server = null;
-		this.channelManager = null;
-		this.serverUpTime = 0;
-	}
-	
-	public void run()
-	{
-		while(true)
-		{
-			this.usedMem.setText("Used Memory: " + this.usedMemory() + " MB");
-			this.freeMem.setText("Free Memory: " + this.freeMemory() + " MB");
-			this.totalMem.setText("Total Memory: " + this.totalMemory() + " MB");
-			this.maxMem.setText("Max Memory: " + this.maxMemory() + " MB");
-			
-			this.messagesSent.setText("Messages Sent: " + this.objectsCommunicated());
-			this.filesTransferred.setText("Files Transferred: " + this.filesCommunicated());
-			this.port.setText("Server Port: " + this.serverPort());
-			this.maxConnections.setText("Max Connections: " + this.serverMaxConnections());
-			this.version.setText("Server Version: " + this.serverVersion());
-			this.clientVersion.setText("Client Version: " + this.clientVersion());
-			this.status.setText("Server Status: " + this.serverStatus());
-			
-			this.memUsage.setValue((int)(this.usedMemory() * 100 / this.totalMemory()));
-			this.serverUsage.setValue(this.server != null ? (this.serverConnectedUsers() * 100 / this.serverMaxConnections()) : 0);
-			this.serverUsage.setString(this.server != null ? this.serverConnectedUsers() + "/" + this.serverMaxConnections() : "Suspended");
-			
-			this.upTime.setText("Server Up Time: " + serverUpTime());
-			
-			if(this.memUsage.getValue() >= 75)
-				this.memUsage.setForeground(Color.RED);
-			else
-				this.memUsage.setForeground(new Color(0,204,0));
-			
-			if(this.serverUsage.getValue() >= 75)
-				this.serverUsage.setForeground(Color.RED);
-			else
-				this.serverUsage.setForeground(new Color(0,204,0));
-			
-			try
-			{
-				Thread.sleep(1000);
-				
-				if(this.server != null)
-					this.serverUpTime++;
-			}
-			catch(InterruptedException e)
-			{
-				AbstractServer.logException(e);
-			}
-		}
-	}
-	
-	private long usedMemory()
-	{
-		return (runtime.totalMemory() - runtime.freeMemory())/1024/1024;
-	}
-	
-	private long freeMemory()
-	{
-		return runtime.freeMemory()/1024/1024;
-	}
-	
-	private long totalMemory()
-	{
-		return runtime.totalMemory()/1024/1024;
-	}
-	
-	private long maxMemory()
-	{
-		return runtime.maxMemory()/1024/1024;
-	}
-	
-	private int availableProcessors()
-	{
-		return runtime.availableProcessors();
-	}
-	
-	private long objectsCommunicated()
-	{
-		if(this.server != null)
-			return this.server.getObjectsSent();
-		else
-			return 0;
-	}
-	
-	private long filesCommunicated()
-	{
-		if(this.server != null)
-			return this.server.getFilesTransferred();
-		else
-			return 0;
-	}
-	
-	private int serverPort()
-	{
-		if(this.server != null)
-			return AbstractServer.serverPortNumber;
-		else
-			return 0;
-	}
-	
-	private String serverUpTime()
-	{
-		int time = this.serverUpTime;
-		
-		int days = time / 86400;
-		int hours = (time % 86400) / 3600;
-		int minutes = ((time % 86400) % 3600) / 60;
-		int seconds = ((time % 86400) % 3600) % 60;
-		
-		return days + "d " + hours + "h " + minutes + "m " + seconds + "s";
-	}
-	
-	private int serverMaxConnections()
-	{
-		if(this.server != null)
-			return AbstractServer.maxConnectedUsers;
-		else
-			return 0;
-	}
-	
-	private int serverConnectedUsers()
-	{
-		if(this.server != null)
-			return this.channelManager.getGlobalChannelSize();
-		else
-			return 0;
-	}
-	
-	private String serverStatus()
-	{
-		if(this.server != null)
-			return "Running";
-		else
-			return "Suspended";
+		this.usedMem.setText("Used Memory: " + usedMemory);
 	}
 
-	private String serverVersion()
+	public void changeFreeMemory(String freeMemory)
 	{
-		return AbstractIRC.SERVER_VERSION;
+		this.freeMem.setText("Free Memory: " + freeMemory);
 	}
 
-	private String clientVersion()
+	public void changeTotalMemory(String totalMemory)
 	{
-		return AbstractIRC.CLIENT_VERSION;
+		this.totalMem.setText("Total Memory: " + totalMemory);
+	}
+
+	public void changeMaxMemory(String maxMemory)
+	{
+		this.maxMem.setText("Max Memory: " + maxMemory);
+	}
+
+	public void changeMessagesSent(long messagesSent)
+	{
+		this.messagesSent.setText("Messages Sent: " + messagesSent);
+	}
+
+	public void changeFilesTransferred(long filesTransferred)
+	{
+		this.filesTransferred.setText("Files Transferred: " + filesTransferred);
+	}
+
+	public void changePortNumber(int portNumber)
+	{
+		this.port.setText("Server Port: " + portNumber);
+	}
+
+	public void changeMaxConnections(int maxConnections)
+	{
+		this.maxConnections.setText("Max Connections: " + maxConnections);
+	}
+
+	public void changeServerVersion(String serverVersion)
+	{
+		this.version.setText("Server Version: " + serverVersion);
+	}
+
+	public void changeClientVersion(String clientVersion)
+	{
+		this.clientVersion.setText("Client Version: " + clientVersion);
+	}
+
+	public void changeStatus(String status)
+	{
+		this.status.setText("Server Status: " + status);
+	}
+
+	public void changeMemoryUsageValue(int value)
+	{
+		this.memUsage.setValue(value);
+	}
+
+	public void changeMemoryUsageText(String text)
+	{
+		this.memUsage.setString(text);
+	}
+
+	public void changeMemoryUsageForeground(Color color)
+	{
+		this.memUsage.setForeground(color);
+	}
+
+	public void changeServerUsageValue(int value)
+	{
+		this.serverUsage.setValue(value);
+	}
+
+	public void changeServerUsageText(String text)
+	{
+		this.serverUsage.setString(text);
+	}
+
+	public void changeServerUsageForeground(Color color)
+	{
+		this.serverUsage.setForeground(color);
+	}
+
+	public void changeServerUpTimeText(String text)
+	{
+		this.upTime.setText(text);
+	}
+
+	public void changeAvailableProcessors(int availableProcessors)
+	{
+		this.availableProcessors.setText("Available Processors: " + availableProcessors);
 	}
 
 	public static UsageMonitor getInstance()

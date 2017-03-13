@@ -12,6 +12,7 @@ import webchatinterface.server.ui.components.UsageMonitor;
 import webchatinterface.server.ui.dialog.AccountListDialog;
 import webchatinterface.server.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
+import webchatinterface.server.util.UsageMonitorManager;
 import webchatinterface.util.Command;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem aboutApp;
 	private JMenuItem getHelp;
 	private ConsoleManager consoleMng;
-	private UsageMonitor usageMnt;
+	private UsageMonitorManager usageMonitorManager;
 	private boolean running = false;
 	private WebChatServer server;
 	
@@ -103,7 +104,6 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		super.setVisible(true);
 		super.setState((AbstractServer.openMinimized) ? Frame.ICONIFIED : Frame.NORMAL);
 
-
 		if(AbstractServer.startServerWhenApplicationStarts)
 			this.runServer();
 	}
@@ -111,9 +111,8 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private void buildUI()
 	{
 		this.consoleMng = ConsoleManager.getInstance();
-		this.usageMnt = UsageMonitor.getInstance();
+		this.usageMonitorManager = UsageMonitorManager.getInstance();
 		(new Thread(consoleMng)).start();
-		(new Thread(usageMnt)).start();
 		
 		//---BUILD MENU BAR---//
 		JMenuBar menuBar;
@@ -206,7 +205,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		{
 			this.running = false;
 			this.server.suspend();
-			this.usageMnt.suspendServer();
+			this.usageMonitorManager.stop();
 			this.server = null;
 			
 			super.setTitle("Web Chat Server Interface - Suspended");
@@ -220,7 +219,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			//run server on specified port
 			this.running = true;
 			this.server = new WebChatServer();
-			this.usageMnt.runServer(server);
+			this.usageMonitorManager.start(server);
 			this.server.start();
 			
 			super.setTitle("Web Chat Server Interface - Running");
@@ -316,12 +315,12 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		//If Usage Monitor is Visible
 		if(show)
 		{
-			this.masterPane.add(usageMnt, BorderLayout.PAGE_END);
+			this.masterPane.add(UsageMonitor.getInstance(), BorderLayout.PAGE_END);
 			this.masterPane.validate();
 		}
 		else
 		{
-			this.masterPane.remove(usageMnt);
+			this.masterPane.remove(UsageMonitor.getInstance());
 			this.masterPane.validate();
 		}
 	}
