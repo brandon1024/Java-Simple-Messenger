@@ -9,9 +9,9 @@ These instructions will get you a copy of the project up and running on your loc
 To install and run the client or server, clone the repository. Import into your IDE of choice, compile, and run either `WebChatClientGUI.java` or `WebChatServerGUI.java`. Ensure you have forwarded the inbound server port on your router, default `5100`, and created an inbound rule through your firewall.
 
 # Contribute
-Interesting in contributing to Java-IRC? See [CONTRIBUTOR.md](https://github.com/brandon1024/Java-IRC/blob/master/CONTIBUTOR.md).
+Interested in contributing to Java-IRC? See [CONTRIBUTING ](https://github.com/brandon1024/Java-IRC/blob/master/CONTIBUTING.md).
 
 # Authors
-|[<img src="https://avatars3.githubusercontent.com/u/22732449?v=3&s=460" width="128">](https://github.com/brandon1024)| [<img src="https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png" width="128">](https://github.com/brandon1024/Java-IRC/graphs/contributors)
+|[<img src="https://avatars3.githubusercontent.com/u/22732449?v=3&s=460" width="128">](https://github.com/brandon1024)| [<img src="https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png" width="128">](https://github.com/brandon1024/Java-IRC/blob/master/CONTIBUTING.md)
 |:---:|:---:|
-|[Brandon Richardson](https://github.com/brandon1024)| [Become a Contributor](https://github.com/brandon1024/Java-IRC/graphs/contributors)
+|[Brandon Richardson](https://github.com/brandon1024)| [Become a Contributor](https://github.com/brandon1024/Java-IRC/blob/master/CONTIBUTING.md)
