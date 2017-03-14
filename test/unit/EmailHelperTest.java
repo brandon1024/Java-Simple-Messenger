@@ -42,7 +42,8 @@ public class EmailHelperTest
 		"email@domain.co.jp",
 		"email@(comment)domain.com",
 		"email@domain.com(comment)",
-		"firstname-lastname@domain.com"};
+		"firstname-lastname@domain.com",
+		"\"a\"1111111111111111111111111111111111111111111111111111111111111@test.com"};
 
 		String[] invalidEmailAddresses = {
 		"ABC.example.com",
