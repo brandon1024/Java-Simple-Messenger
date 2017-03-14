@@ -26,21 +26,13 @@ import java.awt.event.WindowListener;
 
 public class ConnectedUsersWindow extends JFrame implements Runnable, WindowListener
 {
-	private static ImageIcon AVAILABLE_ICON;
-	private static ImageIcon BUSY_ICON;
-	private static ImageIcon AWAY_ICON;
 	private WebChatClient client;
 	private ClientUser clientUser;
+	private ImageIcon availableIcon;
+	private ImageIcon busyIcon;
+	private ImageIcon awayIcon;
 	private volatile boolean isRunning;
-	
-	static
-	{
-		ResourceLoader rl = ResourceLoader.getInstance();
-		AVAILABLE_ICON = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAvailableIcon());
-		BUSY_ICON = ResourceLoader.bufferedImageToImageIcon(rl.getStatusBusyIcon());
-		AWAY_ICON = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAwayIcon());
-	}
-	
+
 	public ConnectedUsersWindow(WebChatClient client, ClientUser clientUser)
 	{
 		super("Connected Users");
@@ -48,7 +40,12 @@ public class ConnectedUsersWindow extends JFrame implements Runnable, WindowList
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		super.addWindowListener(this);
 		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
-		
+
+		ResourceLoader rl = ResourceLoader.getInstance();
+		this.availableIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAvailableIcon());
+		this.busyIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusBusyIcon());
+		this.awayIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAwayIcon());
+
 		this.client = client;
 		this.clientUser = clientUser;
 		this.isRunning = false;
@@ -67,8 +64,6 @@ public class ConnectedUsersWindow extends JFrame implements Runnable, WindowList
 	{
 		super.setVisible(true);
 		
-		Object[][] data;
-		Object[][] previousData = null;
 		DefaultTableModel tableModel = new DefaultTableModel();
 		tableModel.addColumn("");
 		tableModel.addColumn("Username");
@@ -77,8 +72,7 @@ public class ConnectedUsersWindow extends JFrame implements Runnable, WindowList
 		
 		JTable clientConnections = new JTable(tableModel)
 		{
-            @Override
-			public Class<?> getColumnClass(int column)
+            public Class<?> getColumnClass(int column)
             {
             	switch(column)
             	{
@@ -95,75 +89,65 @@ public class ConnectedUsersWindow extends JFrame implements Runnable, WindowList
         JScrollPane scrollPane = new JScrollPane(clientConnections);
 		super.getContentPane().add(scrollPane);
 		super.validate();
-		
+
 		while(this.isRunning && this.client.isRunning())
 		{
-			try
-			{
-				Thread.sleep(1000);
-			}
-			catch(InterruptedException e)
-			{
-				AbstractClient.logException(e);
-			}
-
-			data = this.client.getConnectedUsers();
-			
-			if(data == previousData)
-				continue;
-
-			previousData = data;
-			
 			//remove all data from table
 			for(int i = tableModel.getRowCount() - 1; i > -1; i--)
 				tableModel.removeRow(i);
-			
-			for(Object[] dataElement : data)
+
+			for(Object[] dataElement : this.client.getConnectedUsers())
 			{
 				Object[] row = new Object[4];
-				
+
 				//Switch Client Availability
 				switch((Integer)dataElement[3])
 				{
 					case ClientUser.AVAILABLE:
-						row[0] = AVAILABLE_ICON;
+						row[0] = this.availableIcon;
 						row[2] = "AVAILABLE";
 						break;
 					case ClientUser.BUSY:
-						row[0] = BUSY_ICON;
+						row[0] = this.busyIcon;
 						row[2] = "BUSY";
 						break;
 					case ClientUser.AWAY:
-						row[0] = AWAY_ICON;
+						row[0] = this.awayIcon;
 						row[2] = "AWAY";
 						break;
 					case ClientUser.APPEAR_OFFLINE:
 					case ClientUser.OFFLINE:
 						continue;
 				}
-				
+
 				//Assign Client Information to Object[][]
 				if(dataElement[1].equals(this.clientUser.getUserID()))
 					row[1] = dataElement[0] + "(Me)";
 				else
 					row[1] = dataElement[0];
-				
+
 				row[3] = dataElement[4];
-				
 				tableModel.addRow(row);
 			}
-			
+
 			clientConnections.setColumnSelectionAllowed(false);
-		    clientConnections.setRowSelectionAllowed(true);
-		    
-		    clientConnections.getColumnModel().getColumn(0).setPreferredWidth(16);
-		    clientConnections.getColumnModel().getColumn(0).setMinWidth(16);
-		    clientConnections.getColumnModel().getColumn(0).setMaxWidth(16);
-		    clientConnections.getColumnModel().getColumn(2).setPreferredWidth(100);
-		    clientConnections.getColumnModel().getColumn(2).setMinWidth(100);
-		    clientConnections.getColumnModel().getColumn(2).setMaxWidth(100);
-		   
-		    tableModel.fireTableDataChanged();
+			clientConnections.setRowSelectionAllowed(true);
+			clientConnections.getColumnModel().getColumn(0).setPreferredWidth(16);
+			clientConnections.getColumnModel().getColumn(0).setMinWidth(16);
+			clientConnections.getColumnModel().getColumn(0).setMaxWidth(16);
+			clientConnections.getColumnModel().getColumn(2).setPreferredWidth(100);
+			clientConnections.getColumnModel().getColumn(2).setMinWidth(100);
+			clientConnections.getColumnModel().getColumn(2).setMaxWidth(100);
+			tableModel.fireTableDataChanged();
+		}
+
+		try
+		{
+			Thread.sleep(1000);
+		}
+		catch(InterruptedException e)
+		{
+			AbstractClient.logException(e);
 		}
 	}
 	

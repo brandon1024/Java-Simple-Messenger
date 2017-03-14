@@ -33,4 +33,14 @@ public class TimeHelper
         Date date = cal.getTime();
         return new SimpleDateFormat(format).format(date);
     }
+
+    public static String formatIntegerTime(int time)
+    {
+        int days = time / 86400;
+        int hours = (time % 86400) / 3600;
+        int minutes = ((time % 86400) % 3600) / 60;
+        int seconds = ((time % 86400) % 3600) % 60;
+
+        return days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+    }
 }

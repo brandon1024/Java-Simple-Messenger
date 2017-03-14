@@ -1,5 +1,6 @@
-package webchatinterface.server.ui.dialog;
+package webchatinterface.server.ui;
 
+import webchatinterface.server.AbstractServer;
 import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.server.network.Channel;
@@ -7,13 +8,11 @@ import webchatinterface.server.network.ChannelManager;
 import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.util.ClientUser;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -24,42 +23,22 @@ import java.io.IOException;
   *polls {@code Channel.getGlobalMembers()} periodically for client connection data. The thread runs
   *until the user closes the dialog or the server closes.
   *<p>
-  *The list contains the client username, availablility, channel, user ID, instance ID and IP address.
+  *The list contains the client username, availability, channel, user ID, instance ID and IP address.
  */
 
-public class ConnectedUsersDialog extends JFrame implements Runnable, WindowListener
+public class ConnectedUsersWindow extends JFrame implements Runnable, WindowListener
 {
-	private static Object AVAILABLE_ICON;
-	private static Object BUSY_ICON;
-	private static Object AWAY_ICON;
-	private static Object APPEAR_OFFLINE_ICON;
-	private static Object OFFLINE_ICON;
 	private WebChatServer server;
 	private ChannelManager channelManager;
 	private Container masterPane;
-	private boolean isRunning;
-	
-	static
-	{
-		try
-		{
-			AVAILABLE_ICON = new ImageIcon(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/AVAILABLE.png")));
-			BUSY_ICON = new ImageIcon(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/BUSY.png")));
-			AWAY_ICON = new ImageIcon(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/AWAY.png")));
-			APPEAR_OFFLINE_ICON = new ImageIcon(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/APPEAROFFLINE.png")));
-			OFFLINE_ICON = new ImageIcon(ImageIO.read(ConnectedUsersDialog.class.getResource("/webchatinterface/server/resources/OFFLINE.png")));
-		}
-		catch(IOException | IllegalArgumentException e)
-		{
-			AVAILABLE_ICON = "";
-			BUSY_ICON = "";
-			AWAY_ICON = "";
-			APPEAR_OFFLINE_ICON = "";
-			OFFLINE_ICON = "";
-		}
-	}
-	
-	public ConnectedUsersDialog(WebChatServer server)
+	private ImageIcon availableIcon;
+	private ImageIcon busyIcon;
+	private ImageIcon awayIcon;
+	private ImageIcon appearOfflineIcon;
+	private ImageIcon offlineIcon;
+	private volatile boolean isRunning;
+
+	public ConnectedUsersWindow(WebChatServer server)
 	{
 		super("Connected Clients");
 		super.setSize(600,150);
@@ -67,7 +46,14 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		super.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		super.addWindowListener(this);
 		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
-		
+
+		ResourceLoader rl = ResourceLoader.getInstance();
+		this.availableIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAvailableIcon());
+		this.busyIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusBusyIcon());
+		this.awayIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAwayIcon());
+		this.appearOfflineIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusAppearOfflineIcon());
+		this.offlineIcon = ResourceLoader.bufferedImageToImageIcon(rl.getStatusOfflineIcon());
+
 		this.server = server;
 		this.channelManager = ChannelManager.getInstance();
 		this.masterPane = super.getContentPane();
@@ -85,8 +71,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 	
 	public void run()
 	{
-		WebChatServerInstance[] data;
-		WebChatServerInstance[] previousData = null;
 		DefaultTableModel tableModel = new DefaultTableModel();
 		tableModel.addColumn("");
 		tableModel.addColumn("Status");
@@ -98,12 +82,7 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 		
 		JTable clientConnections = new JTable(tableModel)
 		{
-            private static final long serialVersionUID = -986803268686380681L;
-            
-            //  Returning the Class of each column will allow different
-            //  Renderer to be used based on Class
-            @Override
-			public Class<?> getColumnClass(int column)
+            public Class<?> getColumnClass(int column)
             {
             	switch(column)
             	{
@@ -121,7 +100,6 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
         clientConnections.setPreferredScrollableViewportSize(new Dimension(500,150));
         
         JScrollPane scrollPane = new JScrollPane(clientConnections);
-		
 		this.masterPane.add(scrollPane);
 		super.validate();
 		
@@ -145,23 +123,23 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 					switch(client.getAvailability())
 					{
 						case ClientUser.AVAILABLE:
-							row[0] = AVAILABLE_ICON;
+							row[0] = this.availableIcon;
 							row[1] = "AVAILABLE";
 							break;
 						case ClientUser.BUSY:
-							row[0] = BUSY_ICON;
+							row[0] = this.busyIcon;
 							row[1] = "BUSY";
 							break;
 						case ClientUser.AWAY:
-							row[0] = AWAY_ICON;
+							row[0] = this.awayIcon;
 							row[1] = "AWAY";
 							break;
 						case ClientUser.APPEAR_OFFLINE:
-							row[0] = APPEAR_OFFLINE_ICON;
+							row[0] = this.appearOfflineIcon;
 							row[1] = "APPEAR OFFLINE";
 							break;
 						case ClientUser.OFFLINE:
-							row[0] = OFFLINE_ICON;
+							row[0] = this.offlineIcon;
 							row[1] = "OFFLINE";
 							break;
 					}
@@ -172,28 +150,28 @@ public class ConnectedUsersDialog extends JFrame implements Runnable, WindowList
 					row[4] = client.getIP();
 					row[5] = client.getChannel().toString();
 					row[6] = client.getUserID();
-
 					tableModel.addRow(row);
 				}
 			}
 			
 			clientConnections.setColumnSelectionAllowed(false);
 		    clientConnections.setRowSelectionAllowed(true);
-		    
 		    clientConnections.getColumnModel().getColumn(0).setPreferredWidth(16);
 		    clientConnections.getColumnModel().getColumn(0).setMinWidth(16);
 		    clientConnections.getColumnModel().getColumn(0).setMaxWidth(16);
 		    clientConnections.getColumnModel().getColumn(2).setPreferredWidth(100);
 		    clientConnections.getColumnModel().getColumn(2).setMinWidth(100);
 		    clientConnections.getColumnModel().getColumn(2).setMaxWidth(100);
-		   
 		    tableModel.fireTableDataChanged();
-			
+
 			try
 			{
 				Thread.sleep(1000);
 			}
-			catch(InterruptedException e){}
+			catch(InterruptedException e)
+			{
+				AbstractServer.logException(e);
+			}
 		}
 	}
 	

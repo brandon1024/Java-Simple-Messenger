@@ -10,7 +10,6 @@ import webchatinterface.server.network.Channel;
 import webchatinterface.server.ui.components.ConsoleManager;
 import webchatinterface.server.ui.components.UsageMonitor;
 import webchatinterface.server.ui.dialog.AccountListDialog;
-import webchatinterface.server.ui.dialog.ConnectedUsersDialog;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
 import webchatinterface.server.util.UsageMonitorManager;
 import webchatinterface.util.Command;
@@ -296,7 +295,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	{
 		//if server running
 		if(this.running)
-			(new ConnectedUsersDialog(this.server)).start();
+			(new ConnectedUsersWindow(this.server)).start();
 		else
 			this.consoleMng.printConsole("No Connected Users; Server is Suspended", true);
 	}

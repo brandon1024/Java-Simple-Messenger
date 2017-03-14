@@ -18,25 +18,18 @@ public class TransferBuffer extends TransportEntity implements Serializable
 	private static final long serialVersionUID = 731185342360505610L;
 
 	private final byte[] BYTE_ARRAY;
-	private final String FILE_NAME;
 	private final String TRANSFER_ID;
 	
-	public TransferBuffer(byte[] byteArray, String fileName, String transferID, String sender, String senderID)
+	public TransferBuffer(byte[] byteArray, String transferID, String sender, String senderID)
 	{
 		super(sender, senderID);
 		this.BYTE_ARRAY = byteArray;
-		this.FILE_NAME = fileName;
 		this.TRANSFER_ID = transferID;
 	}
 	
 	public byte[] getByteArray()
 	{
 		return this.BYTE_ARRAY;
-	}
-	
-	public String getFileName()
-	{
-		return this.FILE_NAME;
 	}
 	
 	public String getTransferID()

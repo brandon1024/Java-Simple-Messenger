@@ -27,18 +27,16 @@ public class WebChatServer implements Runnable
 {
 	private ConsoleManager consoleMng;
 	private ChannelManager channelManager;
-	private BroadcastHelper broadcastHelper;
 	private BroadcastScheduler broadcastScheduler;
-	private ServerSocket servSocket;
+	private ServerSocket serverSocket;
 	private long objectsSent;
-	private long filesTransfered;
+	private long filesTransferred;
 	private volatile boolean RUN = true;
 
 	public WebChatServer()
 	{
 		this.consoleMng = ConsoleManager.getInstance();
 		this.channelManager = ChannelManager.getInstance();
-		this.broadcastHelper = BroadcastHelper.getInstance();
 		this.broadcastScheduler = BroadcastScheduler.getInstance();
 		this.objectsSent = 0;
 	}
@@ -86,8 +84,8 @@ public class WebChatServer implements Runnable
 		//close ServerSocket
 		try
 		{
-			if(this.servSocket != null)
-				this.servSocket.close();
+			if(this.serverSocket != null)
+				this.serverSocket.close();
 		}
 		catch (IOException e)
 		{
@@ -105,9 +103,9 @@ public class WebChatServer implements Runnable
 			this.consoleMng.printConsole("Opening Socket on Port " + AbstractServer.serverPortNumber, false);
 			
 			if(AbstractServer.serverBindIPAddress.equals("default"))
-				this.servSocket = new ServerSocket(AbstractServer.serverPortNumber);
+				this.serverSocket = new ServerSocket(AbstractServer.serverPortNumber);
 			else
-				this.servSocket = new ServerSocket(AbstractServer.serverPortNumber, 50, InetAddress.getByName(AbstractServer.serverBindIPAddress));
+				this.serverSocket = new ServerSocket(AbstractServer.serverPortNumber, 50, InetAddress.getByName(AbstractServer.serverBindIPAddress));
 			
 			this.consoleMng.printConsole("Successfully Opened Socket on Port " + AbstractServer.serverPortNumber, false);
 			this.consoleMng.printConsole("Awaiting Client Connection...", false);
@@ -122,7 +120,7 @@ public class WebChatServer implements Runnable
 				do
 				{
 					//Accept Incoming Connections to Socket
-					socket = this.servSocket.accept();
+					socket = this.serverSocket.accept();
 					
 					if(this.channelManager.getGlobalChannelSize() >= AbstractServer.maxConnectedUsers)
 					{
@@ -198,9 +196,11 @@ public class WebChatServer implements Runnable
 		for(Channel channel : this.channelManager.getGlobalChannels())
 		{
 			for(WebChatServerInstance client : channel.getChannelMembers())
+			{
 				clients.add(client);
+			}
 		}
-		
+
 		Object[][] list = new Object[clients.size()][5];
 		for(int index = 0; index < clients.size(); index++)
 		{
@@ -210,7 +210,7 @@ public class WebChatServer implements Runnable
 			list[index][3] = clients.get(index).getAvailability();
 			list[index][4] = clients.get(index).getChannel().toString();
 		}
-		
+
 		return list;
 	}
 	
@@ -226,12 +226,12 @@ public class WebChatServer implements Runnable
 	
 	public void addFilesTransferred()
 	{
-		this.filesTransfered++;
+		this.filesTransferred++;
 	}
 	
 	public long getFilesTransferred()
 	{
-		return this.filesTransfered;
+		return this.filesTransferred;
 	}
 	
 	public boolean isRunning()

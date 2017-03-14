@@ -41,36 +41,35 @@ public class UsageMonitor extends JPanel
 		
 		//Build Inner Container Objects
 		JPanel memory = new JPanel();
-		memory.setBorder(BorderFactory.createTitledBorder("Memory"));
 		JPanel serverInfo = new JPanel();
-		serverInfo.setBorder(BorderFactory.createTitledBorder("Server Usage"));
 		JPanel usageInfo = new JPanel();
-		usageInfo.setLayout(new BoxLayout(usageInfo, BoxLayout.LINE_AXIS));
 		JPanel upTimeInfo = new JPanel();
-		upTimeInfo.setLayout(new BoxLayout(upTimeInfo, BoxLayout.LINE_AXIS));
 		JPanel visualInfo = new JPanel();
+		memory.setBorder(BorderFactory.createTitledBorder("Memory"));
+		serverInfo.setBorder(BorderFactory.createTitledBorder("Server Usage"));
+		usageInfo.setLayout(new BoxLayout(usageInfo, BoxLayout.LINE_AXIS));
+		upTimeInfo.setLayout(new BoxLayout(upTimeInfo, BoxLayout.LINE_AXIS));
 		visualInfo.setLayout(new BoxLayout(visualInfo, BoxLayout.LINE_AXIS));
-		
+
 		JPanel col1 = new JPanel();
-		col1.setLayout(new GridLayout(2,1, 5, 0));
 		JPanel col2 = new JPanel();
-		col2.setLayout(new GridLayout(2,1, 5, 0));
 		JPanel col3 = new JPanel();
-		col3.setLayout(new GridLayout(2,1, 5, 0));
 		JPanel col4 = new JPanel();
-		col4.setLayout(new GridLayout(2,1, 5, 0));
 		JPanel col5 = new JPanel();
-		col5.setLayout(new GridLayout(2,1, 5, 0));
 		JPanel col6 = new JPanel();
+		col1.setLayout(new GridLayout(2,1, 5, 0));
+		col2.setLayout(new GridLayout(2,1, 5, 0));
+		col3.setLayout(new GridLayout(2,1, 5, 0));
+		col4.setLayout(new GridLayout(2,1, 5, 0));
+		col5.setLayout(new GridLayout(2,1, 5, 0));
 		col6.setLayout(new GridLayout(2,1, 5, 0));
-		
+
 		//Build JLabels
 		this.availableProcessors = new JLabel("Available Processors: 0");
 		this.usedMem = new JLabel("Used Memory: 0");
 		this.freeMem = new JLabel("Free Memory: 0");
 		this.totalMem = new JLabel("Total Memory: 0");
 		this.maxMem = new JLabel("Max Memory: 0");
-		
 		this.messagesSent = new JLabel("Messages Sent: 0");
 		this.filesTransferred = new JLabel("Files Transferred: 0");
 		this.port = new JLabel("Server Port: 0");
@@ -79,7 +78,6 @@ public class UsageMonitor extends JPanel
 		this.clientVersion = new JLabel("Client Version: 0.0.0");
 		this.status = new JLabel("Server Status: Suspended");
 		this.upTime = new JLabel("Server Up Time: 0d 0h 0m 0s");
-		
 		this.memUsage = new JProgressBar(0, 100);
 		this.serverUsage = new JProgressBar(0, 100);
 		this.memUsage.setStringPainted(true);
@@ -91,32 +89,24 @@ public class UsageMonitor extends JPanel
 		
 		col1.add(this.usedMem);
 		col1.add(this.freeMem);
-		
 		col2.add(this.totalMem);
 		col2.add(this.maxMem);
-		
 		col3.add(this.messagesSent);
 		col3.add(this.filesTransferred);
-		
 		col4.add(this.port);
 		col4.add(this.maxConnections);
-		
 		col5.add(this.version);
 		col5.add(this.clientVersion);
-		
 		col6.add(this.status);
 		col6.add(this.availableProcessors);
-		
+
 		visualInfo.add(new JLabel("Memory Usage: "));
 		visualInfo.add(memUsage);
 		visualInfo.add(Box.createHorizontalStrut(15));
 		visualInfo.add(new JLabel("Server Connection Usage: "));
 		visualInfo.add(serverUsage);
-		
 		upTimeInfo.add(upTime);
 		upTimeInfo.add(Box.createHorizontalGlue());
-		
-		//Add Containers to main Container
 		memory.add(col1);
 		memory.add(Box.createRigidArea(new Dimension(10,0)));
 		memory.add(col2);
@@ -127,7 +117,6 @@ public class UsageMonitor extends JPanel
 		serverInfo.add(col5);
 		serverInfo.add(Box.createRigidArea(new Dimension(10,0)));
 		serverInfo.add(col6);
-		
 		usageInfo.add(memory);
 		usageInfo.add(serverInfo);
 		

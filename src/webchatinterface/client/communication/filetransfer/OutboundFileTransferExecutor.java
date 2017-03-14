@@ -72,7 +72,7 @@ public class OutboundFileTransferExecutor implements Runnable
 				bytesRemaining -= array.length;
 
 				//Create TransferBuffer
-				TransferBuffer message = new TransferBuffer(array, this.file.getName(), this.transferID, this.clientUser.getUsername(), this.clientUser.getUserID());
+				TransferBuffer message = new TransferBuffer(array, this.transferID, this.clientUser.getUsername(), this.clientUser.getUserID());
 
 				//Send Message and Close Streams
 				this.client.send(message);
