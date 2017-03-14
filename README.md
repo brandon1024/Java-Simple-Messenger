@@ -6,7 +6,7 @@ The Web Chat Interface project allows two or more clients to communicate through
 
 # Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-To install and run the client or server, clone the repository. Import into your IDE of choice, compile, and run either `WebChatClientGUI.java` or `WebChatServerGUI.java`. Ensure you have forwarded the inbound server port on your router, default `5100`, and created an inbound rule through your firewall.
+To install and run the client or server, simply clone the repository, import into your IDE of choice, compile and run either `WebChatClientGUI.java` or `WebChatServerGUI.java`. Ensure you have forwarded the inbound server port on your router, default `5100`, and created an inbound rule through your firewall.
 
 # Contribute
 Interested in contributing to Java-IRC? See [CONTRIBUTING ](https://github.com/brandon1024/Java-IRC/blob/master/CONTIBUTING.md).
