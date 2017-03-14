@@ -4,7 +4,7 @@ package util;
   *@version 1.4.3
   *@since 06/05/2016
   *<p>
-  *The {@code ConsoleQueue} class represents an abstract data type to store
+  *The {@code DynamicQueue} class represents an abstract data type to store
   *objects. The data type is a singly linked list representing a queue. 
   *Objects enqueued are stored in nodes, linked to the next node as enqueued.
   *The DynamicQueue follows a first-in first-out sequence, FIFO. 
@@ -53,9 +53,7 @@ public class DynamicQueue<E1>
 	public E1 dequeue()
 	{
 		if(this.length == 0)
-		{
 			return null;
-		}
 		else if(this.length == 1)
 		{
 			this.length--;

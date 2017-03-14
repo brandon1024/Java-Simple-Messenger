@@ -1,50 +1,26 @@
 package webchatinterface.client.ui.components;
 
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Desktop;
-import java.awt.FileDialog;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
+import util.DynamicQueue;
+import webchatinterface.client.AbstractClient;
+import webchatinterface.client.util.ResourceLoader;
+import webchatinterface.helpers.TimeHelper;
+import webchatinterface.util.ClientUser;
+import webchatinterface.util.Command;
+import webchatinterface.util.Message;
+
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextPane;
-import javax.swing.WindowConstants;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
-import util.DynamicQueue;
-import webchatinterface.client.AbstractClient;
-import webchatinterface.util.ClientUser;
-import webchatinterface.util.Command;
-import webchatinterface.util.Message;
 
 /**@author Brandon Richardson
   *@version 1.4.3
@@ -59,7 +35,7 @@ import webchatinterface.util.Message;
   *messages. Users are distingued by the SENDER_ID field of the Message objects. 
   *If the SENDER_ID field matches the userID defined in WebChatClientGUI, the message is right
   *justified in the JTextPane. Otherwise, the message is left justified. Above the message, the 
-  *username of the sender is displayed in a smaller font size. Similarily, below the message, the
+  *username of the sender is displayed in a smaller font size. Similarly, below the message, the
   *time sent is displayed in a smaller font size.
   *<p>
   *Images are also displayed in the JTextPane, justified similar to simple text messages. These
@@ -70,71 +46,30 @@ import webchatinterface.util.Message;
   *a file is represented by a FileButton object, allowing the user to save the file to the desired
   *directory.
   *<p>
-  *The console manager extends JTextPane, so it may be used as a component in the GUI. However, the 
+  *The console manager extends JTextPane, so it may be used as a components in the GUI. However, the
   *Console Manager uses a print queue to correctly print messages to the console. Therefore, using 
   *methods defined  in JTextPane are strongly discouraged.
   */
 
 public class ConsoleManager extends JTextPane implements Runnable
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
-	private static final long serialVersionUID = 2619250731419205387L;
-
-	/**Default console style; black foreground with white background*/
 	public static final int STYLE_INITIALIZED = 0;
-	
-	/**Stylized console; white foreground with charcoal background*/
 	public static final int STYLE_AUTHENTICATED = 1;
-	
-	/**Stylized console; green foreground with black background*/
 	public static final int STYLE_AUTHENTICATED_HACKER = 2;
-	
-	/**Stylized console; green foreground with black background*/
 	public static final int STYLE_AUTHENTICATED_RED = 3;
-	
-	/**Stylized console; black foreground with purple background*/
 	public static final int STYLE_AUTHENTICATED_ORANGE = 4;
-	
-	/**Queue of ConsoleMessage objects waiting to be appended to the underlying JTextPane*/
 	private DynamicQueue<ConsoleMessage> consoleQueue;
-	
-	/**A list of cached ConsoleMessages. This ArrayList is used to repopulate the
-	  *console conversation when the user selects to change the console style, which
-	  *requires clearing the console*/
 	private ArrayList<ConsoleMessage> cachedMessages;
-	
-	/**The StyledDocument for the underlying JTextPane*/
 	private StyledDocument doc;
-	
-	/**Attribute Set for current user message header*/
 	private MutableAttributeSet currentUserStyleHeader;
-	
-	/**Attribute Set for current user message body*/
 	private MutableAttributeSet currentUserStyleText;
-	
-	/**Attribute Set for other users message header*/
 	private MutableAttributeSet otherUsersStyleHeader;
-	
-	/**Attribute Set for other users message body*/
 	private MutableAttributeSet otherUsersStyleText;
-	
-	/**Current style ID*/
 	private int style;
-	
-	/**Allows messages to be displayed in a simple top down view, as opposed to the
-	  *more complex justified view.*/
 	private boolean simpleView = false;
-
-	/**Control variable for the ConsoleManager thread.*/
 	private volatile boolean isRunning = false;
-	
-	/**The ClientUser object representing a model of the user, the user status, and parameters.
-	  *@see webchatinterface.util.ClientUser*/
 	private ClientUser client;
 	
-	/**Builds a {@code ConsoleManager} object. Constructs the underlying JTextPane framework, print 
-	  *queue, and style attributes.*/
 	private ConsoleManager()
 	{
 		//Build JTextPane
@@ -178,38 +113,20 @@ public class ConsoleManager extends JTextPane implements Runnable
 		this.cachedMessages = new ArrayList<ConsoleMessage>();
 	}
 	
-	/**Start the ConsoleManager thread.*/
 	public void start()
 	{
 		if(this.isRunning())
-		{
 			return;
-		}
 		
 		this.isRunning = true;
 		(new Thread(this)).start();
 	}
 	
-	/**Stop the ConsoleManager thread.*/
-	public void stop()
-	{
-		this.isRunning = false;
-	}
-	
-	/**Accessor method for the state of the ConsoleManager thread.
-	  *@returns true of the ConsoleManager is running, false otherwise.*/
-	public boolean isRunning()
+	private boolean isRunning()
 	{
 		return this.isRunning;
 	}
 	
-	/**Executed when the {@code ConsoleManager} thread starts. Periodically polls the console queue, 
-	  *appending any stored messages, images or files to the underlying JTextPane in a sequential 
-	  *manner. Sets the caret to the end of the document, such that it remains scolled and new text 
-	  *is easily visible.
-	  *<p>
-	  *Poll time: 100ms*/
-	@Override
 	public void run()
 	{
 		while(this.isRunning)
@@ -234,173 +151,96 @@ public class ConsoleManager extends JTextPane implements Runnable
 				
 				if(message == null)
 					continue;
-				
-				String messageBody = message.getMessage();
-				String sender = message.getSender();
-				String senderID = message.getSenderID();
-				String timestamp = message.getTimestamp();
-				FileButton file = message.getFile();
-				ImageButton image = message.getImage();
-				int type = message.getType();
-				
-				if(type == ConsoleMessage.MESSAGE)
+
+				try
 				{
-					if(this.simpleView)
+					if(message.getType() == ConsoleMessage.MESSAGE)
 					{
-						try
+						if(this.simpleView)
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + messageBody + "\n", this.otherUsersStyleText);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + message.getMessage() + "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							this.doc.insertString(this.doc.getLength(), messageBody + "\n", this.currentUserStyleText);
-							this.doc.insertString(this.doc.getLength(), "Sent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getMessage() + "\n", this.currentUserStyleText);
+							this.doc.insertString(this.doc.getLength(), "Sent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Match Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
-							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.otherUsersStyleHeader);
-							this.doc.insertString(this.doc.getLength(), messageBody + "\n", this.otherUsersStyleText);
-							this.doc.insertString(this.doc.getLength(), "Sent: " + timestamp + "\n\n", this.otherUsersStyleHeader);
-						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-				}
-				else if(type == ConsoleMessage.IMAGE)
-				{
-					if(this.simpleView)
-					{
-						try
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + "\n", this.otherUsersStyleText);
-							super.insertComponent(image);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getMessage() + "\n", this.otherUsersStyleText);
+							this.doc.insertString(this.doc.getLength(), "Sent: " + message.getTimestamp() + "\n\n", this.otherUsersStyleHeader);
+						}
+					}
+					else if(message.getType() == ConsoleMessage.IMAGE)
+					{
+						if(this.simpleView)
+						{
+							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + "\n", this.otherUsersStyleText);
+							super.insertComponent(message.getImage());
 							this.doc.insertString(this.doc.getLength(), "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							super.insertComponent(image);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							super.insertComponent(message.getImage());
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Matche Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
-							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.otherUsersStyleHeader);
-							super.insertComponent(image);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
-						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
-					}
-				}
-				else if(type == ConsoleMessage.FILE)
-				{
-					if(this.simpleView)
-					{
-						try
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), "[" + sender + "] " + "\n", this.otherUsersStyleText);
-							super.insertComponent(file);
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.otherUsersStyleHeader);
+							super.insertComponent(message.getImage());
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
+						}
+					}
+					else if(message.getType() == ConsoleMessage.FILE)
+					{
+						if(this.simpleView)
+						{
+							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
+							this.doc.insertString(this.doc.getLength(), "[" + message.getSender() + "] " + "\n", this.otherUsersStyleText);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.otherUsersStyleHeader);
 							this.doc.insertString(this.doc.getLength(), "\n", this.otherUsersStyleText);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Matches Client User ID
+						else if(message.getSenderID().equals(this.client.getUserID()))
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Matches Client User ID
-					else if(senderID.equals(this.client.getUserID()))
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.currentUserStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n", this.currentUserStyleHeader);
-							
-							//Insert FileButton Component
-							super.insertComponent(file);
-							
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.currentUserStyleHeader);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n", this.currentUserStyleHeader);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.currentUserStyleHeader);
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.currentUserStyleHeader);
 						}
-						catch(BadLocationException e)
+						//If Sender ID Does Not Match Client User ID
+						else
 						{
-							AbstractClient.logException(e);
-						}
-					}
-					//If Sender ID Does Not Matche Client User ID
-					else
-					{
-						try
-						{
-							//Display Message
 							this.doc.setParagraphAttributes(doc.getLength(), 1, this.otherUsersStyleHeader, false);
-							this.doc.insertString(this.doc.getLength(), sender + ":\n\n", this.otherUsersStyleHeader);
-							
-							//Insert FileButton Component
-							super.insertComponent(file);
-							
-							this.doc.insertString(this.doc.getLength(), "\nSize: " + messageBody, this.otherUsersStyleHeader);
-							this.doc.insertString(this.doc.getLength(), "\nSent: " + timestamp + "\n\n", this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), message.getSender() + ":\n\n", this.otherUsersStyleHeader);
+							super.insertComponent(message.getFile());
+							this.doc.insertString(this.doc.getLength(), "\nSize: " + message.getMessage(), this.otherUsersStyleHeader);
+							this.doc.insertString(this.doc.getLength(), "\nSent: " + message.getTimestamp() + "\n\n", this.otherUsersStyleHeader);
 						}
-						catch(BadLocationException e)
-						{
-							AbstractClient.logException(e);
-						}
+
+						if(this.cachedMessages.size() >= 100)
+							this.cachedMessages.clear();
 					}
-					
-					if(this.cachedMessages.size() >= 100)
-					{
-						this.cachedMessages.clear();
-					}
+
+				}
+				catch(BadLocationException e)
+				{
+					AbstractClient.logException(e);
 				}
 			}
 			
@@ -416,13 +256,12 @@ public class ConsoleManager extends JTextPane implements Runnable
 	  *If the parameter format is incorrect, the method will return null;
 	  *@param messageTimestamp the unformatted timestamp of format {@code YYYY-MM-DDThh:mm:ss+00:00} to
 	  *be formatted to 12-hour time format
-	  *@return the formatted timestamp in 12-hour time format, or null if format is incorrect
-	  *@see ConsoleManager#getSystemTimestamp()*/
+	  *@return the formatted timestamp in 12-hour time format, or null if format is incorrect*/
 	private String formatTimestamp(String messageTimestamp)
 	{
 		try
 		{
-			String systemTimestamp = this.getSystemTimestamp();
+			String systemTimestamp = TimeHelper.formatTimestampUTC(Calendar.getInstance());
 			int[] systemTime = new int[8];
 			systemTime[0] = Integer.parseInt(systemTimestamp.substring(0, 4)); //year
 			systemTime[1] = Integer.parseInt(systemTimestamp.substring(5, 7)); //month
@@ -504,18 +343,14 @@ public class ConsoleManager extends JTextPane implements Runnable
 			{
 				formattedTimestamp = (messageTime[3] - 12) + ":";
 				if(messageTime[4] < 10)
-				{
 					formattedTimestamp += "0";
-				}
 				formattedTimestamp += messageTime[4] + "pm";
 			}
 			else
 			{
 				formattedTimestamp = messageTime[3] + ":";
 				if(messageTime[4] < 10)
-				{
 					formattedTimestamp += "0";
-				}
 				formattedTimestamp += messageTime[4] + "am";
 			}
 			
@@ -528,46 +363,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Build and return a string containing the local system time expressed according
-	  *to ISO 8601 with UTC timezone offset.
-	  *<p>
-	  *Format:
-	  *<ul>
-	  *<li>{@code YYYY-MM-DDThh:mm:ss+00:00}
-	  *</ul>
-	  *@return the current system time expressed according to ISO 8601 with UTC timezone offset*/
-	private String getSystemTimestamp()
-	{
-		Calendar cal = Calendar.getInstance();
-		TimeZone tz = TimeZone.getDefault();
-		Date date = cal.getTime();
-		int UTC_Offset = tz.getOffset(cal.getTimeInMillis());
-				
-		String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").format(date);
-		
-		if(UTC_Offset / 1000 / 60 / 60 >= 0)
-		{
-			timestamp += "+";
-		}
-		else
-		{
-			timestamp += "-";
-		}
-		
-		if(Math.abs(UTC_Offset / 1000 / 60 / 60) < 10)
-		{
-			timestamp += "0";
-		}
-
-		timestamp += Math.abs(UTC_Offset / 1000 / 60 / 60) + ":";
-		timestamp += UTC_Offset % (1000 * 60 * 60) + "0";
-		
-		return timestamp;
-	}
-	
-	/**Enqueue a new {@code Message} object.
-	  *@param message the {@code Message} object to enqueue to the printQueue.
-	  *@see ConsoleManager#run()*/
 	public void printConsole(Message message)
 	{
 		String messageBody = message.getMessage();
@@ -583,9 +378,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Enqueue a new file object to be displayed in the console.
-	  *@param file the file that the new FileButton object will represent
-	  *@param transferManifest the file transfer manifest command.*/
 	public void printFile(File file, Command transferManifest)
 	{
 		String filename = file.getName();
@@ -604,7 +396,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		else
 		{
-			String size = "";
+			String size;
 			if(file.length() / 1024 / 1024 > 1)
 				size = file.length() / 1024 / 1024 + "MB";
 			else if(file.length() / 1024 > 1)
@@ -612,7 +404,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 			else
 				size = file.length() + "B";
 			
-			FileButton fileButton = new FileButton(file, transferManifest);
+			FileButton fileButton = new FileButton(file);
 			ConsoleMessage component = new ConsoleMessage(fileButton, size, this.formatTimestamp(transferManifest.getTimeStamp()), transferManifest);
 			
 			synchronized(this)
@@ -623,9 +415,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Removes all stored objects in the print queue, clears all the text in the JTextPane, and
-	  *appends a message to the text pane.
-	  *@param message a string representing the text to display in the empty console.*/
 	public void setText(String message)
 	{
 		this.clearConsole();
@@ -641,12 +430,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**Changes the way message objects are appended to the console.
-	  *<p>
-	  *The format for simple view is as follows:
-	  *Format: {@code [USERNAME] message...}
-	  *@param simpleView if true, messages are displayed in a simple view. If false, messages
-	  *are displayed in standard view.*/
 	public void setSimpleView(boolean simpleView)
 	{
 		this.simpleView = simpleView;
@@ -658,21 +441,15 @@ public class ConsoleManager extends JTextPane implements Runnable
 			this.consoleQueue.removeAll();
 		
 			for(ConsoleMessage message : this.cachedMessages)
-			{
 				this.consoleQueue.enqueue(message);
-			}
 		}
 	}
 	
-	/**Accessor method for the message display style. If true, messages are displayed in a simple view. 
-	  *If false, messages are displayed in standard view.
-	  *@return true if the console message display style is simple*/
 	public boolean isSimpleView()
 	{
 		return this.simpleView;
 	}
 	
-	/**Removes all stored objects in the print queue, and clears all the text in the JTextPane.*/
 	public void clearConsole()
 	{
 		synchronized(this)
@@ -684,12 +461,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		super.setText("");
 	}
 	
-	/**Set the style of the console.
-	  *@param styleID the style code
-	  *@see ConsoleManager#STYLE_INITIALIZED
-	  *@see ConsoleManager#STYLE_AUTHENTICATED
-	  *@see ConsoleManager#STYLE_AUTHENTICATED_HACKER
-	  *@see ConsoleManager#STYLE_AUTHENTICATED_ORANGE*/
 	public void setConsoleStyle(int styleID)
 	{
 		this.style = styleID;
@@ -772,21 +543,10 @@ public class ConsoleManager extends JTextPane implements Runnable
 			this.consoleQueue.removeAll();
 		
 			for(ConsoleMessage message : this.cachedMessages)
-			{
 				this.consoleQueue.enqueue(message);
-			}
 		}
 	}
 	
-	public int getStyleID()
-	{
-		return this.style;
-	}
-	
-	/**Overridden {@code paintComponent()} method. Relies on private {@code style} field to paint
-	  *the component according to the desired style.
-	  *@param g The {@code Graphics} object used to paint the component*/
-	@Override
 	public void paintComponent(Graphics g)
 	{
 		super.setOpaque(false);
@@ -833,8 +593,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		super.paintComponent(g2d);
 	}
 	
-	/**The {@code ImageButton} class represents a clickable image component that may be appeneded
-	  *to the console JTextPane.*/
 	private class ImageButton extends JButton
 	{
 		/**Serial Version UID is used as a version control for the class that implements
@@ -847,9 +605,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *600 pixels and the height does not exceed 250 pixels.
 		  *<p>
 		  *The ImageButton also has a custom action listener, allowing it to open the enlarged image
-		  *in a JFrame for easy viewing.
-		  *@param message The {@code TransferBuffer} object that wraps the image to be displayed
-		  *in the underlying JButton*/
+		  *in a JFrame for easy viewing.*/
 		public ImageButton(File file, Command transferManifest)
 		{
 			//Construct JButton
@@ -922,40 +678,31 @@ public class ConsoleManager extends JTextPane implements Runnable
 							{
 								try
 								{
-									File source = file;
 									File destination = new File(fileLocation + "//" + filename);
 
 									//copy file from source to destination
-									FileInputStream fis = new FileInputStream(source);
+									FileInputStream fis = new FileInputStream(file);
 									FileOutputStream fos = new FileOutputStream(destination);
 									
 									byte[] buffer = new byte[1024];
 						            int len;
 						            
-						            while ((len = fis.read(buffer)) > 0) {
+						            while ((len = fis.read(buffer)) > 0)
 						            	fos.write(buffer, 0, len);
-						            }
 						            
 						            fis.close();
 						            fos.close();
 									
 									Desktop.getDesktop().open(destination);
 								}
-								catch (FileNotFoundException e){}
-								catch (IOException e){}
+								catch (Exception e){}
 							}
 						}
 					});
 					
 					masterPane.add(imageLabel);
 					dialogFrame.pack();
-					
-					try
-					{
-						dialogFrame.setIconImage(ImageIO.read(ConsoleManager.class.getResource("/webchatinterface/client/resources/CLIENTICON.png")));
-					}
-					catch(IOException | IllegalArgumentException e){}
-					
+					dialogFrame.setIconImage(ResourceLoader.getInstance().getFrameIcon());
 					dialogFrame.setResizable(true);
 					dialogFrame.setVisible(true);
 					dialogFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -964,9 +711,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**The {@code FileButton} class represents a clickable component that may be appeneded
-	  *to the console JTextPane. The {@code FileButton}, once clicked and a directory is chosen by
-	  *the user, the file is copied from the temporary directory to the desired directory.*/
 	private class FileButton extends JButton
 	{
 		/**Serial Version UID is used as a version control for the class that implements
@@ -978,9 +722,8 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *<p>
 		  *The FileButton also has a custom action listener, allowing the file to be saved to a directory
 		  *as given by the client through a FileDialog.
-		  *@param file The {@code file} object that this FileButton object will wrap
-		  *@param transferManifest the file transfer manifest command*/
-		public FileButton(File file, Command transferManifest)
+		  *@param file The {@code file} object that this FileButton object will wrap*/
+		public FileButton(File file)
 		{
 			//Construct JButton
 			super();
@@ -1008,28 +751,22 @@ public class ConsoleManager extends JTextPane implements Runnable
 					{
 						try
 						{
-							File source = file;
 							File destination = new File(fileLocation + "//" + filename);
 
 							//copy file from source to destination
-							FileInputStream fis = new FileInputStream(source);
+							FileInputStream fis = new FileInputStream(file);
 							FileOutputStream fos = new FileOutputStream(destination);
 							
 							byte[] buffer = new byte[1024];
 				            int len;
 				            
-				            while ((len = fis.read(buffer)) > 0) {
+				            while ((len = fis.read(buffer)) > 0)
 				            	fos.write(buffer, 0, len);
-				            }
 				            
 				            fis.close();
 				            fos.close();
 							
 							Desktop.getDesktop().open(destination);
-						}
-						catch (FileNotFoundException e)
-						{
-							AbstractClient.logException(e);
 						}
 						catch (IOException e)
 						{
@@ -1041,10 +778,6 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 	}
 	
-	/**The {@code ConsoleMessage} class represents a single text, image or file message that the
-	  *ConsoleManager class will use to append to the console. The ConsoleMessage is able to
-	  *reprsent three types of messages, and depending on the type of message, the object fields 
-	  *will have the information necessary to append to the console.*/
 	private class ConsoleMessage
 	{
 		/**Static class member used to describe a ConsoleMessage that represents a String message.*/
@@ -1068,11 +801,11 @@ public class ConsoleManager extends JTextPane implements Runnable
 		/**Field representing a timestamp of when the message was issued*/
 		private final String timestamp;
 		
-		/**Field representing the FileButton component, a clickable component that represents a 
+		/**Field representing the FileButton components, a clickable components that represents a
 		  *TransferBuffer object.*/
 		private final FileButton file;
 		
-		/**Field representing the ImageButton component, a clickable component that represents a 
+		/**Field representing the ImageButton components, a clickable components that represents a
 		  *MultimediaMessage object.*/
 		private final ImageButton image;
 		
@@ -1097,11 +830,10 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Constructs a new ConsoleMessage that represents a file message object.
-		  *@param file The FileButton component that represents the file message
+		  *@param file The FileButton components that represents the file message
 		  *@param size The size of the file. Note, the message field of this ConsoleMessage object
 		  *obtains this parameter
-		  *param timestamp The timestamp of when the message was issued
-		  *@param transfermManifest The file transfer manifest command*/
+		  *param timestamp The timestamp of when the message was issued*/
 		public ConsoleMessage(FileButton file, String size, String timestamp, Command transferManifest)
 		{
 			this.message = size;
@@ -1114,9 +846,8 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Constructs a new ConsoleMessage that represents an image message object.
-		  *@param image The ImageButton component that represents the image message
-		  *@param timestamp The timestamp of when the message was issued
-		  *@param transfermManifest The file transfer manifest command*/
+		  *@param image The ImageButton components that represents the image message
+		  *@param timestamp The timestamp of when the message was issued*/
 		public ConsoleMessage(ImageButton image, String timestamp, Command transferManifest)
 		{
 			this.message = null;
@@ -1159,7 +890,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 			return this.timestamp;
 		}
 		
-		/**Return the FileButtom object if this ConsoleMessage represents
+		/**Return the FileButton object if this ConsoleMessage represents
 		  *a file. If this instance represents a String or image message,
 		  *this method returns null.
 		  *@return the FileButton object associated with the message, or null if
@@ -1170,7 +901,7 @@ public class ConsoleManager extends JTextPane implements Runnable
 		}
 		
 		/**Return the ImageButton object if this ConsoleMessage represents
-		  *an image messafe. If this instance represents a String or file message,
+		  *an image message. If this instance represents a String or file message,
 		  *this method returns null.
 		  *@return the ImageButton object associated with the message, or null if
 		  *this object does not represent an image message*/
@@ -1188,27 +919,20 @@ public class ConsoleManager extends JTextPane implements Runnable
 		  *<li>IMAGE: 1
 		  *<li>FILE: 2
 		  *</ul>
-		  *@return the sender field of this instace*/
+		  *@return the sender field of this instance*/
 		public int getType()
 		{
 			return this.type;
 		}
 	}
 	
-	/**Private class that holds the single instance of ConsoleManager. This implementation of the
-	  *singleton pattern, known as the initialization-on-demands holder idiom, takes advantage of
-	  *language guarentees about class initialization.*/
-	private static class InstanceHolder
-	{
-		/**The single instance of ConsoleManager.*/
-		private static final ConsoleManager INSTANCE = new ConsoleManager();
-	}
-	
-	/**Accessor method for the insatnce of ConsoleManager. InstanceHolder is loaded only on the first
-	  *execution of getInstance().
-	  *@returns the single instance of ConsoleManager.*/
 	public static ConsoleManager getInstance()
 	{
 		return InstanceHolder.INSTANCE;
+	}
+
+	private static class InstanceHolder
+	{
+		private static final ConsoleManager INSTANCE = new ConsoleManager();
 	}
 }

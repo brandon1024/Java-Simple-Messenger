@@ -9,18 +9,13 @@ package webchatinterface.client.communication;
 
 public class ConnectionDeniedException extends CannotEstablishConnectionException
 {
-	/**Serial Version UID is used as a version control for the class that implements
-	 *the serializable interface.*/
 	private static final long serialVersionUID = 7425679860650348725L;
 
-	/**Constructs a new ConnectionDeniedException with the specified detail message.
-	  *@param message a String containing a message that describes the cause of the exception*/
 	public ConnectionDeniedException(String message)
 	{
 		super(message);
 	}
 	
-	/**Constructs a new ConnectionDeniedException.*/
 	public ConnectionDeniedException()
 	{
 		super();

@@ -34,7 +34,7 @@ import java.io.File;
  *<br>		allows messages sent from different timezones to display the timestamp in the civil time
  *<br>		of the client reading the message.
  *<br>	- Implemented availability feature, allowing clients to specify an availability status.
- *<br>  - Added client status bar, used to display the client availability and what chatroom the client
+ *<br>  - Added client status bar, used to display the client availability and what channel the client
  *<br>		is connected to.
  *<br>  - Updated server 'Show Connected Clients' dialog. Added status icon and status description columns.
  *<br>	- Added new BroadcastHelper class, designed to simply message broadcasting. Also facilitates scheduled
@@ -42,30 +42,21 @@ import java.io.File;
  *<br>	- Updated client 'Show Connected Users' function. The list of clients is now displayed in a standalone
  *<br>		dialog. This also allows users to see other users availability. Users with availability OFFLINE or
  *<br>		APPEAR_OFFLINE do not appear in this list.
- *<br>	- Implemented a feature that allows for private and public chatrooms. Now, users can request a 
- *<br>		private chatroom with another client.
+ *<br>	- Implemented a feature that allows for private and public channels. Now, users can request a
+ *<br>		private channel with another client.
  *<br>	- Consolidated TransferBuffer and MultimediaMessage into the single class TransferBuffer. Images
  *<br>		and files are differentiated by the file extension, where files with the extension .JPEG, .JPG, .GIF
  *<br>		and .PNG are displayed as images in the console.
  *<br>	- Image messages may be saved by clicking the image in the popup JDialog.
  *<br>	- To indicate that work is in progress, the wait cursor is displayed when hovering over the application
  *<br>		user interface. This prevents the apparent 'block' in the application runtime.
- *<br>	- Connected users dialog auto will auto refresh every second. Users can now keep the ConnectedUsersDialog
+ *<br>	- Connected users dialog auto will auto refresh every second. Users can now keep the ConnectedUsersWindow
  *<br>		window open while using the application to see who is online in real time.
  *<br>	- Redesigned Usage Monitor. Removed non-essential information and added space between columns for
  *<br>		easier reading.
  *<br>	- File chooser dialog for uploading images and files is more user friendly, icons do not take time to buffer
  *<br>	- Minor Bug Fixes
  */
-
-//(Optional)SSL encryption
-//(Optional)Add Client WindowStyleManager class
-//(Optional)File Manager class
-//(Optional)New Application Name? ComNode Interface?
-//(Optional)Dockable ConnectedUsers dialog
-//(Optional)Ping
-//Flagging Users(Reason, flagged username, user who issued the complaint)
-//Add warning to Server Preference for changing hashing algorithm
 
 public interface AbstractIRC
 {
