@@ -2,16 +2,16 @@ package webchatinterface.server.ui;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.network.ChannelManager;
+import webchatinterface.server.ui.components.ResourceMonitor;
 import webchatinterface.server.util.ResourceLoader;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.communication.WebChatServerInstance;
 import webchatinterface.server.network.Channel;
 import webchatinterface.server.ui.components.ConsoleManager;
-import webchatinterface.server.ui.components.UsageMonitor;
 import webchatinterface.server.ui.dialog.AccountListDialog;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
-import webchatinterface.server.util.UsageMonitorManager;
+import webchatinterface.server.util.ResourceMonitorManager;
 import webchatinterface.util.Command;
 
 import javax.swing.*;
@@ -47,7 +47,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem aboutApp;
 	private JMenuItem getHelp;
 	private ConsoleManager consoleMng;
-	private UsageMonitorManager usageMonitorManager;
+	private ResourceMonitorManager resourceMonitorManager;
 	private boolean running = false;
 	private WebChatServer server;
 	
@@ -110,7 +110,8 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private void buildUI()
 	{
 		this.consoleMng = ConsoleManager.getInstance();
-		this.usageMonitorManager = UsageMonitorManager.getInstance();
+		this.resourceMonitorManager = ResourceMonitorManager.getInstance();
+		this.resourceMonitorManager.start();
 		(new Thread(consoleMng)).start();
 		
 		//---BUILD MENU BAR---//
@@ -204,7 +205,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		{
 			this.running = false;
 			this.server.suspend();
-			this.usageMonitorManager.stop();
+			this.resourceMonitorManager.stop();
 			this.server = null;
 			
 			super.setTitle("Web Chat Server Interface - Suspended");
@@ -218,7 +219,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			//run server on specified port
 			this.running = true;
 			this.server = new WebChatServer();
-			this.usageMonitorManager.start(server);
+			this.resourceMonitorManager.start(server);
 			this.server.start();
 			
 			super.setTitle("Web Chat Server Interface - Running");
@@ -314,12 +315,12 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 		//If Usage Monitor is Visible
 		if(show)
 		{
-			this.masterPane.add(UsageMonitor.getInstance(), BorderLayout.PAGE_END);
+			this.masterPane.add(ResourceMonitor.getInstance(), BorderLayout.PAGE_END);
 			this.masterPane.validate();
 		}
 		else
 		{
-			this.masterPane.remove(UsageMonitor.getInstance());
+			this.masterPane.remove(ResourceMonitor.getInstance());
 			this.masterPane.validate();
 		}
 	}

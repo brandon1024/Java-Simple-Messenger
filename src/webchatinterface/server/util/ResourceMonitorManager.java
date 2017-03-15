@@ -6,37 +6,42 @@ import webchatinterface.helpers.TimeHelper;
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.communication.WebChatServer;
 import webchatinterface.server.network.ChannelManager;
-import webchatinterface.server.ui.components.UsageMonitor;
+import webchatinterface.server.ui.components.ResourceMonitor;
 
 import java.awt.*;
 
-public class UsageMonitorManager implements Runnable
+public class ResourceMonitorManager implements Runnable
 {
 	private Runtime runtime;
 	private WebChatServer server;
 	private ChannelManager channelManager;
-	private UsageMonitor usageMonitorPanel;
+	private ResourceMonitor usageMonitorPanel;
 	private int serverUpTime;
 	private volatile boolean RUN;
 
-	public UsageMonitorManager()
+	public ResourceMonitorManager()
 	{
 		this.runtime = Runtime.getRuntime();
 		this.server = null;
 		this.channelManager = ChannelManager.getInstance();
-		this.usageMonitorPanel = UsageMonitor.getInstance();
+		this.usageMonitorPanel = ResourceMonitor.getInstance();
 		this.serverUpTime = 0;
 		this.RUN = false;
 	}
 
-	public void start(WebChatServer server)
+	public void start()
 	{
-		this.server = server;
 		if(this.RUN)
 			return;
 
 		(new Thread(this)).start();
 		this.RUN = true;
+	}
+
+	public void start(WebChatServer server)
+	{
+		this.server = server;
+		this.start();
 	}
 
 	public void stop()
@@ -186,13 +191,13 @@ public class UsageMonitorManager implements Runnable
 		return new Color(0,204,0);
 	}
 
-	public static UsageMonitorManager getInstance()
+	public static ResourceMonitorManager getInstance()
 	{
-		return UsageMonitorManager.InstanceHolder.INSTANCE;
+		return ResourceMonitorManager.InstanceHolder.INSTANCE;
 	}
 
 	private static class InstanceHolder
 	{
-		private static final UsageMonitorManager INSTANCE = new UsageMonitorManager();
+		private static final ResourceMonitorManager INSTANCE = new ResourceMonitorManager();
 	}
 }

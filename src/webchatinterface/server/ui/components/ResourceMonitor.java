@@ -7,14 +7,14 @@ import java.awt.*;
   *@version 1.4.3
   *@since 06/05/2016
   *<p>
-  *The UsageMonitor class extends the Java JPanel. It is responsible for
+  *The ResourceMonitor class extends the Java JPanel. It is responsible for
   *acquiring and displaying useful data with regards to the server application
   *memory allocations, processes, and server status.
   *<p>
-  *The implementing class can simply add the UsageMonitor object to the frame.
+  *The implementing class can simply add the ResourceMonitor object to the frame.
   */
 
-public class UsageMonitor extends JPanel
+public class ResourceMonitor extends JPanel
 {
 	private JLabel usedMem;
 	private JLabel freeMem;
@@ -32,7 +32,7 @@ public class UsageMonitor extends JPanel
 	private JProgressBar memUsage;
 	private JProgressBar serverUsage;
 	
-	private UsageMonitor()
+	private ResourceMonitor()
 	{
 		//Build Container Object
 		super();
@@ -212,7 +212,7 @@ public class UsageMonitor extends JPanel
 
 	public void changeServerUpTimeText(String text)
 	{
-		this.upTime.setText(text);
+		this.upTime.setText("Server Up Time: " + text);
 	}
 
 	public void changeAvailableProcessors(int availableProcessors)
@@ -220,13 +220,13 @@ public class UsageMonitor extends JPanel
 		this.availableProcessors.setText("Available Processors: " + availableProcessors);
 	}
 
-	public static UsageMonitor getInstance()
+	public static ResourceMonitor getInstance()
 	{
 		return InstanceHolder.INSTANCE;
 	}
 
 	private static class InstanceHolder
 	{
-		private static final UsageMonitor INSTANCE = new UsageMonitor();
+		private static final ResourceMonitor INSTANCE = new ResourceMonitor();
 	}
 }
