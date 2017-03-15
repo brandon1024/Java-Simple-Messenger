@@ -62,7 +62,7 @@ public class EmailHelper
         }
 
         //---Ensure Valid Character Lengths---//
-        if(localPartWithQuotedMarkers.length() + removedChars > 64)
+        if(localPartWithoutQuotedMarkers.length() + removedChars > 64)
             return false;
         if(localPartWithoutQuotedMarkers.length() == 0 && removedChars == 0)
             return false;
