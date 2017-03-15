@@ -50,7 +50,7 @@ public class DynamicQueue<E1>
 	/**The dequeue() method returns the Object at the head of the queue, and
 	  *removes the reference to the node from the queue.
 	  *@return the Object at the head of the queue, or null if the queue is empty*/
-	public E1 dequeue()
+	public synchronized E1 dequeue()
 	{
 		if(this.length == 0)
 			return null;
@@ -74,7 +74,7 @@ public class DynamicQueue<E1>
 	
 	/**The enqueue() method stores a new Object in the queue.
 	  *@param obj The object to be enqueued*/
-	public void enqueue(E1 obj)
+	public synchronized void enqueue(E1 obj)
 	{
 		Node<E1> newNode = new Node<E1>(obj);
 		
@@ -95,7 +95,7 @@ public class DynamicQueue<E1>
 	}
 	
 	/**Removes all Objects from the queue.*/
-	public void removeAll()
+	public synchronized void removeAll()
 	{
 		this.first = null;
 		this.last = null;
