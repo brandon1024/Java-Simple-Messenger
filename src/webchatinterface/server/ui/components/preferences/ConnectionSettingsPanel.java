@@ -1,10 +1,10 @@
 package webchatinterface.server.ui.components.preferences;
 
-import webchatinterface.server.AbstractServer;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ConnectionSettingsPanel extends PreferencePanel
 {
@@ -20,7 +20,6 @@ public class ConnectionSettingsPanel extends PreferencePanel
 		this.bindIPField = new JTextField(15);
 		this.maxConnectionsField = new JTextField(15);
 		this.loginTimeoutField = new JTextField(15);
-		this.populatePanel();
 		
 		JPanel body = new JPanel();
 		body.setLayout(new BoxLayout(body, BoxLayout.PAGE_AXIS));
@@ -100,39 +99,15 @@ public class ConnectionSettingsPanel extends PreferencePanel
 		
 		return timeoutSettings;
 	}
-	
-	public String[] requestChangedFields()
+
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		ArrayList<String> changedFields = new ArrayList<String>();
-		
-		if(Integer.parseInt(this.portNumberField.getText()) != AbstractServer.serverPortNumber)
-			changedFields.add("Port Number");
-		
-		if(!this.bindIPField.getText().equals(AbstractServer.serverBindIPAddress))
-			changedFields.add("Bind IP Address");
-		
-		if(Integer.parseInt(this.maxConnectionsField.getText()) != AbstractServer.maxConnectedUsers)
-			changedFields.add("Maximum Number of Connected Users");
-		
-		if(Integer.parseInt(this.loginTimeoutField.getText()) != AbstractServer.loginTimeoutSeconds)
-			changedFields.add("Login Timeout Seconds");
-		
-		return changedFields.toArray(new String[0]);
-	}
-	
-	public void save()
-	{
-		AbstractServer.serverPortNumber = Integer.parseInt(this.portNumberField.getText());
-		AbstractServer.serverBindIPAddress = this.bindIPField.getText();
-		AbstractServer.maxConnectedUsers = Integer.parseInt(this.maxConnectionsField.getText());
-		AbstractServer.loginTimeoutSeconds = Integer.parseInt(this.loginTimeoutField.getText());
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		this.portNumberField.setText(Integer.toString(AbstractServer.serverPortNumber));
-		this.bindIPField.setText(AbstractServer.serverBindIPAddress);
-		this.maxConnectionsField.setText(Integer.toString(AbstractServer.maxConnectedUsers));
-		this.loginTimeoutField.setText(Integer.toString(AbstractServer.loginTimeoutSeconds));
+		//TODO:
 	}
 }

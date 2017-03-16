@@ -1,10 +1,10 @@
 package webchatinterface.server.ui.components.preferences;
 
-import webchatinterface.server.AbstractServer;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SecuritySettingsPanel extends PreferencePanel
 {
@@ -44,13 +44,11 @@ public class SecuritySettingsPanel extends PreferencePanel
 		
 		this.supportedUserIDKeyAlgorithmsComboBox = new JComboBox<Object>(supportedUserIDKeyAlgorithms);
 		
-		this.populatePanel();
-		
 		JPanel body = new JPanel();
 		body.setLayout(new BoxLayout(body, BoxLayout.PAGE_AXIS));
 		body.setBorder(BorderFactory.createEmptyBorder());
 		body.add(this.buildAccountStorePanel());
-		body.add(this.buildUserIDPanel());
+		body.add(this.buildUserIDSettingsPanel());
 		body.setPreferredSize(new Dimension(100, 585));
 		super.add(new JScrollPane(body, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 	}
@@ -97,7 +95,7 @@ public class SecuritySettingsPanel extends PreferencePanel
 		return accountStorePanel;
 	}
 	
-	private JPanel buildUserIDPanel()
+	private JPanel buildUserIDSettingsPanel()
 	{
 		JPanel userIDPanel = new JPanel();
 		userIDPanel.setLayout(new BoxLayout(userIDPanel, BoxLayout.PAGE_AXIS));
@@ -131,128 +129,16 @@ public class SecuritySettingsPanel extends PreferencePanel
 		
 		return userIDPanel;
 	}
-	
-	public String[] requestChangedFields()
+
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		ArrayList<String> changedFields = new ArrayList<String>();
-		
-		if(!this.hashingAlgorithmField.getText().equals(AbstractServer.messageDigestHashingAlgorithm))
-			changedFields.add("Message Digest Hashing Algorithm");
-		
-		if(!this.keyGeneratorAlgorithmField.getText().equals(AbstractServer.secureRandomSaltAlgorithm))
-			changedFields.add("Secure Random Salt Generator");
-		
-		ComboBoxItem item1 = (ComboBoxItem)(this.saltLengthComboBox.getSelectedItem());
-		Integer value1 = (Integer)(item1.getValue());
-		if(value1.intValue() != AbstractServer.secureRandomSaltLength)
-			changedFields.add("Secure Random Salt Length");
-		
-		ComboBoxItem item2 = (ComboBoxItem)(this.userIDKeyLengthComboBox.getSelectedItem());
-		Integer value2 = (Integer)(item2.getValue());
-		if(value2.intValue() != AbstractServer.userIDKeyLength)
-			changedFields.add("User ID Key Length");
-		
-		ComboBoxItem item3 = (ComboBoxItem)(this.supportedUserIDKeyAlgorithmsComboBox.getSelectedItem());
-		String value3 = (String)(item3.getValue());
-		if(!value3.equals(AbstractServer.userIDAlgorithm))
-			changedFields.add("User ID Key Generator Algorithm");
-		
-		if(blacklistInconsistentUserIDCheckBox.isSelected() != AbstractServer.blacklistAccountIPInconsistentUserID)
-			changedFields.add("Enable/Disable Blacklist Account/IP On Inconsistent User ID");
-		
-		return changedFields.toArray(new String[0]);
-	}
-	
-	public void save()
-	{
-		AbstractServer.messageDigestHashingAlgorithm = this.hashingAlgorithmField.getText();
-		AbstractServer.secureRandomSaltAlgorithm = this.keyGeneratorAlgorithmField.getText();
-		AbstractServer.secureRandomSaltLength = (int)((ComboBoxItem)(this.saltLengthComboBox.getSelectedItem())).getValue();
-		AbstractServer.userIDKeyLength = (int)((ComboBoxItem)(this.userIDKeyLengthComboBox.getSelectedItem())).getValue();
-		AbstractServer.userIDAlgorithm = (String)((ComboBoxItem)(this.supportedUserIDKeyAlgorithmsComboBox.getSelectedItem())).getValue();
-		AbstractServer.blacklistAccountIPInconsistentUserID = this.blacklistInconsistentUserIDCheckBox.isSelected();
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		this.hashingAlgorithmField.setText(AbstractServer.messageDigestHashingAlgorithm);
-		this.keyGeneratorAlgorithmField.setText(AbstractServer.secureRandomSaltAlgorithm);
-		this.blacklistInconsistentUserIDCheckBox.setSelected(AbstractServer.blacklistAccountIPInconsistentUserID);
-		
-		switch(AbstractServer.secureRandomSaltLength)
-		{
-			case 32:
-				this.saltLengthComboBox.setSelectedIndex(0);
-				break;
-			case 64:
-				this.saltLengthComboBox.setSelectedIndex(1);
-				break;
-			case 128:
-				this.saltLengthComboBox.setSelectedIndex(2);
-				break;
-			case 256:
-				this.saltLengthComboBox.setSelectedIndex(3);
-				break;
-			case 512:
-				this.saltLengthComboBox.setSelectedIndex(4);
-				break;
-			case 1024:
-				this.saltLengthComboBox.setSelectedIndex(5);
-				break;
-			case 2048:
-				this.saltLengthComboBox.setSelectedIndex(6);
-				break;
-			case 4096:
-				this.saltLengthComboBox.setSelectedIndex(7);
-				break;
-		}
-		
-		switch(AbstractServer.userIDKeyLength)
-		{
-			case 32:
-				this.userIDKeyLengthComboBox.setSelectedIndex(0);
-				break;
-			case 64:
-				this.userIDKeyLengthComboBox.setSelectedIndex(1);
-				break;
-			case 128:
-				this.userIDKeyLengthComboBox.setSelectedIndex(2);
-				break;
-			case 256:
-				this.userIDKeyLengthComboBox.setSelectedIndex(3);
-				break;
-			case 512:
-				this.userIDKeyLengthComboBox.setSelectedIndex(4);
-				break;
-			case 1024:
-				this.userIDKeyLengthComboBox.setSelectedIndex(5);
-				break;
-			case 2048:
-				this.userIDKeyLengthComboBox.setSelectedIndex(6);
-				break;
-			case 4096:
-				this.userIDKeyLengthComboBox.setSelectedIndex(7);
-				break;
-		}
-		
-		switch(AbstractServer.userIDAlgorithm)
-		{
-			case "ALPHANUMERIC_MIXED_CASE":
-				this.supportedUserIDKeyAlgorithmsComboBox.setSelectedIndex(0);
-				break;
-			case "ALPHANUMERIC_LOWER_CASE":
-				this.supportedUserIDKeyAlgorithmsComboBox.setSelectedIndex(1);
-				break;
-			case "ALPHANUMERIC_UPPER_CASE":
-				this.supportedUserIDKeyAlgorithmsComboBox.setSelectedIndex(2);
-				break;
-			case "NUMERIC":
-				this.supportedUserIDKeyAlgorithmsComboBox.setSelectedIndex(3);
-				break;
-			case "ALPHABETIC":
-				this.supportedUserIDKeyAlgorithmsComboBox.setSelectedIndex(4);
-				break;
-		}
+		//TODO:
 	}
 	
 	private class ComboBoxItem

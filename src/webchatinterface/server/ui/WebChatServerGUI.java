@@ -35,6 +35,9 @@ import java.io.IOException;
 
 public class WebChatServerGUI extends JFrame implements ActionListener, WindowListener
 {
+	private WebChatServer server;
+	private ConsoleManager consoleMng;
+	private ResourceMonitorManager resourceMonitorManager;
 	private Container masterPane;
 	private JMenuItem runServer;
 	private JMenuItem suspendServer;
@@ -46,11 +49,8 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 	private JMenuItem showPreferencesDialog;
 	private JMenuItem aboutApp;
 	private JMenuItem getHelp;
-	private ConsoleManager consoleMng;
-	private ResourceMonitorManager resourceMonitorManager;
 	private boolean running = false;
-	private WebChatServer server;
-	
+
 	public static void main(String[] args)
 	{
 		//Set OS Window Look and Feel
@@ -324,7 +324,12 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			this.masterPane.validate();
 		}
 	}
-	
+
+	private void showPreferencesDialog()
+	{
+		(new PreferencesDialog(this)).showDialog();
+	}
+
 	private void exit()
 	{
 		if(this.running)
@@ -400,7 +405,7 @@ public class WebChatServerGUI extends JFrame implements ActionListener, WindowLi
 			AccountListDialog.displayAccountList();
 		//Exit Server Application Gracefully
 		else if(event.getSource() == this.showPreferencesDialog)
-			(new PreferencesDialog(this)).showDialog();
+			this.showPreferencesDialog();
 		//About Application
 		else if(event.getSource() == this.aboutApp)
 			this.showAboutDialog();

@@ -1,19 +1,15 @@
 package webchatinterface.server.ui.components.preferences;
 
-import webchatinterface.server.AbstractServer;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class StylePreferencesPanel extends PreferencePanel
 {
-	private Color backgroundColor;
-	private Color foregroundColor;
-	private Font textFont;
-
 	private JButton foregroundColorButton;
 	private JButton backgroundColorButton;
 	private JComboBox<String> fontFamilyComboBox;
@@ -26,7 +22,10 @@ public class StylePreferencesPanel extends PreferencePanel
 
 	private String[] supportedFonts;
 	private Integer[] supportedSizes;
-	
+	private Color backgroundColor;
+	private Color foregroundColor;
+	private Font textFont;
+
 	public StylePreferencesPanel(String header)
 	{
 		super(header);
@@ -129,7 +128,6 @@ public class StylePreferencesPanel extends PreferencePanel
 		this.fontBoldItalicRadioButton.addActionListener(listener);
 		this.fontPlainRadioButton.addActionListener(listener);
 		
-		this.populatePanel();
 		JPanel body = new JPanel();
 		body.setLayout(new BoxLayout(body, BoxLayout.PAGE_AXIS));
 		body.setBorder(BorderFactory.createEmptyBorder());
@@ -200,62 +198,14 @@ public class StylePreferencesPanel extends PreferencePanel
 		return previewPanel;
 	}
 
-	public String[] requestChangedFields()
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		ArrayList<String> changedFields = new ArrayList<String>();
-		
-		if(!this.backgroundColor.equals(AbstractServer.backgroundColor))
-			changedFields.add("Background Color");
-		
-		if(!this.foregroundColor.equals(AbstractServer.foregroundColor))
-			changedFields.add("Foreground Color");
-		
-		if(!this.textFont.equals(AbstractServer.textFont))
-			changedFields.add("Text Font");
-		
-		return changedFields.toArray(new String[0]);
-	}
-	
-	public void save()
-	{
-		AbstractServer.backgroundColor = this.backgroundColor;
-		AbstractServer.foregroundColor = this.foregroundColor;
-		AbstractServer.textFont = this.textFont;
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		this.backgroundColor = AbstractServer.backgroundColor;
-		this.foregroundColor = AbstractServer.foregroundColor;
-		this.foregroundColorButton.setBackground(this.foregroundColor);
-		this.foregroundColorButton.setForeground(this.foregroundColor);
-		this.backgroundColorButton.setBackground(this.backgroundColor);
-		this.backgroundColorButton.setForeground(this.backgroundColor);
-		
-		this.previewPane.setForeground(this.foregroundColor);
-		this.previewPane.setBackground(this.backgroundColor);
-		
-		this.textFont = AbstractServer.textFont;
-		
-		for(String font : this.supportedFonts)
-		{
-			if(font.equals(AbstractServer.textFont.getFamily()))
-				this.fontFamilyComboBox.setSelectedItem(font);
-		}
-		
-		for(Integer size : this.supportedSizes)
-		{
-			if(size == AbstractServer.textFont.getSize())
-				this.fontSizeComboBox.setSelectedItem(size);
-		}
-		
-		if(AbstractServer.textFont.isBold())
-			this.fontBoldRadioButton.setSelected(true);
-		else if(AbstractServer.textFont.isItalic())
-			this.fontItalicRadioButton.setSelected(true);
-		else if(AbstractServer.textFont.isPlain())
-			this.fontPlainRadioButton.setSelected(true);
-		else
-			this.fontBoldItalicRadioButton.setSelected(true);
+		//TODO:
 	}
 }

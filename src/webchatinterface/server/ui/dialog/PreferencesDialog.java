@@ -1,14 +1,12 @@
 package webchatinterface.server.ui.dialog;
 
-import webchatinterface.server.AbstractServer;
-import webchatinterface.server.ui.WebChatServerGUI;
 import webchatinterface.server.ui.components.preferences.*;
+import webchatinterface.server.util.Pair;
 import webchatinterface.server.util.ResourceLoader;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -16,242 +14,91 @@ import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.util.HashMap;
 
-public class PreferencesDialog extends JDialog implements ActionListener, WindowListener, TreeSelectionListener
+public class PreferencesDialog extends JDialog implements TreeSelectionListener
 {
-	private WebChatServerGUI userInterface;
-	private PreferencePanel currentPanel;
+	private HashMap<String, Pair<Object, Boolean>> preferences;
 	private PreferencePanel[] panels;
+	private PreferencePanel currentPanel;
 	private JTree settingTree;
-	private JButton applyButton;
-	private JButton okButton;
-	private JButton cancelButton;
-	private JButton helpButton;
-	
-	public PreferencesDialog(WebChatServerGUI userInterface)
+	private int exitCode;
+
+	public PreferencesDialog(JFrame parent)
 	{
-		super(userInterface, "Server Preferences", true);
-		super.setSize(700, 500);
+		super(parent, "Server Preferences", ModalityType.DOCUMENT_MODAL);
 		super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		super.setVisible(false);
+		super.setSize(700, 500);
 		super.setResizable(false);
+		super.setLocationRelativeTo(parent);
 		super.setIconImage(ResourceLoader.getInstance().getFrameIcon());
-		
-		this.userInterface = userInterface;
-		this.getContentPane().setLayout(new BorderLayout(5,5));
-		((JPanel)this.getContentPane()).setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		
-		this.settingTree = this.buildTree();
+
 		this.buildSettingsPanels();
+		this.buildSettingsTree();
 		this.currentPanel = this.panels[0];
+		this.init();
+		this.preferences = new HashMap<String, Pair<Object, Boolean>>(32);
+		this.exitCode = 0;
+	}
 
-		this.getContentPane().add(this.settingTree, BorderLayout.LINE_START);
-		this.getContentPane().add(this.currentPanel);
-		this.getContentPane().add(this.buildButtonPanel(), BorderLayout.PAGE_END);
-	}
-	
-	public void showDialog()
+	private void init()
 	{
-		super.setVisible(true);
-	}
-	
-	public void close(boolean save)
-	{
-		if(!save)
+		JButton okButton = new JButton("OK");
+		JButton applyButton = new JButton("Apply");
+		JButton cancelButton = new JButton("Cancel");
+		JButton helpButton = new JButton("Help");
+
+		okButton.addActionListener(new ActionListener()
 		{
-			super.dispose();
-			return;
-		}
-		
-		if(((AdvancedSettingsPanel)this.panels[8]).isEdited())
+			public void actionPerformed(ActionEvent e)
+			{
+				PreferencesDialog.this.saveSettings();
+			}
+		});
+
+		applyButton.addActionListener(new ActionListener()
 		{
-			JPanel dialogPanel = new JPanel();
-			dialogPanel.setLayout(new BorderLayout(5,5));
-			
-			JTable table = new JTable(new DefaultTableModel(new String[]{"Panel", "Property"}, 0));
-			DefaultTableModel model = (DefaultTableModel) table.getModel();
-			for(String mod : (this.panels[8]).requestChangedFields())
-				model.addRow(new String[]{this.panels[8].getID(), mod});
-			JScrollPane scroll = new JScrollPane(table);
-			
-			dialogPanel.add(new JLabel("Confirm Modified Properties?"), BorderLayout.PAGE_START);
-			dialogPanel.add(scroll, BorderLayout.CENTER);
-			dialogPanel.add(new JLabel("This modified property requires the server to restart."), BorderLayout.PAGE_END);
-			
-			String[] options = {"Confirm and Restart", "Confirm and Restart Later", "Cancel"};
-			
-			int returnValue = JOptionPane.showOptionDialog(this, dialogPanel, 
-					"Modified Preferences", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-			
-			if(returnValue == 0)
+			public void actionPerformed(ActionEvent e)
 			{
-				try
-				{
-					this.panels[8].save();
-				}
-				catch(RuntimeException e){}
+				PreferencesDialog.this.exitCode = 1;
+				PreferencesDialog.this.saveSettings();
+				PreferencesDialog.this.dispose();
 			}
-			if(returnValue == 1)
-			{
-				try
-				{
-					this.panels[8].save();
-				}
-				catch(RuntimeException e){}
-			}
-		}
-		else
+		});
+
+		cancelButton.addActionListener(new ActionListener()
 		{
-			boolean showConfirmDialog = false;
-			for(PreferencePanel panel : this.panels)
+			public void actionPerformed(ActionEvent e)
 			{
-				if(panel.requestChangedFields().length != 0)
-				{
-					showConfirmDialog = true;
-					break;
-				}
+				PreferencesDialog.this.exitCode = 2;
+				PreferencesDialog.this.dispose();
 			}
-			
-			if(showConfirmDialog)
+		});
+
+		helpButton.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
 			{
-				JPanel dialogPanel = new JPanel();
-				dialogPanel.setLayout(new BorderLayout(5,5));
-				
-				JTable table = new JTable(new DefaultTableModel(new String[]{"Panel", "Property"}, 0));
-				DefaultTableModel model = (DefaultTableModel) table.getModel();
-				
-				boolean requiresRestart = false;
-				for(PreferencePanel panel : this.panels)
-				{
-					for(String mod : panel.requestChangedFields())
-					{
-						model.addRow(new String[]{panel.getID(), mod});
-						
-						if(panel.getID().equals("Connection Settings") || panel.getID().equals("Security Settings") || panel.getID().equals("Logging"))
-							requiresRestart = true;
-					}
-				}
-				
-				JScrollPane scroll = new JScrollPane(table);
-				
-				dialogPanel.add(new JLabel("Confirm Modified Properties?"), BorderLayout.PAGE_START);
-				dialogPanel.add(scroll, BorderLayout.CENTER);
-				
-				if(requiresRestart)
-					dialogPanel.add(new JLabel("This modified property requires the server to restart."), BorderLayout.PAGE_END);
-				
-				String[] options = {"Confirm and Restart", "Confirm and Restart Later", "Cancel"};
-				int returnValue = JOptionPane.showOptionDialog(this, dialogPanel, 
-						"Modified Preferences", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-
-				if(returnValue == 2)
-					return;
-
-				for(PreferencePanel panel : this.panels)
-				{
-					try
-					{
-						panel.save();
-					}
-					catch(RuntimeException e){}
-				}
-
-				if(returnValue == 0)
-					this.userInterface.restartServer();
-				else
-					this.userInterface.validateSettings();
+				//Open GitHub, Do Not Dispose
 			}
-			else
-			{
-				for(PreferencePanel panel : this.panels)
-				{
-					try
-					{
-						panel.save();
-					}
-					catch(RuntimeException e){}
-				}
-				
-				this.userInterface.validateSettings();
-			}
-		}
-		
-		super.dispose();
+		});
+
+		JPanel buttonPanel = new JPanel(new GridLayout(1,5,10,10));
+		buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		buttonPanel.add(okButton);
+		buttonPanel.add(applyButton);
+		buttonPanel.add(cancelButton);
+		buttonPanel.add(new JLabel());
+		buttonPanel.add(helpButton);
+
+		JPanel contentPane = (JPanel)this.getContentPane();
+		contentPane.setLayout(new BorderLayout(5,5));
+		contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		contentPane.add(this.settingTree, BorderLayout.LINE_START);
+		contentPane.add(this.currentPanel);
+		contentPane.add(buttonPanel, BorderLayout.PAGE_END);
 	}
-	
-	public void restoreSavedSettings()
-	{
-		for(PreferencePanel panel : panels)
-			panel.populatePanel();
-	}
-	
-	public void restoreGlobalSettings()
-	{
-		AbstractServer.loadDefaultSettings();
-		
-		for(PreferencePanel panel : panels)
-			panel.populatePanel();
-	}
-	
-	private JTree buildTree()
-	{
-		DefaultMutableTreeNode parentNode = new DefaultMutableTreeNode();
-		JTree tree = new JTree(parentNode, false);
-		tree.setRootVisible(false);
-		tree.setShowsRootHandles(true);
-		tree.setBorder(BorderFactory.createLineBorder(Color.black));
-		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-		renderer.setLeafIcon(null);
-		renderer.setClosedIcon(null);
-		renderer.setOpenIcon(null);
-		tree.setCellRenderer(renderer);
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		tree.addTreeSelectionListener(this);
-		
-		DefaultMutableTreeNode node = new DefaultMutableTreeNode("General Server Settings", true);
-		node.add(new DefaultMutableTreeNode("Welcome Message", false));
-		node.add(new DefaultMutableTreeNode("Connection Settings", false));
-		node.add(new DefaultMutableTreeNode("IP Filter", false));
-		parentNode.add(node);
-		
-		parentNode.add(new DefaultMutableTreeNode("File Transfer Settings"));
-		parentNode.add(new DefaultMutableTreeNode("Security Settings", false));
-		parentNode.add(new DefaultMutableTreeNode("Logging", false));
-		parentNode.add(new DefaultMutableTreeNode("Style Preferences", false));
-		parentNode.add(new DefaultMutableTreeNode("Advanced Settings", false));
-		
-		tree.expandPath(new TreePath(parentNode.getPath()));
-		for(int i = 0; i < tree.getRowCount(); i++)
-		    tree.expandRow(i);
-		
-		return tree;
-	}
-	
-	private JPanel buildButtonPanel()
-	{
-		JPanel buttonPane = new JPanel();
-		buttonPane.setLayout(new GridLayout(1,5,10,10));
-		buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		this.applyButton = new JButton("Apply");
-		this.okButton = new JButton("OK");
-		this.cancelButton = new JButton("Cancel");
-		this.helpButton = new JButton("Help");
-		this.applyButton.addActionListener(this);
-		this.okButton.addActionListener(this);
-		this.cancelButton.addActionListener(this);
-		this.helpButton.addActionListener(this);
-		
-		buttonPane.add(this.applyButton);
-		buttonPane.add(this.okButton);
-		buttonPane.add(this.cancelButton);
-		buttonPane.add(new JLabel());
-		buttonPane.add(this.helpButton);
-		
-		return buttonPane;
-	}
-	
+
 	private void buildSettingsPanels()
 	{
 		this.panels = new PreferencePanel[9];
@@ -266,18 +113,65 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 		this.panels[8] = new AdvancedSettingsPanel("Advanced Settings");
 	}
 
-	public void actionPerformed(ActionEvent e)
+	private void buildSettingsTree()
 	{
-		if(e.getSource() == this.applyButton)
-			this.close(true);
-		else if(e.getSource() == this.okButton)
-			this.close(true);
-		else if(e.getSource() == this.cancelButton)
-			this.close(false);
-		else if(e.getSource() == this.helpButton)
-		{}//do something
+		DefaultMutableTreeNode parentNode = new DefaultMutableTreeNode();
+		this.settingTree = new JTree(parentNode, false);
+		settingTree.setRootVisible(false);
+		settingTree.setShowsRootHandles(true);
+		settingTree.setBorder(BorderFactory.createLineBorder(Color.black));
+		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+		renderer.setLeafIcon(null);
+		renderer.setClosedIcon(null);
+		renderer.setOpenIcon(null);
+		settingTree.setCellRenderer(renderer);
+		settingTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		settingTree.addTreeSelectionListener(this);
+
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode("General Server Settings", true);
+		node.add(new DefaultMutableTreeNode("Welcome Message", false));
+		node.add(new DefaultMutableTreeNode("Connection Settings", false));
+		node.add(new DefaultMutableTreeNode("IP Filter", false));
+		parentNode.add(node);
+
+		parentNode.add(new DefaultMutableTreeNode("File Transfer Settings"));
+		parentNode.add(new DefaultMutableTreeNode("Security Settings", false));
+		parentNode.add(new DefaultMutableTreeNode("Logging", false));
+		parentNode.add(new DefaultMutableTreeNode("Style Preferences", false));
+		parentNode.add(new DefaultMutableTreeNode("Advanced Settings", false));
+
+		settingTree.expandPath(new TreePath(parentNode.getPath()));
+		for(int i = 0; i < settingTree.getRowCount(); i++)
+			settingTree.expandRow(i);
 	}
-	
+
+	private void saveSettings()
+	{
+		for(PreferencePanel panel : PreferencesDialog.this.panels)
+		{
+			HashMap<String, Pair<Object, Boolean>> preferences = panel.getModifiedPreferences();
+			for(String key : preferences.keySet())
+				PreferencesDialog.this.preferences.put(key, preferences.get(key));
+		}
+	}
+
+	public int showDialog()
+	{
+		this.setVisible(true);
+		return exitCode;
+	}
+
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
+	{
+		return this.preferences;
+	}
+
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
+	{
+		//TODO:
+		//Send appropriate preferences to corresponding panels
+	}
+
 	public void valueChanged(TreeSelectionEvent e)
 	{
 		DefaultMutableTreeNode node = (DefaultMutableTreeNode)this.settingTree.getLastSelectedPathComponent();
@@ -296,12 +190,4 @@ public class PreferencesDialog extends JDialog implements ActionListener, Window
 			}
 		}
 	}
-	
-	public void windowActivated(WindowEvent arg0){}
-	public void windowClosed(WindowEvent arg0){}
-	public void windowClosing(WindowEvent arg0){}
-	public void windowDeactivated(WindowEvent arg0){}
-	public void windowDeiconified(WindowEvent arg0){}
-	public void windowIconified(WindowEvent arg0){}
-	public void windowOpened(WindowEvent arg0){}
 }

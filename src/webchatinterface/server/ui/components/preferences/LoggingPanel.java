@@ -2,6 +2,7 @@ package webchatinterface.server.ui.components.preferences;
 
 import webchatinterface.AbstractIRC;
 import webchatinterface.server.AbstractServer;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class LoggingPanel extends PreferencePanel
 {
@@ -288,8 +289,6 @@ public class LoggingPanel extends PreferencePanel
 		this.deleteOldLogFilesCheckBox.addActionListener(action);
 		this.deleteOldLogFilesCheckBox.addItemListener(item);
 		
-		this.populatePanel();
-		
 		JPanel body = new JPanel();
 		body.setLayout(new BoxLayout(body, BoxLayout.PAGE_AXIS));
 		body.setBorder(BorderFactory.createEmptyBorder());
@@ -379,117 +378,15 @@ public class LoggingPanel extends PreferencePanel
 		
 		return manageLogFilesPanel;
 	}
-	
-	public String[] requestChangedFields()
+
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		ArrayList<String> changedFields = new ArrayList<String>();
-		
-		if(this.enableLoggingCheckBox.isSelected() != AbstractServer.loggingEnabled)
-			changedFields.add("Logging Enabled/Disabled");
-		
-		if(this.logOnlyWarningsExceptionsRadioButton.isSelected() != AbstractServer.logOnlyWarningsExceptions &&
-		this.logOnlyServerActivityRadioButton.isSelected() != AbstractServer.logOnlyServerActivity &&
-		this.logAllRadioButton.isSelected() != AbstractServer.logAllActivity)
-		{
-			if(this.logOnlyWarningsExceptionsRadioButton.isSelected())
-				changedFields.add("Log Only Warnings and Exceptions");
-			else if(this.logOnlyServerActivityRadioButton.isSelected())
-				changedFields.add("Log Only Server Activity");
-			else if(this.logAllRadioButton.isSelected())
-				changedFields.add("Log All Activity");
-		}
-		
-		if(this.logAllToSingleFileCheckBox.isSelected() != AbstractServer.logAllToSingleFile)
-			changedFields.add("Log All to Single File Enabled/Disabled");
-		
-		if(this.logFileFormatCheckBox.isSelected() && !this.logFileFormatField.getText().equals(AbstractServer.logFileFormat))
-			changedFields.add("Log File Format");
-		
-		if(this.limitFileSizeCheckBox.isSelected() && Integer.parseInt(this.limitFileSizeField.getText()) == AbstractServer.logFileSizeLimit)
-			changedFields.add("Log File Size Limit");
-		
-		if(this.deleteOldLogFilesCheckBox.isSelected() && Integer.parseInt(this.deleteOldLogFilesField.getText()) == AbstractServer.deleteLogAfterSessions)
-			changedFields.add("Delete Old Log Files");
-		
-		if(this.showTimestampsCheckBox.isSelected() != AbstractServer.showTimestampsInLogFiles)
-			changedFields.add("Show/Hide Timestamps in Log Files");
-		
-		return changedFields.toArray(new String[0]);
-	}
-	
-	public void save()
-	{
-		AbstractServer.loggingEnabled = this.enableLoggingCheckBox.isSelected();
-		AbstractServer.logOnlyWarningsExceptions = this.logOnlyWarningsExceptionsRadioButton.isSelected();
-		AbstractServer.logOnlyServerActivity = this.logOnlyServerActivityRadioButton.isSelected();
-		AbstractServer.logAllActivity = this.logAllRadioButton.isSelected();
-		AbstractServer.logAllToSingleFile = this.logAllToSingleFileCheckBox.isSelected();
-		AbstractServer.showTimestampsInLogFiles = this.showTimestampsCheckBox.isSelected();
-		
-		if(this.logFileFormatCheckBox.isSelected())
-			AbstractServer.logFileFormat = this.logFileFormatField.getText();
-		
-		if(this.limitFileSizeCheckBox.isSelected())
-			AbstractServer.logFileSizeLimit = Integer.parseInt(this.limitFileSizeField.getText());
-		
-		if(this.deleteOldLogFilesCheckBox.isSelected())
-			AbstractServer.deleteLogAfterSessions = Integer.parseInt(this.deleteOldLogFilesField.getText());
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		this.enableLoggingCheckBox.setSelected(AbstractServer.loggingEnabled);
-		this.logOnlyWarningsExceptionsRadioButton.setSelected(AbstractServer.logOnlyWarningsExceptions);
-		this.logOnlyServerActivityRadioButton.setSelected(AbstractServer.logOnlyServerActivity);
-		this.logAllRadioButton.setSelected(AbstractServer.logAllActivity);
-		this.logAllToSingleFileCheckBox.setSelected(AbstractServer.logAllToSingleFile);
-		this.logFileFormatCheckBox.setSelected(!AbstractServer.logFileFormat.equals("LOG"));
-		this.limitFileSizeCheckBox.setSelected(AbstractServer.logFileSizeLimit != 0);
-		this.deleteOldLogFilesCheckBox.setSelected(AbstractServer.deleteLogAfterSessions != 0);
-		this.showTimestampsCheckBox.setSelected(AbstractServer.showTimestampsInLogFiles);
-		this.limitFileSizeField.setText(Integer.toString(AbstractServer.logFileSizeLimit));
-		this.deleteOldLogFilesField.setText(Integer.toString(AbstractServer.deleteLogAfterSessions));
-		this.logFileFormatField.setText(AbstractServer.logFileFormat);
-		
-		if(this.enableLoggingCheckBox.isSelected())
-		{
-			this.logOnlyWarningsExceptionsRadioButton.setEnabled(true);
-			this.logOnlyServerActivityRadioButton.setEnabled(true);
-			this.logAllRadioButton.setEnabled(true);
-			this.logAllToSingleFileCheckBox.setEnabled(true);
-			this.logFileFormatCheckBox.setEnabled(true);
-			this.limitFileSizeCheckBox.setEnabled(true);
-			this.deleteOldLogFilesCheckBox.setEnabled(true);
-			this.showTimestampsCheckBox.setEnabled(true);
-			
-			if(this.logFileFormatCheckBox.isSelected())
-				this.limitFileSizeField.setEnabled(true);
-			else
-				this.limitFileSizeField.setEnabled(false);
-			
-			if(this.deleteOldLogFilesCheckBox.isSelected())
-				this.deleteOldLogFilesField.setEnabled(true);
-			else
-				this.deleteOldLogFilesField.setEnabled(false);
-			
-			if(this.logFileFormatCheckBox.isSelected())
-				this.logFileFormatField.setEnabled(true);
-			else
-				this.logFileFormatField.setEnabled(false);
-		}
-		else
-		{
-			this.logOnlyWarningsExceptionsRadioButton.setEnabled(false);
-			this.logOnlyServerActivityRadioButton.setEnabled(false);
-			this.logAllRadioButton.setEnabled(false);
-			this.logAllToSingleFileCheckBox.setEnabled(false);
-			this.logFileFormatCheckBox.setEnabled(false);
-			this.limitFileSizeCheckBox.setEnabled(false);
-			this.deleteOldLogFilesCheckBox.setEnabled(false);
-			this.showTimestampsCheckBox.setEnabled(false);
-			this.limitFileSizeField.setEnabled(false);
-			this.deleteOldLogFilesField.setEnabled(false);
-			this.logFileFormatField.setEnabled(false);
-		}
+		//TODO:
 	}
 }

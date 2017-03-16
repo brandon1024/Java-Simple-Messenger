@@ -1,11 +1,12 @@
 package webchatinterface.server.ui.components.preferences;
 
-import webchatinterface.server.account.BlacklistManager;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.util.HashMap;
 
 public class IPFilterPanel extends PreferencePanel
 {
@@ -19,7 +20,6 @@ public class IPFilterPanel extends PreferencePanel
 		this.IPFilterEditor = new JTextArea();
 		this.filterAllIPAddressesExceptCheckBox = new JCheckBox("Filter All Addresses Except Those Marked With Asterisk (*)");
 		this.edited = false;
-		this.populatePanel();
 		
 		this.IPFilterEditor.getDocument().addDocumentListener(new DocumentListener()
 		{
@@ -75,29 +75,14 @@ public class IPFilterPanel extends PreferencePanel
 		return IPFilterSettingsPanel;
 	}
 
-	public String[] requestChangedFields()
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		if(this.edited)
-			return new String[]{"IP Address Filter"};
-		else
-			return new String[0];
-	}
-	
-	public void save()
-	{
-		BlacklistManager.clearBlacklistRecord();
-		String filteredAddresses = this.IPFilterEditor.getText();
-		String[] lines = filteredAddresses.split("\r\n|\r|\n|\\s+");
-
-		for(String address : lines)
-			BlacklistManager.blacklistIPAddress(address);
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		String[] addresses = BlacklistManager.getBlacklistedAddresses();
-
-		for(String address : addresses)
-			this.IPFilterEditor.append(address + "\n");
+		//TODO:
 	}
 }

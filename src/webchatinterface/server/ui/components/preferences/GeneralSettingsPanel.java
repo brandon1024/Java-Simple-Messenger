@@ -2,12 +2,14 @@ package webchatinterface.server.ui.components.preferences;
 
 import webchatinterface.server.AbstractServer;
 import webchatinterface.server.ui.dialog.PreferencesDialog;
+import webchatinterface.server.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GeneralSettingsPanel extends PreferencePanel
 {
@@ -40,8 +42,6 @@ public class GeneralSettingsPanel extends PreferencePanel
 				dialog.restoreSavedSettings();
 			}
 		});
-
-		this.populatePanel();
 		
 		JPanel body = new JPanel();
 		body.setLayout(new BoxLayout(body, BoxLayout.PAGE_AXIS));
@@ -107,34 +107,15 @@ public class GeneralSettingsPanel extends PreferencePanel
 		
 		return restoreSettingsPanel;
 	}
-	
-	public String[] requestChangedFields()
+
+	public HashMap<String, Pair<Object, Boolean>> getModifiedPreferences()
 	{
-		ArrayList<String> changedFields = new ArrayList<String>();
-		
-		if(this.startServerWhenOpened.isSelected() != AbstractServer.startServerWhenApplicationStarts)
-			changedFields.add("Start Server When Application Starts");
-		
-		if(this.startServerMinimized.isSelected() != AbstractServer.openMinimized)
-			changedFields.add("Start Application Minimized");
-		
-		if(this.showResourceMonitor.isSelected() != AbstractServer.showResourceMonitor)
-			changedFields.add("Show Resource Monitor");
-		
-		return changedFields.toArray(new String[0]);
-	}
-	
-	public void save()
-	{
-		AbstractServer.startServerWhenApplicationStarts = this.startServerWhenOpened.isSelected();
-		AbstractServer.openMinimized = this.startServerMinimized.isSelected();
-		AbstractServer.showResourceMonitor = this.showResourceMonitor.isSelected();
+		//TODO:
+		return null;
 	}
 
-	public void populatePanel()
+	public void setPreferences(HashMap<String, Pair<Object, Boolean>> preferences)
 	{
-		this.startServerWhenOpened.setSelected(AbstractServer.startServerWhenApplicationStarts);
-		this.startServerMinimized.setSelected(AbstractServer.openMinimized);
-		this.showResourceMonitor.setSelected(AbstractServer.showResourceMonitor);
+		//TODO:
 	}
 }
