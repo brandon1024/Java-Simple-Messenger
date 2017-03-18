@@ -102,9 +102,7 @@ public abstract class AbstractServer
 		File configFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "config.ini");
 		
 		if(!configFile.exists())
-		{
 			throw new IOException("configuration file does not exist");
-		}
 		
 		try
 		{
@@ -276,9 +274,7 @@ public abstract class AbstractServer
 		File configFile = new File(AbstractIRC.SERVER_APPLCATION_DIRECTORY + "config.ini");
 		
 		if(!configFile.exists())
-		{
 			configFile.createNewFile();
-		}
 		
 		FileWriter fileWriter = new FileWriter(configFile, false);
 		String[] lines = new String[47];
@@ -332,9 +328,7 @@ public abstract class AbstractServer
 		lines[46] = "ConsoleFontPlain=" + (AbstractServer.textFont.getStyle() == Font.PLAIN);
 		
 		for(String line : lines)
-		{
 			fileWriter.write(line);
-		}
 
 		fileWriter.close();
 	}

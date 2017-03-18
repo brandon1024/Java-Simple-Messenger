@@ -83,7 +83,7 @@ public class WebChatServerInstance implements Runnable
 	private void listen()
 	{
 		//Verify Connection
-		this.consoleMng.printConsole("Authenticating Client", false);
+		this.consoleMng.printConsole("Connection Requested: " + this.socket.getInetAddress().getHostAddress(), false);
 		this.establishConnection();
 		
 		if(this.verified)
