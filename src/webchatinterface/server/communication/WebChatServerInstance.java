@@ -200,17 +200,17 @@ public class WebChatServerInstance implements Runnable
 						}
 						catch(FileNotFoundException e)
 						{
-							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Account Database File Not Found", true);
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Account Database File Not Found : See LOG", true);
 							AbstractServer.logException(e);
 						}
 						catch(IOException | ClassNotFoundException e)
 						{
-							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Unable to Read Account Database File", true);
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Unable to Read Account Database File : See LOG", true);
 							AbstractServer.logException(e);
 						}
 						catch (NoSuchAlgorithmException e)
 						{
-							this.consoleMng.printConsole("Unable to Verify User Credentials : Unsupported MessageDigest Algorithm", true);
+							this.consoleMng.printConsole("Unable to Verify User Credentials : Unsupported MessageDigest Algorithm : See LOG", true);
 							AbstractServer.logException(e);
 						}
 
@@ -234,16 +234,19 @@ public class WebChatServerInstance implements Runnable
 					}
 				}
 			}
+
+			this.consoleMng.printConsole("\tInstance ID: this.INSTANCE_ID  Address: " + this.getIP() + "  Local Port: " + this.socket.getLocalPort() + "  Remote Port: " + this.socket.getPort(), false);
+			this.consoleMng.printConsole("Username: " + this.client.getUsername() + "  User ID: " + this.client.getUserID(), false);
 		}
 		catch (ClassNotFoundException e)
 		{
-			this.consoleMng.printConsole("Unrecognized Object Received: " + e.getMessage(), true);
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : Undefined Communication Protocol : See LOG", true);
 			AbstractServer.logException(e);
 			this.verified = false;
 		}
 		catch(IOException e)
 		{
-			this.consoleMng.printConsole("Exception Thrown While Attempting to Send Message: " + e.getMessage(), true);
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : Unexpected IOException : See LOG", true);
 			AbstractServer.logException(e);
 			this.verified = false;
 		}
@@ -322,6 +325,11 @@ public class WebChatServerInstance implements Runnable
 						case Command.PRIVATE_CHANNEL_REQUEST:
 						case Command.PRIVATE_CHANNEL_DENIED:
 							Object[] recipient = (Object[]) (((Command) message).getMessage());
+							if(((Command) message).getCommand() == Command.PRIVATE_CHANNEL_REQUEST)
+								this.consoleMng.printConsole("Private Channel Request : TO " + recipient[0] + " : FROM " + this.client.getUsername() + " : " + this.getIP(), false);
+							else
+								this.consoleMng.printConsole("Private Channel Denied : TO " + recipient[0] + " : FROM " + this.client.getUsername() + " : " + this.getIP(), false);
+
 							Channel[] channels = this.channelManager.getGlobalChannels();
 							for(Channel channel : channels)
 							{
@@ -337,6 +345,7 @@ public class WebChatServerInstance implements Runnable
 							break;
 						case Command.PRIVATE_CHANNEL_AUTHORIZED:
 							recipient = (Object[]) (((Command) message).getMessage());
+							this.consoleMng.printConsole("Private Channel Authorized : TO " + recipient[0] + " : FROM " + this.client.getUsername() + " : " + this.getIP(), false);
 							channels = this.channelManager.getGlobalChannels();
 							for(Channel channel : channels)
 							{
@@ -354,6 +363,7 @@ public class WebChatServerInstance implements Runnable
 							}
 							break;
 						case Command.PRIVATE_CHANNEL_EXIT:
+							this.consoleMng.printConsole("Private Channel Closed : " + this.client.getUsername() + " : " + this.getIP(), false);
 							if(!this.channel.equals(this.channelManager.publicChannel))
 							{
 								this.broadcastHlp.broadcastMessage((Command) message, this.channel);
@@ -479,17 +489,6 @@ public class WebChatServerInstance implements Runnable
 	public int getAvailability()
 	{
 		return this.client.getAvailability();
-	}
-	
-	private String paramString()
-	{
-		return "\nInstance: " + this.INSTANCE_ID +
-				"\nAddress: " + this.getIP() +
-				"\nLocal Port: " + this.socket.getLocalPort() +
-				"\nRemote Port: " + this.socket.getPort() + 
-				"\nUsername: " + this.client.getUsername() +
-				"\nUser ID: " + this.client.getUserID() +
-				"\nVerified: " + this.verified;
 	}
 	
 	public String toString()

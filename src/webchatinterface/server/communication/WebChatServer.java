@@ -48,18 +48,18 @@ public class WebChatServer implements Runnable
 	
 	public void run()
 	{
-		this.consoleMng.printConsole("Initializing Server", false);
-		this.consoleMng.printConsole("Using Server IP " + AbstractServer.serverBindIPAddress, false);
+		this.consoleMng.printConsole("Initializing Server Interface", false);
+		this.consoleMng.printConsole("Server Bound to IP " + AbstractServer.serverBindIPAddress, false);
 		
 		//Use Port Number from Command Line Argument or Use Default Port 5100
 		if(AbstractServer.serverPortNumber <= 0 || AbstractServer.serverPortNumber >= 65535)
 		{
-			this.consoleMng.printConsole("Invalid Server Port " + AbstractServer.serverPortNumber, true);
+			this.consoleMng.printConsole("Invalid Port Number" + AbstractServer.serverPortNumber, true);
 			AbstractServer.serverPortNumber = 5100;
-			this.consoleMng.printConsole("Using Default Port " + AbstractServer.serverPortNumber, false);
+			this.consoleMng.printConsole("Using Default Port Number " + AbstractServer.serverPortNumber, false);
 		}
 		else
-			this.consoleMng.printConsole("Using Port " + AbstractServer.serverPortNumber, false);
+			this.consoleMng.printConsole("Port Number " + AbstractServer.serverPortNumber, false);
 		
 		//Start BroadcastScheduler Thread
 		this.broadcastScheduler.start();
@@ -70,16 +70,18 @@ public class WebChatServer implements Runnable
 	
 	public void suspend()
 	{
-		//gracefully stop listening to ServerSocket
+		this.consoleMng.printConsole("Executing Server Suspend Protocol", false);
 		this.broadcastScheduler.stop();
 		this.RUN = false;
 		
 		//disconnect all connected users
+		this.consoleMng.printConsole("Closing Open Server Connections", false);
 		for(Channel channel : this.channelManager.getGlobalChannels())
 		{
 			for(WebChatServerInstance client : channel.getChannelMembers())
 				client.disconnect(Command.REASON_SERVER_CLOSED);
 		}
+		this.consoleMng.printConsole("Closed All Open Server Connections", false);
 
 		//close ServerSocket
 		try
@@ -100,7 +102,7 @@ public class WebChatServer implements Runnable
 		try
 		{
 			//Create Server Socket on Specified Port
-			this.consoleMng.printConsole("Opening Socket on Port " + AbstractServer.serverPortNumber, false);
+			this.consoleMng.printConsole("Opening Server Socket on Port " + AbstractServer.serverPortNumber, false);
 			
 			if(AbstractServer.serverBindIPAddress.equals("default"))
 				this.serverSocket = new ServerSocket(AbstractServer.serverPortNumber);
@@ -127,7 +129,7 @@ public class WebChatServer implements Runnable
 						WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_SERVER_FULL);
-						this.consoleMng.printConsole("User Prevented from Connecting; server full (" + AbstractServer.maxConnectedUsers + " connections)", true);
+						this.consoleMng.printConsole("Client Connection Prevented : Server Full (" + AbstractServer.maxConnectedUsers + " Connections)", true);
 						loopCTRL = true;
 					}
 					else if(BlacklistManager.isBlacklisted(socket.getLocalAddress().getHostName()))
@@ -135,7 +137,7 @@ public class WebChatServer implements Runnable
 						WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
 						chatCom.start();
 						this.disconnectUser(chatCom, Command.REASON_BLACKLISTED);
-						this.consoleMng.printConsole("User Prevented from Connecting; blacklisted user", true);
+						this.consoleMng.printConsole("Client Connection Prevented : Blacklisted User", true);
 						socket.close();
 						loopCTRL = true;
 					}
@@ -143,8 +145,6 @@ public class WebChatServer implements Runnable
 						loopCTRL = false;
 				}
 				while(loopCTRL);
-				
-				this.consoleMng.printConsole("Connection Request From: " + socket.getInetAddress().getHostAddress(), false);
 				
 				//Start Server Instance Thread
 				WebChatServerInstance chatCom = new WebChatServerInstance(this, socket);
@@ -160,17 +160,17 @@ public class WebChatServer implements Runnable
 		}
 		catch(UnknownHostException e)
 		{
-			this.consoleMng.printConsole("Critical Error Occurred; The server bind IP address could not be resolved.", true);
+			this.consoleMng.printConsole("Critical Error Occurred : Server Bind IP Could Not Be Resolved : See LOG", true);
 			AbstractServer.logException(e);
 		}
 		catch(IOException e)
 		{
-			this.consoleMng.printConsole("Critical Error Occurred; I/O error Occurred when opening server socket", true);
+			this.consoleMng.printConsole("Critical Error Occurred : IO Error Occurred Opening Server Socket : See LOG", true);
 			AbstractServer.logException(e);
 		}
 		catch(Exception e)
 		{
-			this.consoleMng.printConsole("Critical Error Occurred; Restart Server", true);
+			this.consoleMng.printConsole("Critical Error Occurred : Restart Server : See LOG", true);
 			AbstractServer.logException(e);
 		}
 	}
@@ -196,9 +196,7 @@ public class WebChatServer implements Runnable
 		for(Channel channel : this.channelManager.getGlobalChannels())
 		{
 			for(WebChatServerInstance client : channel.getChannelMembers())
-			{
 				clients.add(client);
-			}
 		}
 
 		Object[][] list = new Object[clients.size()][5];
