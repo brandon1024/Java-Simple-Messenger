@@ -66,6 +66,7 @@ public class WebChatServerInstance implements Runnable
 	
 	public void run()
 	{
+		this.establishConnection();
 		this.listen();
 		
 		try
@@ -79,204 +80,325 @@ public class WebChatServerInstance implements Runnable
 			AbstractServer.logException(e);
 		}
 	}
-	
-	private void listen()
+
+	private void establishConnection()
 	{
-		//Verify Connection
-		this.consoleMng.printConsole("Connection Requested: " + this.socket.getInetAddress().getHostAddress(), false);
-		this.establishConnection();
-		
-		if(this.verified)
+		try
 		{
-			this.consoleMng.printConsole("Client Authenticated: Connection Authorized", false);
-			this.consoleMng.printConsole(this.paramString(), false);
-			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " connected", "SERVER", "0"), this.channel);
-			this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
-		}
-		else
-			this.consoleMng.printConsole("Client Authentication Failed: Connection Denied", false);
-		
-		//If not verified, exit.
-		while(this.verified)
-		{
-			try
+			while(!this.verified)
 			{
-				//If Message Received
-				Object message = this.messageIn.readObject();
-				
-				if(message != null && message instanceof TransferBuffer)
+				Object objIn = this.messageIn.readObject();
+
+				if(objIn == null || !(objIn instanceof Command))
+					continue;
+
+				Command com = (Command)objIn;
+
+				if(com.getCommand() != Command.CONNECTION_REQUEST)
 				{
-					//validate
-					this.validateMessage((TransferBuffer)message);
-					
-					if(this.verified)
-						this.broadcastHlp.broadcastMessage((TransferBuffer)message, this.channel);
-					else
-						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
+					this.consoleMng.printConsole("Connection Denied : Invalid Authentication Sequence : " + this.getIP(), true);
+					this.verified = false;
+					break;
 				}
-				else if(message != null && message instanceof Message)
+
+				this.consoleMng.printConsole("Connection Requested : " + this.getIP(), false);
+
+				Object[] data = (Object[])com.getMessage();
+				boolean isGuest = (boolean)data[0];
+
+				if(isGuest)
 				{
-					//validate
-					this.validateMessage((Message)message);
-					this.server.addObjectSent();
-					
-					if(this.verified)
+					this.consoleMng.printConsole("Assigning Guest Credentials : " + this.getIP(), false);
+					String clientVersion = (String)data[1];
+
+					if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
 					{
-						//Log and Print to Console
-						consoleMng.printConsole("Message Broadcasted From: " + this.client.getUsername() + " : " + this.socket.getInetAddress().getHostAddress(), false);
-						this.broadcastHlp.broadcastMessage((Message)message, this.channel);
+						this.consoleMng.printConsole("Connection Denied : Incompatible Client Version : " + this.getIP(), false);
+						this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCOMPATIBLE_CLIENT, "SERVER", "0"));
+						this.verified = false;
+						break;
 					}
-					else
-						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
+
+					String username = "Guest" + KeyGenerator.generateKey16(KeyGenerator.NUMERIC);
+					String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
+
+					this.client.setUsername(username);
+					this.client.setUserID(userID);
+
+					Object[] responseData = {username, userID};
+					this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
+					this.consoleMng.printConsole("Connection Authorized : " + username + " : " + this.getIP(), false);
+					this.verified = true;
 				}
-				else if(message != null && message instanceof Command)
+				else
 				{
-					//validate
-					this.validateMessage((Command)message);
-					
-					if(this.verified)
+					boolean newAccount = (boolean)data[1];
+					String clientVersion = (String)data[2];
+					String emailAddress = (String)data[3];
+					String username = (String)data[4];
+					byte[] password = (byte[])data[5];
+					String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
+
+					if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
 					{
-						switch(((Command)message).getCommand())
+						this.consoleMng.printConsole("Connection Denied : Incompatible Client Version : " + this.getIP(), false);
+						this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCOMPATIBLE_CLIENT, "SERVER", "0"));
+						this.verified = false;
+						break;
+					}
+
+					if(newAccount)
+					{
+						boolean successful = false;
+						try
 						{
-							case Command.CONNECTION_SUSPENDED:
-							case Command.CONNECTION_SUSPENDED_ACKNOWLEDGE:
-								this.consoleMng.printConsole("User Disconnected: " + this.socket.getInetAddress().getHostAddress() + "; Closing Connection", false);
-								this.verified = false;
-								break;
-							case Command.CLIENT_VERSION_REQUEST:
-								this.send(new Command(Command.CLIENT_VERSION, AbstractIRC.CLIENT_VERSION, "SERVER", "0"));
-								break;
-							case Command.MESSAGE_TYPED:
-								this.broadcastHlp.broadcastMessage((Command)message, this.channel);
-								break;
-							case Command.CLIENT_AVAILABILITY_AVAILABLE:
-								this.client.setAvailability(ClientUser.AVAILABLE);
-								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AVAILABLE", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
-								break;
-							case Command.CLIENT_AVAILABILITY_BUSY:
-								this.client.setAvailability(ClientUser.BUSY);
-								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : BUSY", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
-								break;
-							case Command.CLIENT_AVAILABILITY_AWAY:
-								this.client.setAvailability(ClientUser.AWAY);
-								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : AWAY", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
-								break;
-							case Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE:
-								this.client.setAvailability(ClientUser.APPEAR_OFFLINE);
-								this.consoleMng.printConsole(this.client.getUsername() + " Set New Availability : APPEAR_OFFLINE", false);
-								this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
-								break;
-							case Command.PRIVATE_CHANNEL_REQUEST:
-							case Command.PRIVATE_CHANNEL_DENIED:
-								Object[] recipient = (Object[])(((Command)message).getMessage());
-								Channel[] channels = this.channelManager.getGlobalChannels();
-								for(Channel channel : channels)
-								{
-									for(WebChatServerInstance client : channel.getChannelMembers())
-									{
-										if(client.getUserID().equals(recipient[1]))
-										{
-											client.send((Command) message);
-											break;
-										}
-									}
-								}
-								break;
-							case Command.PRIVATE_CHANNEL_AUTHORIZED:
-								recipient = (Object[])(((Command)message).getMessage());
-								channels = this.channelManager.getGlobalChannels();
-								for(Channel channel : channels)
-								{
-									for(WebChatServerInstance client : channel.getChannelMembers())
-									{
-										if(client.getUserID().equals(recipient[1]))
-										{
-											client.send((Command)message);
-											Channel newPrivateChannel = this.channelManager.newChannel("Private Channel", false, false);
-											this.setChannel(newPrivateChannel);
-											client.setChannel(newPrivateChannel);
-											break;
-										}
-									}
-								}
-								break;
-							case Command.PRIVATE_CHANNEL_EXIT:
-								if(!this.channel.equals(this.channelManager.publicChannel))
-								{
-									this.broadcastHlp.broadcastMessage((Command)message, this.channel);
-									WebChatServerInstance[] channelMembers = this.channel.getChannelMembers();
-									for(WebChatServerInstance member : channelMembers)
-										member.setChannel(this.channelManager.publicChannel);
-								}
-								break;
-							case Command.FILE_TRANSFER:
-								Object[] manifestInfo = (Object[]) ((Command)message).getMessage();
-								long fileSize = (long) manifestInfo[1];
-								long bufferSize = (long) manifestInfo[2];
-								String fileTransferID = (String)manifestInfo[3];
-								String filename = (String)manifestInfo[4];
-								this.consoleMng.printConsole(this.client.getUsername()
-										+ " Initialized a File Transfer:"
-										+ "\nFilename: " + filename
-										+ "\nFile Size: " + fileSize + "bytes"
-										+ "\nBuffer Size: " + bufferSize + "bytes"
-										+ "\nTransfer ID: " + fileTransferID, false);
-								this.broadcastHlp.broadcastMessage((Command)message);
-								this.server.addFilesTransferred();
-								break;
+							this.consoleMng.printConsole("New Account Request : " + this.getIP(), false);
+							successful = AccountManager.createNewAccount(emailAddress.getBytes(), username.getBytes(), password);
+						}
+						catch(FileNotFoundException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Account Database File Not Found", true);
+							AbstractServer.logException(e);
+						}
+						catch(IOException | ClassNotFoundException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Unable to Read Account Database File", true);
+							AbstractServer.logException(e);
+						}
+						catch (NoSuchAlgorithmException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : Unsupported MessageDigest Algorithm", true);
+							AbstractServer.logException(e);
+						}
+
+						if(successful)
+						{
+							this.consoleMng.printConsole("Connection Authorized : " + username + " : " + this.getIP(), false);
+							this.client.setUsername(username);
+							this.client.setUserID(userID);
+
+							Object[] responseData = {username, userID};
+							this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
+							this.verified = true;
+						}
+						else
+						{
+							this.consoleMng.printConsole("Connection Denied : Account Creation Aborted : Username or Email Address Exists : " + this.getIP(), false);
+							this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_USERNAME_EMAIL_ALREADY_EXISTS, "SERVER", "0"));
+							this.verified = false;
+							break;
 						}
 					}
 					else
-						this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
+					{
+						boolean successful = false;
+
+						try
+						{
+							this.consoleMng.printConsole("Verifying Credentials : " + this.getIP(), false);
+							successful = AccountManager.verifyCredentials(username.getBytes(), password);
+						}
+						catch(FileNotFoundException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Account Database File Not Found", true);
+							AbstractServer.logException(e);
+						}
+						catch(IOException | ClassNotFoundException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : AccountManager Unable to Read Account Database File", true);
+							AbstractServer.logException(e);
+						}
+						catch (NoSuchAlgorithmException e)
+						{
+							this.consoleMng.printConsole("Unable to Verify User Credentials : Unsupported MessageDigest Algorithm", true);
+							AbstractServer.logException(e);
+						}
+
+						if(successful)
+						{
+							this.consoleMng.printConsole("Connection Authorized : " + username + " : " + this.getIP(), false);
+							this.client.setUsername(username);
+							this.client.setUserID(userID);
+
+							Object[] responseData = {username, userID};
+							this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
+							this.verified = true;
+						}
+						else
+						{
+							this.consoleMng.printConsole("Connection Denied : Invalid Credentials : " + this.getIP(), false);
+							this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCORRECT_CREDENTIALS, "SERVER", "0"));
+							this.verified = false;
+							break;
+						}
+					}
 				}
-				
+			}
+		}
+		catch (ClassNotFoundException e)
+		{
+			this.consoleMng.printConsole("Unrecognized Object Received: " + e.getMessage(), true);
+			AbstractServer.logException(e);
+			this.verified = false;
+		}
+		catch(IOException e)
+		{
+			this.consoleMng.printConsole("Exception Thrown While Attempting to Send Message: " + e.getMessage(), true);
+			AbstractServer.logException(e);
+			this.verified = false;
+		}
+	}
+	
+	private void listen()
+	{
+		if(this.verified)
+		{
+			this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " connected", "SERVER", "0"), this.channel);
+			this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
+		}
+
+		try
+		{
+			while(this.verified)
+			{
+				//If Message Received
+				Object message = this.messageIn.readObject();
+
+				if(message == null)
+					continue;
+
+				this.validateMessage((TransportEntity) message);
+
 				if(!this.verified)
+				{
+					this.disconnect(Command.REASON_INCONSISTENT_USER_ID);
 					break;
+				}
+
+				if(message instanceof TransferBuffer)
+				{
+					this.broadcastHlp.broadcastMessage((TransferBuffer) message, this.channel);
+				}
+				else if(message instanceof Message)
+				{
+					this.consoleMng.printConsole("Message Broadcasted : " + this.client.getUsername() + " : " + this.getIP(), false);
+					this.broadcastHlp.broadcastMessage((Message) message, this.channel);
+				}
+				else if(message instanceof Command)
+				{
+					switch(((Command) message).getCommand())
+					{
+						case Command.CONNECTION_SUSPENDED:
+						case Command.CONNECTION_SUSPENDED_ACKNOWLEDGE:
+							this.consoleMng.printConsole("Client Disconnected : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.verified = false;
+							break;
+						case Command.CLIENT_VERSION_REQUEST:
+							this.send(new Command(Command.CLIENT_VERSION, AbstractIRC.CLIENT_VERSION, "SERVER", "0"));
+							break;
+						case Command.MESSAGE_TYPED:
+							this.broadcastHlp.broadcastMessage((Command) message, this.channel);
+							break;
+						case Command.CLIENT_AVAILABILITY_AVAILABLE:
+							this.client.setAvailability(ClientUser.AVAILABLE);
+							this.consoleMng.printConsole("Availability Changed : AVAILABLE : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
+							break;
+						case Command.CLIENT_AVAILABILITY_BUSY:
+							this.client.setAvailability(ClientUser.BUSY);
+							this.consoleMng.printConsole("Availability Changed : BUSY : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
+							break;
+						case Command.CLIENT_AVAILABILITY_AWAY:
+							this.client.setAvailability(ClientUser.AWAY);
+							this.consoleMng.printConsole("Availability Changed : AWAY : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
+							break;
+						case Command.CLIENT_AVAILABILITY_APPEAR_OFFLINE:
+							this.client.setAvailability(ClientUser.APPEAR_OFFLINE);
+							this.consoleMng.printConsole("Availability Changed : APPEAR OFFLINE : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.broadcastHlp.broadcastMessage(new Command(Command.CONNECTED_USERS, this.server.getConnectedUsers(), "SERVER", "0"), this.channel);
+							break;
+						case Command.PRIVATE_CHANNEL_REQUEST:
+						case Command.PRIVATE_CHANNEL_DENIED:
+							Object[] recipient = (Object[]) (((Command) message).getMessage());
+							Channel[] channels = this.channelManager.getGlobalChannels();
+							for(Channel channel : channels)
+							{
+								for(WebChatServerInstance client : channel.getChannelMembers())
+								{
+									if(client.getUserID().equals(recipient[1]))
+									{
+										client.send((Command) message);
+										break;
+									}
+								}
+							}
+							break;
+						case Command.PRIVATE_CHANNEL_AUTHORIZED:
+							recipient = (Object[]) (((Command) message).getMessage());
+							channels = this.channelManager.getGlobalChannels();
+							for(Channel channel : channels)
+							{
+								for(WebChatServerInstance client : channel.getChannelMembers())
+								{
+									if(client.getUserID().equals(recipient[1]))
+									{
+										client.send((Command) message);
+										Channel newPrivateChannel = this.channelManager.newChannel("Private Channel", false, false);
+										this.setChannel(newPrivateChannel);
+										client.setChannel(newPrivateChannel);
+										break;
+									}
+								}
+							}
+							break;
+						case Command.PRIVATE_CHANNEL_EXIT:
+							if(!this.channel.equals(this.channelManager.publicChannel))
+							{
+								this.broadcastHlp.broadcastMessage((Command) message, this.channel);
+								WebChatServerInstance[] channelMembers = this.channel.getChannelMembers();
+								for(WebChatServerInstance member : channelMembers)
+									member.setChannel(this.channelManager.publicChannel);
+							}
+							break;
+						case Command.FILE_TRANSFER:
+							Object[] manifestInfo = (Object[]) ((Command) message).getMessage();
+							long fileSize = (long) manifestInfo[1];
+							String fileTransferID = (String) manifestInfo[3];
+							String filename = (String) manifestInfo[4];
+							this.consoleMng.printConsole("File Transfer : " + this.client.getUsername() + " : " + this.getIP(), false);
+							this.consoleMng.printConsole("\tFilename: " + filename + " : File Size: " + fileSize + "bytes" + " : Transfer ID: " + fileTransferID, false);
+							this.broadcastHlp.broadcastMessage((Command) message);
+							this.server.addFilesTransferred();
+							break;
+					}
+				}
 			}
-			catch(EOFException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Stream Closed Unexpectedly; Connection Aborted", true);
-				AbstractServer.logException(e);
-				break;
-			}
-			catch(StreamCorruptedException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Stream Closed Unexpectedly; Connection Aborted", true);
-				AbstractServer.logException(e);
-				break;
-			}
-			catch(IOException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Stream Closed Unexpectedly; Connection Aborted", true);
-				AbstractServer.logException(e);
-				break;
-			}
-			catch(SecurityException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Untrusted Subclass Illegally Overrode Security-Sensitive Methods", true);
-				AbstractServer.logException(e);
-				break;
-			}
-			catch(NullPointerException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Stream Closed Unexpectedly; Connection Aborted", true);
-				AbstractServer.logException(e);
-				break;
-			}
-			catch (ClassNotFoundException e)
-			{
-				this.consoleMng.printConsole("FATAL ERROR: Thread " + this.INSTANCE_ID + ": Incompatible Client; Connection Aborted", true);
-				AbstractServer.logException(e);
-				break;
-			}
+		}
+		catch(IOException e)
+		{
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : Unexpected IOException : See LOG", true);
+			AbstractServer.logException(e);
+		}
+		catch(SecurityException e)
+		{
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : Unexpected SecurityException : See LOG", true);
+			AbstractServer.logException(e);
+		}
+		catch(NullPointerException e)
+		{
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : NullPointerException : See LOG", true);
+			AbstractServer.logException(e);
+		}
+		catch (ClassNotFoundException e)
+		{
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + " : Undefined Communication Protocol : See LOG", true);
+			AbstractServer.logException(e);
 		}
 		
 		//remove connection from connection array
 		this.channel.removeChannelMember(this);
-		this.consoleMng.printConsole("Successfully Removed User From List of Connected Users", false);
 			
 		//broadcast message to all users
 		this.broadcastHlp.broadcastMessage(new Message(this.client.getUsername() + " disconnected", "SERVER", "0"), this.channel);
@@ -292,7 +414,7 @@ public class WebChatServerInstance implements Runnable
 		}
 		catch (IOException e)
 		{
-			this.consoleMng.printConsole("Exception Thrown While Attempting to Send CONNECTION_SUSPENDED Command", true);
+			this.consoleMng.printConsole("FATAL ERROR : Thread " + this.INSTANCE_ID + ": Unexpected IOException : See LOG", true);
 			AbstractServer.logException(e);
 		}
 		
@@ -307,178 +429,11 @@ public class WebChatServerInstance implements Runnable
 		}
 	}
 	
-	private void establishConnection()
-	{
-		//Verify User
-		while(!this.verified)
-		{
-			Object objIn;
-			try
-			{
-				objIn = this.messageIn.readObject();
-				
-				//Filter Received Objects for CONNECTION_REQUEST Command
-				if(objIn != null && objIn instanceof Command)
-				{
-					int com = ((Command)objIn).getCommand();
-					
-					if(com == Command.CONNECTION_REQUEST)
-					{
-						Object[] data = (Object[])((Command)objIn).getMessage();
-						boolean isGuest = (boolean)data[0];
-						
-						if(isGuest)
-						{
-							String clientVersion = (String)data[1];
-							
-							if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
-							{
-								this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCOMPATIBLE_CLIENT, "SERVER", "0"));
-								this.verified = false;
-								break;
-							}
-							
-							String username = "Guest" + KeyGenerator.generateKey16(KeyGenerator.NUMERIC);
-							String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
-							
-							this.client.setUsername(username);
-							this.client.setUserID(userID);
-							
-							Object[] responseData = {username, userID};
-							this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
-							this.verified = true;
-						}
-						else
-						{
-							boolean newAccount = (boolean)data[1];
-							String clientVersion = (String)data[2];
-							String emailAddress = (String)data[3];
-							String username = (String)data[4];
-							byte[] password = (byte[])data[5];
-							String userID = KeyGenerator.generateKey64(KeyGenerator.ALPHANUMERIC_MIXED_CASE);
-							
-							if(!clientVersion.equals(AbstractIRC.CLIENT_VERSION))
-							{
-								this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCOMPATIBLE_CLIENT, "SERVER", "0"));
-								this.verified = false;
-								break;
-							}
-							
-							if(newAccount)
-							{
-								boolean successful;
-								try
-								{
-									successful = AccountManager.createNewAccount(emailAddress.getBytes(), username.getBytes(), password);
-								}
-								catch(FileNotFoundException e)
-								{
-									this.consoleMng.printConsole("AccountManager account database file not found. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								catch(IOException | ClassNotFoundException e)
-								{
-									this.consoleMng.printConsole("AccountManager unable to read account database file. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								catch (NoSuchAlgorithmException e)
-								{
-									this.consoleMng.printConsole("AccountManager hashing algorithm is not supported. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								
-								if(successful)
-								{
-									this.client.setUsername(username);
-									this.client.setUserID(userID);
-									
-									Object[] responseData = {username, userID};
-									this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
-									this.verified = true;
-								}
-								else
-								{
-									this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_USERNAME_EMAIL_ALREADY_EXISTS, "SERVER", "0"));
-									this.verified = false;
-									break;
-								}
-							}
-							else
-							{
-								boolean successful;
-								try
-								{
-									successful = AccountManager.verifyCredentials(username.getBytes(), password);
-								}
-								catch(FileNotFoundException e)
-								{
-									this.consoleMng.printConsole("AccountManager account database file not found. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								catch(IOException | ClassNotFoundException e)
-								{
-									this.consoleMng.printConsole("AccountManager unable to read account database file. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								catch (NoSuchAlgorithmException e)
-								{
-									this.consoleMng.printConsole("AccountManager hashing algorithm is not supported. Unable to verify user credentials.", true);
-									AbstractServer.logException(e);
-									successful = false;
-								}
-								
-								if(successful)
-								{
-									this.client.setUsername(username);
-									this.client.setUserID(userID);
-									
-									Object[] responseData = {username, userID};
-									this.send(new Command(Command.CONNECTION_AUTHORIZED, responseData, "SERVER", "0"));
-									this.verified = true;
-								}
-								else
-								{
-									this.send(new Command(Command.CONNECTION_DENIED, Command.REASON_INCORRECT_CREDENTIALS, "SERVER", "0"));
-									this.verified = false;
-									break;
-								}
-							}
-						}
-					}
-					else
-					{
-						this.verified = false;
-						break;
-					}
-				}
-			}
-			catch (ClassNotFoundException e)
-			{
-				this.consoleMng.printConsole("Unrecognized Object Received: " + e.getMessage(), true);
-				AbstractServer.logException(e);
-				this.verified = false;
-				break;
-			}
-			catch(IOException e)
-			{
-				this.consoleMng.printConsole("Exception Thrown While Attempting to Send Message: " + e.getMessage(), true);
-				AbstractServer.logException(e);
-				this.verified = false;
-				break;
-			}
-		}
-	}
-	
 	private void validateMessage(TransportEntity message)
 	{
 		if(!message.getSenderID().equals(this.client.getUserID()))
 		{
-			this.consoleMng.printConsole("Client " + this.INSTANCE_ID  + " connection aborted: Inconsistent User ID", true);
+			this.consoleMng.printConsole("Connection Aborted : Inconsistent User ID : " + this.getIP(), true);
 			this.verified = false;
 		}
 	}
@@ -529,7 +484,7 @@ public class WebChatServerInstance implements Runnable
 	private String paramString()
 	{
 		return "\nInstance: " + this.INSTANCE_ID +
-				"\nAddress: " + this.socket.getInetAddress().getHostAddress() +
+				"\nAddress: " + this.getIP() +
 				"\nLocal Port: " + this.socket.getLocalPort() +
 				"\nRemote Port: " + this.socket.getPort() + 
 				"\nUsername: " + this.client.getUsername() +
