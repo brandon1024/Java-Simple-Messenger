@@ -1,0 +1,22 @@
+plugins {
+    id 'idea'
+    id 'application'
+}
+
+group 'ca.brandonrichardson'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 10
+
+application {
+    mainClassName = 'ca.brandonrichardson.messenger.server.MessengerServerApplication'
+}
+
+dependencies {
+    compile project(':common')
+    compile('org.slf4j:slf4j-log4j12:1.7.25')
+
+    compileOnly('org.projectlombok:lombok:1.18.6')
+    testCompile("org.junit.jupiter:junit-jupiter-api:5.2.0")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+}
