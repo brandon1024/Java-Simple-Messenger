@@ -112,10 +112,10 @@ As mentioned earlier, this project makes use of a client-server architecture. Bo
     - The pool is also used by the `ca.brandonrichardson.messenger.server.svc.ConnectionHandler` to broadcast messages to all connected clients.
     - The pool can be resized using the method `setMaxPoolSize`.
 - Chain of Responsibility Pattern
-    - The chain of responsibility pattern is used to process requests as a chain. There are only two filters in the chain: `ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilterChain` and `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerChain`.
-    - The `ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilterChain` is used to authenticate the client. It essentially performs any handshaking between the client and server to establish the session.
-    - The `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerChain` handles receiving messages from the client once the session is valid.
+    - The chain of responsibility pattern is used to process requests as a chain. There are only two filters in the chain: `ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilter` and `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerFilter`.
+    - The `ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilter` is used to authenticate the client. It essentially performs any handshaking between the client and server to establish the session.
+    - The `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerFilter` handles receiving messages from the client once the session is valid.
     - New filters can be easily added to the chain by extending `ca.brandonrichardson.messenger.server.svc.request.RequestChainFilter` and implementing the `process()` method. New filters must be added to `ca.brandonrichardson.messenger.server.svc.ConnectionHandler`.
 - Pipes and Filters Pattern
     - When I was implementing the Chain of Responsibility pattern for the ConnectionHandler, I was trying to imitate what was implemented by the Spring framework. In doing so, I also implemented a Pipe and Filter pattern.
-    - In each filter (`ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilterChain` and `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerChain`), the input to one filter is output into the next filter in the chain. So, the filter is able to modify the input in the chain and pass it to the next one.
+    - In each filter (`ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilter` and `ca.brandonrichardson.messenger.server.svc.request.RequestHandlerFilter`), the input to one filter is output into the next filter in the chain. So, the filter is able to modify the input in the chain and pass it to the next one.

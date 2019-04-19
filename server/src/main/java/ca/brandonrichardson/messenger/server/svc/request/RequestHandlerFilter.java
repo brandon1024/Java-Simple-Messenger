@@ -12,7 +12,7 @@ import java.io.ObjectInputStream;
 import java.security.NoSuchAlgorithmException;
 
 @Slf4j
-public class RequestHandlerChain extends RequestChainFilter {
+public class RequestHandlerFilter extends RequestChainFilter {
 
     @Override
     public void process(final Connection connection, final RequestChain next) throws IOException, ClassNotFoundException, NoSuchAlgorithmException {

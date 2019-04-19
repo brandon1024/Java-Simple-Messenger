@@ -2,8 +2,8 @@ package ca.brandonrichardson.messenger.server.svc;
 
 import ca.brandonrichardson.messenger.server.core.Connection;
 import ca.brandonrichardson.messenger.server.core.ConnectionPool;
-import ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilterChain;
-import ca.brandonrichardson.messenger.server.svc.request.RequestHandlerChain;
+import ca.brandonrichardson.messenger.server.svc.request.AuthenticationFilter;
+import ca.brandonrichardson.messenger.server.svc.request.RequestHandlerFilter;
 import ca.brandonrichardson.messenger.server.svc.request.SimpleRequestChain;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,8 +36,8 @@ public class ConnectionHandler implements Runnable {
 
             //create filter chain
             SimpleRequestChain.of(
-                    new AuthenticationFilterChain(),
-                    new RequestHandlerChain()
+                    new AuthenticationFilter(),
+                    new RequestHandlerFilter()
             ).process(connection);
 
         } catch(EOFException e) {
