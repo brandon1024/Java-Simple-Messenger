@@ -1,4 +1,7 @@
 # Java Simple Messenger
+
+![](screenshot.png)
+
 ## An Important Note
 This project was built for a university project. The project asked that I implement one architectural pattern and twelve (TWELVE!!) design patterns. The code is not pretty, but if you're learning how Java networking or multithreading works, or you need examples of design pattern implementations, you are welcome to have a peek.
 
